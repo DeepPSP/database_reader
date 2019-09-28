@@ -23,9 +23,17 @@ class PhysioNetDataBase(object):
     """
     def __init__(self, db_name:str, db_path:Optional[str]=None, verbose:int=2, **kwargs):
         """
+        Parameters:
+        -----------
+        db_name: str,
+            name of the database
+        db_path: str, optional,
+            storage path of the database,
+            if not specified, `wfdb` will fetch data from the website of PhysioNet
+        verbose: int, default 2,
 
-        db_path:
-        --------
+        typical `db_path`:
+        ------------------
             "E:\\notebook_dir\\ecg\\data\\PhysioNet\\xxx\\"
             "/export/algo/wenh06/ecg_data/xxx/"
         """
@@ -35,6 +43,14 @@ class PhysioNetDataBase(object):
         self.all_records = None
         self.device_id = None  # maybe data are imported into impala db, to facilitate analyzing
         self.verbose = verbose
+
+        if self.db_path is not None:
+            if '/' in self.db_path:
+                self.path_sep = '/'
+            else:
+                self.path_sep = '\\'
+        else:
+            self.path_sep = None
         
         try:
             all_dbs = wfdb.io.get_dbs()
@@ -188,22 +204,40 @@ class PhysioNetDataBase(object):
 
     def get_patient_id(self, rec:str) -> int:
         """
+        Attach a `patient_id` to the record, in order to facilitate further uses
 
+        Parameters:
+        -----------
+        rec: str,
+            record name
+
+        Returns:
+        --------
+        int, a `patient_id` attached to the record `rec`
         """
         return 0
 
 
     def database_info(self, detailed:bool=False) -> NoReturn:
         """
+        print the information about the database
 
+        detailed: bool, default False,
+            if False, an short introduction of the database will be printed,
+            if True, then docstring of the class will be printed additionally
         """
         return
 
 
     def helper(self, items:Union[List[str],str,type(None)]=None, **kwargs) -> NoReturn:
-        """ 已完成，已测试
+        """ finished, checked, to be improved,
 
-        根据item, 打印相应PhysioNet的记号含义
+        print corr. meanings of symbols belonging to `items`
+
+        Parameters:
+        items: str, or list of str, optional,
+            the items to print,
+            if not specified, then a comprehensive printing of meanings of all symbols will be performed
         """
         beat_annotations = {
             'N': 'Normal beat',
@@ -315,9 +349,16 @@ class NSRRDataBase(object):
     """
     def __init__(self, db_name:str, db_path:str, verbose:int=2, **kwargs):
         """
+        Parameters:
+        -----------
+        db_name: str,
+            name of the database
+        db_path: str,
+            storage path of the database
+        verbose: int, default 2,
 
-        db_path:
-        --------
+        typical `db_path`:
+        ------------------
             "E:\\notebook_dir\\ecg\\data\\NSRR\\xxx\\"
             "/export/algo/wenh06/ecg_data/NSRR/xxx/"
         """
@@ -327,6 +368,11 @@ class NSRRDataBase(object):
         self.all_records = None
         self.device_id = None  # maybe data are imported into impala db, to facilitate analyzing
         self.verbose = verbose
+
+        if '/' in self.db_path:
+            self.path_sep = '/'
+        else:
+            self.path_sep = '\\'
         
         all_dbs = [
             ["shhs", "Multi-cohort study focused on sleep-disordered breathing and cardiovascular outcomes"],
@@ -344,21 +390,39 @@ class NSRRDataBase(object):
 
     def get_patient_id(self, rec:str) -> int:
         """
+        Attach a `patient_id` to the record, in order to facilitate further uses
 
+        Parameters:
+        -----------
+        rec: str,
+            record name
+
+        Returns:
+        --------
+        int, a `patient_id` attached to the record `rec`
         """
         return 0
 
 
     def show_rec_stats(self, rec:str) -> NoReturn:
         """
+        print the statistics about the record `rec`
 
+        Parameters:
+        -----------
+        rec: str,
+            record name
         """
         return
 
 
     def database_info(self, detailed:bool=False) -> NoReturn:
         """
+        print the information about the database
 
+        detailed: bool, default False,
+            if False, an short introduction of the database will be printed,
+            if True, then docstring of the class will be printed additionally
         """
         raw_info = {
             "What": "",
@@ -379,9 +443,16 @@ class OtherDataBase(object):
     """
     def __init__(self, db_name:str, db_path:str, verbose:int=2, **kwargs):
         """
+        Parameters:
+        -----------
+        db_name: str,
+            name of the database
+        db_path: str,
+            storage path of the database
+        verbose: int, default 2,
 
-        db_path:
-        --------
+        typical 'db_path':
+        ------------------
             "E:\\notebook_dir\\ecg\\data\xxx\\"
             "/export/algo/wenh06/ecg_data/xxx/"
         """
@@ -391,27 +462,38 @@ class OtherDataBase(object):
         self.all_records = None
         self.device_id = None  # maybe data are imported into impala db, to facilitate analyzing
         self.verbose = verbose
+
+        if '/' in self.db_path:
+            self.path_sep = '/'
+        else:
+            self.path_sep = '\\'
         
         self.kwargs = kwargs
         
 
     def get_patient_id(self, rec:str) -> int:
         """
+        Attach a `patient_id` to the record, in order to facilitate further uses
 
+        Parameters:
+        -----------
+        rec: str,
+            record name
+
+        Returns:
+        --------
+        int, a `patient_id` attached to the record `rec`
         """
         return 0
-
-
-    def show_rec_stats(self, rec:str) -> NoReturn:
-        """
-
-        """
-        return
-
+    
 
     def database_info(self, detailed:bool=False) -> NoReturn:
         """
+        print the information about the database
 
+        detailed: bool, default False,
+            if False, an short introduction of the database will be printed,
+            if True, then docstring of the class will be printed additionally
         """
         raw_info = {}
 

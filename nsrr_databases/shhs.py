@@ -194,7 +194,6 @@ class SHHS(NSRRDataBase):
 
         self.current_version = kwargs["current_version"] if "current_version" in kwargs else "0.14.0"
 
-        self.path_sep = None
         self.psg_data_path = None
         self.ann_path = None
         self.hrv_ann_path = None
@@ -409,10 +408,6 @@ class SHHS(NSRRDataBase):
         """ 已完成，
 
         """
-        if '/' in self.db_path:
-            self.path_sep = '/'
-        else:
-            self.path_sep = '\\'
         self.psg_data_path = self.db_path+"polysomnography{}edfs{}".format(self.path_sep, self.path_sep)
         self.ann_path = self.db_path+"datasets{}".format(self.path_sep)
         self.hrv_ann_path = self.ann_path+"hrv-analysis{}".format(self.path_sep)
