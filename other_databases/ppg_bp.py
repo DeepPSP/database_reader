@@ -20,13 +20,16 @@ __all__ = [
 class PPGBP(OtherDataBase):
     """
 
-    ABOUT the database PPG_BP:
+    ABOUT the database PPG_BP (ref. [1]):
     1. the PPG sensor:
         1.1. sensor model was SEP9AF-2 (SMPLUS Company, Korea)
         1.2. contains dual LED with 660nm (Red light) and 905 nm (Infrared) wavelengths
         1.3. sampling rate 1 kHz and 12-bit ADC
         1.4. hardware filter design is 0.5‒12Hz bandpass
     more to be written
+
+    PPG analysis tips (ref. [1],[2]):
+    1. Taking the first and second derivatives of the PPG signals may help in detecting the informative inflection points more accurately
 
     References:
     -----------
@@ -174,3 +177,22 @@ class PPGBP(OtherDataBase):
         df_ann = load_ann(rec_no)[diagonosis_items].dropna(axis=1)
         diagonosis = [item for item in df_ann.iloc[0].tolist() if item != 'Normal']
         return diagonosis
+
+
+    def get_patient_info(self, rec_no:int, items:Optional[List[str]]=None,verbose:int=2) -> Union[Real,str,pd.DataFrame]:
+        """ not finished,
+        
+        """
+        if items is None or len(items) == 0:
+            info_items = [
+                'Sex(M/F)','Age(year)','Height(cm)','Weight(kg)','BMI(kg/m^2)',
+                'Systolic Blood Pressure(mmHg)','Diastolic Blood Pressure(mmHg)','Heart Rate(b/m)',
+            ]
+        else:
+            info_items = items
+        df_info = self.load_ann(rec_no)[info_items]
+        
+        if len(info_items) == 1:
+            return  df_info.iloc[0].values[0]
+        else:
+            return df_info
