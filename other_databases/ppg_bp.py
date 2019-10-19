@@ -181,7 +181,18 @@ class PPGBP(OtherDataBase):
 
     def get_patient_info(self, rec_no:int, items:Optional[List[str]]=None,verbose:int=2) -> Union[Real,str,pd.DataFrame]:
         """ not finished,
+
+        Parameters:
+        -----------
+        rec_no: int,
+            number of the record, or 'subject_ID'
+        items: list of str, optional,
+            items of the patient information (e.g. sex, age, etc.)
         
+        Returns:
+        --------
+        if `items` contains only one item, then value of this item in the subject's information will be returned,
+        otherwise, a dataframe of all information of the subject will be returned
         """
         if items is None or len(items) == 0:
             info_items = [

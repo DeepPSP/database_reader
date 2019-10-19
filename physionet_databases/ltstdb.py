@@ -30,6 +30,9 @@ class LTSTDB(PhysioNetDataBase):
     7. measurements in .16a files were used to construct ST level and deviation functions for each signal\n
     """
     def __init__(self, db_path:Optional[str]=None, **kwargs):
+        """
+        
+        """
         super().__init__(db_name='ltstdb', db_path=db_path, **kwargs)
         self.freq = 250
         try:
