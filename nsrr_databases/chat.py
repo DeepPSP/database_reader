@@ -9,7 +9,7 @@ import pandas as pd
 from datetime import datetime
 from typing import Union, Optional, Any, List, Dict, Iterable, Sequence, NoReturn
 from numbers import Real
-from ..misc import ArrayLike
+from ..utils import ArrayLike
 
 from ..base import NSRRDataBase
 

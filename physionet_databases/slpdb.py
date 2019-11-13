@@ -7,7 +7,7 @@ import pandas as pd
 from datetime import datetime
 from typing import Union, Optional, Any, List, NoReturn
 from numbers import Real
-from ..misc import ArrayLike
+from ..utils import ArrayLike
 
 from ..base import PhysioNetDataBase
 
@@ -54,7 +54,7 @@ class SLPDB(PhysioNetDataBase):
 
         it is weird that record 'slp45' has annotations 'M\x00' which is not in the table, should be 'MT'?
         """
-        self.sleep_stage_protocol = kwargs['sleep_stage_protocol'] if 'sleep_stage_protocol' in kwargs else 'new'
+        self.sleep_stage_protocol = kwargs.get('sleep_stage_protocol', 'new')
         if self.sleep_stage_protocol == "old":
             self.stage_names = ['W', 'R', 'N1', 'N2', 'N3', 'N4']
         elif self.sleep_stage_protocol == "new":

@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
 """
-docstring, to write
+commonly used utilities, that do not belong to a particular category
 """
 
 import numpy as np
@@ -13,8 +12,10 @@ from numbers import Real
 __all__ = [
     "ArrayLike", "ArrayLike_Float", "ArrayLike_Int",
     "MilliSecond", "Second",
+    "DEFAULT_FIG_SIZE_PER_SEC",
     "idx_to_ts",
     "timestamp_to_local_datetime_string",
+    "modulo",
 ]
 
 
@@ -23,6 +24,9 @@ ArrayLike_Float = Union[List[float],Tuple[float],np.ndarray]
 ArrayLike_Int = Union[List[int],Tuple[int],np.ndarray]
 MilliSecond = int
 Second = int
+
+
+DEFAULT_FIG_SIZE_PER_SEC = 4.8
 
 
 def idx_to_ts(idx:int, start_ts:MilliSecond, fs:int) -> MilliSecond:
@@ -98,3 +102,38 @@ def time_string_to_timestamp(time_string:str, fmt:str="%Y-%m-%d %H:%M:%S", retur
         return int(round(datetime.strptime(time_string, fmt).timestamp()))
     else:
         return int(round(datetime.strptime(time_string, fmt).timestamp()*1000))
+
+
+def modulo(val:Real, dividend:Real, val_range_start:Real=0) -> Real:
+    """
+    returns:
+        val mod dividend, positive,
+        and within interval [val_range_start, val_range_start+abs(dividend)]
+    """
+    _dividend = abs(dividend)
+    ret = val-val_range_start-_dividend*int((val-val_range_start)/_dividend)
+    return ret+val_range_start if ret >= 0 else _dividend+ret+val_range_start
+    # alternatively
+    # return (val-val_range_start)%_dividend + val_range_start
+
+
+def filter_by_percentile(s:ArrayLike, q:Union[int,List[int]], return_mask:bool=False) -> Union[np.ndarray,Tuple[np.ndarray,np.ndarray]]:
+    """
+
+    Parameters:
+    -----------
+    to write
+    """
+    _s = np.array(s)
+    original_shape = _s.shape
+    _s = _s.reshape(-1, _s.shape[-1])  # flatten, but keep the last dim
+    l,d = _s.shape
+    _q = sorted(q) if isinstance(q,list) else [(100-q)//2, (100+q)//2]
+    iqrs = np.percentile(_s, _q, axis=0)
+    validity = np.full(shape=l, fill_value=True, dtype=bool)
+    for idx in range(d):
+        validity = (validity) & (_s[...,idx] >= iqrs[...,idx][0]) & (_s[...,idx] <= iqrs[...,idx][-1])
+    if return_mask:
+        return _s[validity], validity.reshape(original_shape[:-1])
+    else:
+        return _s[validity]

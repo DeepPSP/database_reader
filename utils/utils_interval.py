@@ -9,6 +9,8 @@ remarks: 一些常用的与区间相关的函数
 考虑：
     是否将interval与generalized_interval合并，
     把单个的interval令成[[a,b]]，即长度为1的generalized_interval
+
+TODO: to english
 """
 
 import numpy as np
@@ -16,7 +18,7 @@ from copy import deepcopy
 from functools import reduce
 from numbers import Real
 from typing import Union, Optional, Any, List, Tuple
-from ..misc import ArrayLike
+from ..utils import ArrayLike
 import time
 
 
@@ -107,7 +109,7 @@ def get_confidence_interval(data:Optional[ArrayLike]=None, val:Optional[Real]=No
     """
     from scipy.stats import norm
     assert data or (val and rmse)
-    correct_factor = kwargs['correct_factor'] if 'correct_factor' in kwargs else 1
+    correct_factor = kwargs.get('correct_factor', 1)
     bias = norm.ppf(0.5 + confidence / 2)
     if data is None:
         lower_bound = (val - rmse * bias) * correct_factor
@@ -316,7 +318,7 @@ def get_optimal_covering(total_interval:Interval, to_cover:list, min_len:int, sp
         其中每一项是一个list，记录了ret中对应的interval覆盖的to_cover中的项的indices
     """
     start_time = time.time()
-    verbose = kwargs['verbose'] if 'verbose' in kwargs else 0
+    verbose = kwargs.get('verbose', 0)
     tmp = sorted(total_interval)
     tot_start, tot_end = tmp[0], tmp[-1]
 

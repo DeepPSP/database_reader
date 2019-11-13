@@ -12,7 +12,7 @@ from pyedflib import EdfReader
 from datetime import datetime
 from typing import Union, Optional, Any, List, Dict, Iterable, Sequence, NoReturn
 from numbers import Real
-from ..misc import ArrayLike
+from ..utils import ArrayLike
 from utils.utils_interval import intervals_union
 
 from ..base import NSRRDataBase
@@ -192,7 +192,7 @@ class SHHS(NSRRDataBase):
         """
         super().__init__(db_name='shhs', db_path=db_path, verbose=verbose, **kwargs)
 
-        self.current_version = kwargs["current_version"] if "current_version" in kwargs else "0.14.0"
+        self.current_version = kwargs.get("current_version" , "0.14.0")
 
         self.psg_data_path = None
         self.ann_path = None
@@ -364,7 +364,7 @@ class SHHS(NSRRDataBase):
         5	--- REM stage
         9	--- Movement/Wake or Unscored?
         """
-        self.sleep_stage_protocol = kwargs['sleep_stage_protocol'] if 'sleep_stage_protocol' in kwargs else 'aasm'
+        self.sleep_stage_protocol = kwargs.get('sleep_stage_protocol', 'aasm')
         self.all_sleep_stage_names = ['W', 'R', 'N1', 'N2', 'N3', 'N4']
         self.sleep_stage_name_value_mapping = {
             "W":0, "R":1, "N1":2, "N2":3, "N3":4, "N4":5
