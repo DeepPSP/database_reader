@@ -22,14 +22,15 @@ from numbers import Real
 from typing import Union, Optional, NoReturn
 
 from .common import ArrayLike, ArrayLike_Int, filter_by_percentile
+from ..utils_spatial import ConvexCone2D
 
 
 __all__ = [
     "generate_pure_color_image",
     "compatible_imshow",
     "compatible_imread_cv2",
-    "get_color_type",
     "convert_color",
+    "get_color_type",
 ]
 
 
@@ -37,9 +38,6 @@ _CVT_COLOR_BACKEND = 'cv2'
 _AVAILABLE_CVT_COLOR_BACKENDS = [
     'cv2', 'pil', 'colour-science', 'toy',
 ]
-
-IMG_BACKGROUND_RGB = np.array([0,0,0],dtype=np.uint8)
-PLOT_BACKGROUND_RGB = np.array([109,190,68],dtype=np.uint8)
 
 
 def generate_pure_color_image(height:int, width:int, rgb_color:ArrayLike_Int, show:bool=True, **kwargs) -> np.ndarray:
@@ -168,7 +166,9 @@ def compatible_imread_cv2(img_path:str, return_fmt:str) -> np.ndarray:
 
 
 def convert_color(img:np.ndarray, src_fmt:str, dst_fmt:str, backend:Optional[str]=None, **kwargs) -> np.ndarray:
-    """ partly finished, checked,
+    """ partly finished, partly checked,
+
+    TODO: check compatibiliy of each backend
 
     Parameters:
     -----------
@@ -327,7 +327,7 @@ def _rgb_to_ciexyz(img:np.ndarray, backend:Optional[str]=None, **kwargs) -> np.n
     elif backend.lower() == 'toy':
         gamma_correction = lambda e: np.power((e+0.055)/1.055, 2.4) if e>0.04045 else e/12.92
         var_rgb = 100 * np.vectorize(gamma_correction)(_rescale_rgb(img))
-        M = MAT_RGB_TO_CIEXYZ
+        M = common.MAT_RGB_TO_CIEXYZ
         cie_xyz = np.apply_along_axis(lambda v:np.dot(M,v), -1, var_rgb)
         cie_xyz = cie_xyz.astype(np.float32)
     else:
@@ -449,7 +449,7 @@ def _ciexyz_to_cielab(img:np.ndarray, illuminant:str='D65', observer:int=2, back
         def _aux_func(t):
             return np.cbrt(t) if t > delta_cubic else a*t+b
 
-        cie_lab = np.apply_along_axis(lambda v:np.array([116*_aux_func(v[1])-16, 500*(_aux_func(v[0])-_aux_func(v[1])), 200*(_aux_func(v[1])-_aux_func(v[2]))]), -1, img/ILLUMINANT_D65_2_XYZ)
+        cie_lab = np.apply_along_axis(lambda v:np.array([116*_aux_func(v[1])-16, 500*(_aux_func(v[0])-_aux_func(v[1])), 200*(_aux_func(v[1])-_aux_func(v[2]))]), -1, img/common.ILLUMINANT_D65_2_XYZ)
         cie_lab = cie_lab.astype(np.float32)
     else:
         raise ValueError("no backend named {} for converting color space from {} to {}".format(backend, 'CIEXYZ', 'CIELAB'))
@@ -593,7 +593,7 @@ def _rgb_to_yiq(img:np.ndarray, backend:Optional[str]=None, **kwargs) -> np.ndar
     elif backend.lower() == 'pil':
         pass
     elif backend.lower() == 'toy':
-        M = MAT_RGB_TO_YIQ
+        M = common.MAT_RGB_TO_YIQ
         yiq = np.apply_along_axis(lambda v:np.dot(M,v), -1, _rescale_rgb(img))
     else:
         raise ValueError("no backend named {} for converting color space from {} to {}".format(backend, 'RGB', 'YIQ'))
@@ -692,6 +692,28 @@ def _rgb_to_cmyk(img:np.ndarray, scale:Real=1, backend:Optional[str]=None, **kwa
     return cmyk
 
 
+def _rgb_to_hex(img:np.ndarray, **kwargs) -> np.ndarray:
+    """ not finished, finished part checked,
+
+    convert `img` from the color space of RGB to the format of hex
+
+    Parameters:
+    -----------
+    img: ndarray,
+        the image, in the format (color space) RGB8, be converted to hex
+    kwargs: dict,
+        not used, only to be compatible with other color space conversion functions
+
+    Returns:
+    --------
+    img_hex: ndarray,
+        `img` in the format of hex
+    """
+    to_hex = lambda v: '#%02x%02x%02x' % tuple(v)
+    img_hex = np.apply_along_axis(to_hex, axis=-1, arr=img,)
+    return img_hex
+
+
 def _ciexyz_to_rgb(img:np.ndarray, backend:Optional[str]=None, **kwargs) -> np.ndarray:
     """ not finished, not checked,
 
@@ -748,7 +770,7 @@ def _validate_img_fmt(img:np.ndarray, fmt:str, **kwargs) -> Union[np.ndarray, No
     if fmt.lower() == 'rgb':
         try:
             valid_img = _validate_rgb(img)
-        except:
+        except Exception as e:
             return
     return valid_img
 
@@ -840,6 +862,7 @@ def get_color_type(roi_pixels:ArrayLike, color_space:str, rule_func:callable, kw
     if len(_observation) > 0:
         observation = _observation
     centroid = np.nanmean(observation, axis=0)
+    
     if kw_rf is not None:
         color_type = rule_func(centroid, **kw_rf)
     else:
@@ -856,6 +879,26 @@ def get_color_type(roi_pixels:ArrayLike, color_space:str, rule_func:callable, kw
             plot_func(observation, **plot_params)
 
     return ret
+
+
+
+#---------------------------------------------------------------------------
+# class of color space
+
+class ColorSpace(object):
+    """
+    """
+    def __init__(self, name:str):
+        """
+        """
+        self.name = name
+
+
+#---------------------------------------------------------------------------
+# functions and classes borrowed from the package `colour-science`
+# to prevent from unexpected errors
+# too complicated, not to do currently
+
 
 
 #---------------------------------------------------
