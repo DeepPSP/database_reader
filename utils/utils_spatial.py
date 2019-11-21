@@ -1,18 +1,28 @@
 """
 utilities for spatial objects and computations, which numpy, scipy, etc. lack
+
+NOTE:
+implemented geometric objects in sympy:
+    Point, Point2D, Point3D,
+    Line, Ray, Segment, Line2D, Segment2D, Ray2D, Line3D, Segment3D, Ray3D,
+    Plane,
+    Ellipse, Circle,
+    Polygon, RegularPolygon, Triangle,
+    Curve,
+    Parabola
 """
 import numpy as np
 import math
+import random
 import numpy.linalg as LA
 from numpy import pi as PI
 # import cmath
 from scipy.spatial import ConvexHull, Delaunay
 from numbers import Real
-from typing import Union, Optional, NoReturn
+from typing import Union, Optional, List, NoReturn
 import warnings
 
-from .commom import ArrayLike
-from .commom import modulo
+from .common import ArrayLike, modulo
 
 
 __all__ = [
@@ -29,69 +39,226 @@ __all__ = [
     "rearrange_vectors_2d",
     "rearrange_convex_contour_points_2d",
     "split_2d_plane_into_convex_cones",
+    "smallest_circle",
+    "get_circle_passing_through",
+    "LineSegment2D",
+    "Triangle2D",
     "ConvexCone2D",
     "Fan2D",
     "Ellipse",
+    "Circle",
 ]
 
 
-def is_in_hull(points:ArrayLike, hull:Union[Delaunay,ConvexHull,ArrayLike]) -> np.ndarray:
+# __GEOMETRIC_OBJECTS__ = [
+#     LineSegment2D,
+#     Triangle2D,
+#     ConvexCone2D, Fan2D,
+#     Ellipse, Circle,
+# ]
+
+# __GEOMETRIC_OBJECTS_TYPES__ = Union[
+#     LineSegment2D,
+#     Triangle2D,
+#     ConvexCone2D, Fan2D,
+#     Ellipse, Circle,
+# ]
+
+
+#-------------------------------------------------------
+# classes
+
+class GeometricObject(object):
     """
-    test if points in `points` are in `hull`
-
-    Parameters:
-    -----------
-    points: array_like,
-        an `NxK` coordinates of `N` points in `K` dimensions
-    hull: Delaunay object or ConvexHull object, or array_like,
-        the objects which defines the hull, essentially an `MxK` array of the coordinates of `M` points in `K`dimensions
-
-    Returns:
-    --------
-    ndarray of bool
     """
-    if isinstance(hull, Delaunay):
-        _h = hull
-    elif isinstance(hull, ConvexHull):
-        _h = Delaunay(hull.points)
-    else:
-        _h = Delaunay(hull)
-
-    return _h.find_simplex(points) >= 0
+    def __init__(self, name:str, **kwargs):
+        """
+        """
+        self._name = name
 
 
-def convex_hull_inflation(ch:ConvexHull, inflation_ratio:float=0.2, vertices_only:bool=True) -> ConvexHull:
+    @property
+    def name(self):
+        """
+        """
+        return self._name
+
+
+    def affine_transform(self, mat:ArrayLike, shift:Optional[ArrayLike]=None):
+        """
+        """
+        raise NotImplementedError
+
+    
+    def intersect_with(self, other):
+        """
+        """
+        raise NotImplementedError
+
+
+    def __str__(self):
+        """
+        """
+        raise NotImplementedError
+
+
+    def __repr__(self):
+        """
+        """
+        raise NotImplementedError
+
+
+class LineSegment2D(GeometricObject):
     """
-
-    TODO: consider the choice of 'center_of_mass'
-
-    Parameters:
-    -----------
-
-    Returns:
-    --------
-
     """
-    ch_vertices = ch.points[ch.vertices]
-    center_of_mass = np.mean(ch.points,axis=0)
-    ch_vertices = ch_vertices - center_of_mass  # relative coord.
-    ch_vertices = ch_vertices * (1+inflation_ratio)
-    ch_vertices = ch_vertices + center_of_mass
-    if vertices_only:
-        inflated_ch = ConvexHull(ch_vertices)
-    else:
-        inflated_ch = ConvexHull(ch_vertices,incremental=True)
-        inflated_ch.add_points(ch.points[is_in_hull(ch.points, inflated_ch)])
-        inflated_ch.close()
-    return inflated_ch
+    def __init__(self, *points, **kwargs):
+        """
+        """
+        super().__init__(name='Line Segment in 2D Space')
+        self.ends = np.array(points)
+        if self.ends.shape != (2,2):
+            raise ValueError("incorrect number or dimensions of input points")
+        self._len = self.get_len()
 
 
-class ConvexCone2D(object):
+    @property
+    def len(self):
+        self._len = self.get_len()
+        return self._len
+
+
+    def get_len(self):
+        """
+        """
+        return LA.norm(self.ends[0]-self.ends[1])
+        # equivalently math.hypot(self.ends[0], self.ends[1])
+
+
+    def affine_transform(self, mat:ArrayLike, shift:Optional[ArrayLike]=None):
+        """
+        """
+        pass
+
+
+    def intersect_with(self, other):
+        """
+        """
+        pass
+
+
+    def __str__(self):
+        """
+        """
+        raise NotImplementedError
+
+
+    def __repr__(self):
+        """
+        """
+        raise NotImplementedError
+
+
+class Triangle2D(GeometricObject):
+    """
+    """
+    def __init__(self, *points, **kwargs):
+        """
+        """
+        super().__init__(name='Triangle in 2D Space')
+        self.apexes = rearrange_convex_contour_points_2d(np.array(points))
+        if self.apexes.shape != (3,2):
+            raise ValueError("incorrect number or dimensions of input points")
+        self._edges = self.edges
+        self._angles = self.angles
+        if np.min(self._angles) == 0:
+            raise ValueError("degenerates to a line segment")
+        self._shape = self.shape
+
+        self.verbose = kwargs.get("verbose", 0)
+
+
+    @property
+    def edges(self):
+        self._edges = [
+            LineSegment2D(self.apexes[0],self.apexes[1]),
+            LineSegment2D(self.apexes[0],self.apexes[2]),
+            LineSegment2D(self.apexes[1],self.apexes[2]),
+        ]
+        # self.edges.sort(key=lambda ls: ls.get_len())
+        return self._edges
+
+
+    @property
+    def angles(self):
+        self._angles = [
+            math.acos(np.dot(self.apexes[1]-self.apexes[0], self.apexes[2]-self.apexes[0]) / math.hypot(self.apexes[1], self.apexes[0]) / math.hypot(self.apexes[2], self.apexes[0])),
+            math.acos(np.dot(self.apexes[0]-self.apexes[1], self.apexes[2]-self.apexes[1]) / math.hypot(self.apexes[0], self.apexes[1]) / math.hypot(self.apexes[2], self.apexes[1])),
+            math.acos(np.dot(self.apexes[1]-self.apexes[2], self.apexes[0]-self.apexes[2]) / math.hypot(self.apexes[1], self.apexes[2]) / math.hypot(self.apexes[0], self.apexes[2])),
+        ]
+        # self.edges.sort(key=lambda ls: ls.get_len())
+        return self._angles
+
+
+    @property
+    def shape(self) -> str:
+        """
+        """
+        _max_angle = np.max(self._angles)
+        if _max_angle > 90:
+            self._shape = 'obtuse'
+        elif _max_angle < 90:
+            self._shape = 'acute'
+        else:
+            self._shape = 'rectangle'
+        return self._shape
+
+
+    def is_obtuse(self) -> bool:
+        """
+        """
+        return self.shape == 'obtuse'
+
+
+    def is_rectangle(self) -> bool:
+        """
+        """
+        return self.shape == 'rectangle'
+
+    
+    def is_acute(self) -> bool:
+        """
+        """
+        return self.shape == 'acute'
+
+    
+    def intersect_with(self, other):
+        """
+        """
+        pass
+
+
+    def __str__(self):
+        """
+        """
+        raise NotImplementedError
+
+
+    def __repr__(self):
+        """
+        """
+        raise NotImplementedError
+
+
+class ConvexCone2D(GeometricObject):
     """ partly finished, under improving,
 
     class of convex cone in 2D space
     """
-    def __init__(self, apex:ArrayLike, axis_vec:Optional[ArrayLike]=None, angle:Optional[Real]=None, left_vec:Optional[ArrayLike]=None, right_vec:Optional[ArrayLike]=None, **kwargs):
+    def __init__(self,
+            apex:Optional[ArrayLike]=None,
+            axis_vec:Optional[ArrayLike]=None, angle:Optional[Real]=None,
+            left_vec:Optional[ArrayLike]=None, right_vec:Optional[ArrayLike]=None,
+            **kwargs):
         """ finished, checked,
 
         Paramters:
@@ -115,6 +282,7 @@ class ConvexCone2D(object):
         1. add more functions
         2. when degenerates to a ray, should raise error or just warning?
         """
+        super().__init__(name='Convex Cone in 2D Space')
         self.verbose = kwargs.get("verbose", 0)
         if not self._check_dimensions([apex, axis_vec, left_vec, right_vec]):
             raise ValueError("all points and vectors should be of dimension 2")
@@ -181,6 +349,12 @@ class ConvexCone2D(object):
             return abs(theta) < self.angle/2
         else:
             return abs(theta) <= self.angle/2
+
+
+    def intersect_with(self, other):
+        """
+        """
+        pass
 
 
     def plot_cone(self, show:bool=False, kw_ray:Optional[dict]=None, kw_fill:Optional[dict]=None, **kwargs) -> Union[tuple, NoReturn]:
@@ -282,6 +456,18 @@ class ConvexCone2D(object):
             return is_valid.all()
 
 
+    def __str__(self):
+        """
+        """
+        raise NotImplementedError
+
+
+    def __repr__(self):
+        """
+        """
+        raise NotImplementedError
+
+
 class Fan2D(ConvexCone2D):
     """ not finished,
     """
@@ -290,17 +476,44 @@ class Fan2D(ConvexCone2D):
         """
         super().__init__(apex, axis_vec, angle, left_vec, right_vec, **kwargs)
         self.radius = radius
-        self.area = None # to compute
+        self._area = self.area # to compute
+
+
+    @property
+    def area(self):
+        """
+        """
+        self._area = None
+        return self._area
 
     
-    def is_inside(self, point:ArrayLike) -> bool:
+    def is_inside(self, point:ArrayLike, strict:bool=False) -> bool:
         """
         """
         dist_to_apex = LA.norm(np.array(point)-self.apex)
-        return dist_to_apex < self.radius and super().is_inside(point)
+        result = dist_to_apex < self.radius if strict else dist_to_apex <= self.radius
+        return result and super().is_inside(point, strict=strict)
 
 
-class Ellipse(object):
+    def intersect_with(self, other):
+        """
+        """
+        pass
+
+
+    def __str__(self):
+        """
+        """
+        raise NotImplementedError
+
+
+    def __repr__(self):
+        """
+        """
+        raise NotImplementedError
+
+
+class Ellipse(GeometricObject):
     """ not finished,
     seems `sympy` has implemented a class named `Ellipse`
     """
@@ -309,6 +522,107 @@ class Ellipse(object):
 
         """
         pass
+
+    
+    def intersect_with(self, other):
+        """
+        """
+        pass
+
+
+    def __str__(self):
+        """
+        """
+        raise NotImplementedError
+
+
+    def __repr__(self):
+        """
+        """
+        raise NotImplementedError
+
+
+class Circle(Ellipse):
+    """
+
+    """
+    def __init__(self, center:ArrayLike, radius:Real):
+        """
+        """
+        pass
+
+
+    def intersect_with(self, other):
+        """
+        """
+        pass
+
+
+    def __str__(self):
+        """
+        """
+        raise NotImplementedError
+
+
+    def __repr__(self):
+        """
+        """
+        raise NotImplementedError
+
+
+
+#----------------------------------------------------------
+# functions
+
+def is_in_hull(points:ArrayLike, hull:Union[Delaunay,ConvexHull,ArrayLike]) -> np.ndarray:
+    """
+    test if points in `points` are in `hull`
+
+    Parameters:
+    -----------
+    points: array_like,
+        an `NxK` coordinates of `N` points in `K` dimensions
+    hull: Delaunay object or ConvexHull object, or array_like,
+        the objects which defines the hull, essentially an `MxK` array of the coordinates of `M` points in `K`dimensions
+
+    Returns:
+    --------
+    ndarray of bool
+    """
+    if isinstance(hull, Delaunay):
+        _h = hull
+    elif isinstance(hull, ConvexHull):
+        _h = Delaunay(hull.points)
+    else:
+        _h = Delaunay(hull)
+
+    return _h.find_simplex(points) >= 0
+
+
+def convex_hull_inflation(ch:ConvexHull, inflation_ratio:float=0.2, vertices_only:bool=True) -> ConvexHull:
+    """
+
+    TODO: consider the choice of 'center_of_mass'
+
+    Parameters:
+    -----------
+
+    Returns:
+    --------
+
+    """
+    ch_vertices = ch.points[ch.vertices]
+    center_of_mass = np.mean(ch.points,axis=0)
+    ch_vertices = ch_vertices - center_of_mass  # relative coord.
+    ch_vertices = ch_vertices * (1+inflation_ratio)
+    ch_vertices = ch_vertices + center_of_mass
+    if vertices_only:
+        inflated_ch = ConvexHull(ch_vertices)
+    else:
+        inflated_ch = ConvexHull(ch_vertices,incremental=True)
+        inflated_ch.add_points(ch.points[is_in_hull(ch.points, inflated_ch)])
+        inflated_ch.close()
+    return inflated_ch
 
 
 def split_2d_plane_into_convex_cones(center:ArrayLike, split_vecs:ArrayLike, **kwargs) -> List[ConvexCone2D]:
@@ -368,16 +682,19 @@ def split_2d_plane_into_convex_cones(center:ArrayLike, split_vecs:ArrayLike, **k
         kw = {
             "xlim": kwargs.get("xlim", None),
             "ylim": kwargs.get("ylim", None),
-            "title": "2D space\nsplit by {} convex cones".format(len(convex_cones)),
+            "title": "2D space split by {} convex cones with common apex".format(len(convex_cones)),
         }
         kw = {k:v for k,v in kw.items() if v is not None}
-        fig, ax = plt.subplots(figsize=figsize)
+        fill_alpha = kwargs.get("alpha", 0.5)
+        # fig, ax = plt.subplots(figsize=figsize)
+        fig = kwargs.get("fig", None)
+        ax = kwargs.get("ax", None)
         cm = kwargs.get("cmap", plt.get_cmap("gist_rainbow"))
         for idx, cc in enumerate(convex_cones):
             cc_color = cm(idx/len(convex_cones))
             fig, ax = cc.plot_cone(
                 show=False,
-                kw_fill={"color":cc_color},
+                kw_fill={"color":cc_color, "alpha":fill_alpha,},
                 fig=fig,
                 ax=ax,
                 **kw
@@ -526,3 +843,95 @@ def rearrange_convex_contour_points_2d(points:ArrayLike) -> np.ndarray:
     _p = _p - center_of_mass
     vec_radians = [vec2rad(item) for item in _p]
     return np.array(points)[np.argsort(vec_radians)]
+
+
+def smallest_circle(points:ArrayLike, method:str='msw') -> dict:
+    """
+    one can use `cv2.minEnclosingCircle` instead
+    """
+    if method.lower() == 'msw':
+        return _smallest_circle_msw(points, [])
+    elif method.lower() == 'welzl':
+        return _smallest_circle_welzl(points, [])
+
+
+def _smallest_circle_msw(points:ArrayLike, base:ArrayLike) -> dict:
+    """
+    """
+    pass
+
+
+def _smallest_circle_welzl(points:ArrayLike, base:ArrayLike) -> dict:
+    """
+    """
+    if len(points) == 0 or len(base) == 3:
+        return _smallest_circle_trivial(base)
+    
+    # choose a point in `points` randomly and uniformly
+    # numpy 2d array could NOT be shuffled correctly
+    shuffled = np.array(points).tolist()
+    random.shuffle(shuffled)
+    _p = shuffled[0]
+    _points = shuffled[1:]
+    _c = _smallest_circle_welzl(_points, base)
+    if LA.norm(_c['center']-np.array(_p)) <= _c['radius']:
+        return _c
+
+    _base = np.array(base).tolist() + [_p]
+    return _smallest_circle_welzl(_points, _base)
+
+
+def _smallest_circle_trivial(points:Optional[ArrayLike]=None) -> Union[dict, None]:
+    """
+    """
+    if points is None or len(points) == 0:
+        return None
+    elif len(points) == 1:
+        center = np.array(points[0])
+        radius = 0
+        circle = {'center':center, 'radius': radius}
+        return circle
+    elif len(points) == 2:
+        _p1, _p2 = np.array(points)
+        center = (_p1+_p2)/2
+        radius = LA.norm(center-_p1)
+        circle = {'center':center, 'radius': radius}
+        return circle
+    elif len(points) == 3:
+        _p1, _p2, _p3 = np.array(points)
+        triangle = Triangle2D(_p1, _p2, _p3)
+        if not triangle.is_acute:
+            ls = max(triangle.edges, key=lambda e: e.len)
+            return _smallest_circle_trivial(ls.ends)
+        else:
+            return get_circle_passing_through(_p1, _p2, _p3)
+
+
+def get_circle_passing_through(p1:ArrayLike, p2:ArrayLike, p3:ArrayLike) -> dict:
+    """
+
+    """
+    _p1, _p2, _p3 = np.array(p1), np.array(p2), np.array(p3)
+
+    # (x1, y1), (x2, y2), (x3, y3) = _p1, _p2, _p3
+    if LA.det(np.array([_p1-_p2],[_p1-_p3])) == 0:
+        raise ValueError("the given points are collinear!")
+
+    x12, y12 = _p1 - _p2
+    x13, y13 = _p1 - _p3
+    x21, x31, y21, y31 = -x12, -x13, -y12, -y13
+    sx13, sy13 = np.power(_p1, 2) - np.power(_p3, 2)  # x1^2 - x3^2, y1^2 - y3^2
+    sx21, sy21 = np.power(_p2, 2) - np.power(_p1, 2)  # x2^2 - x1^2, y2^2 - y1^2
+
+    c_x = -(sx13 * x12 + sy13 * x12 + sx21 * x13 + sy21 * x13) // (2 * (y31 * x12 - y21 * x13))
+    c_y = -(sx13 * y12 + sy13 * y12 + sx21 * y13 + sy21 * y13) // (2 * (x31 * y12 - x21 * y13))
+
+    center = np.array([c_x, c_y])
+    radius = LA.norm(center-_p1)
+
+    circle = {
+        'center': center,
+        'radius': radius,
+    }
+
+    return circle
