@@ -6,7 +6,7 @@ from typing import Union, Optional, Any, List, NoReturn
 from numbers import Real
 from ..utils import ArrayLike
 
-from ..base import OtherDataBase
+from ..base import ImageDataBases
 
 
 __all__ = [
@@ -14,7 +14,7 @@ __all__ = [
 ]
 
 
-class ACNE04(OtherDataBase):
+class ACNE04(ImageDataBases):
     """
     """
     def __init__(self, db_path:str, verbose:int=2, **kwargs):

@@ -8,12 +8,14 @@ import wfdb
 import pandas as pd
 from typing import Union, Optional, Any, List, NoReturn
 from numbers import Real
-from .misc import *
+from utils.common import *
 
 
 __all__ = [
     "PhysioNetDataBase",
     "NSRRDataBase",
+    "ImageDataBases",
+    "OtherDataBases",
 ]
 
 
@@ -435,6 +437,18 @@ class NSRRDataBase(object):
         
         if detailed:
             print(self.__doc__)
+
+
+class ImageDataBases(object):
+    """
+
+    """
+    def __init__(self, db_name:str, db_path:str, verbose:int=2, **kwargs):
+        """
+        """
+        self.db_name = db_name
+        self.db_path = db_path
+        self.verbose = verbose
 
 
 class OtherDataBase(object):

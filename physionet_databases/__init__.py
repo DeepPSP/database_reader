@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-docstring, to write
+facilities for easy reading of databases from physionet
+
+data from physionet databases can be loaded from its server at use,
+or downloaded using `wfdb` easily beforehand
 """
 
 from .apnea_ecg import *
