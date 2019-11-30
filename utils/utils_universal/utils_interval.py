@@ -16,10 +16,11 @@ TODO: to english
 import numpy as np
 from copy import deepcopy
 from functools import reduce
+import time
 from numbers import Real
 from typing import Union, Optional, Any, List, Tuple
-from ..utils import ArrayLike
-import time
+
+from ..common import ArrayLike
 
 
 __all__ = [

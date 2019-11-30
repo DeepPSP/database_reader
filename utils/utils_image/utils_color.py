@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 utilities for operations on color spaces for image processing
 
@@ -22,8 +23,8 @@ from numbers import Real
 from typing import Union, Optional, NoReturn
 
 from . import common
-from .common import ArrayLike, ArrayLike_Int, filter_by_percentile
-from .utils_spatial import ConvexCone2D
+from ..common import ArrayLike, ArrayLike_Int, filter_by_percentile
+from ..utils_universal import ConvexCone2D
 
 
 __all__ = [

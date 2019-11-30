@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 utilities for spatial objects and computations, which numpy, scipy, etc. lack
 
@@ -22,7 +23,7 @@ from numbers import Real
 from typing import Union, Optional, List, NoReturn
 import warnings
 
-from .common import ArrayLike, modulo
+from ..common import ArrayLike, modulo
 
 
 __all__ = [

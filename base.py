@@ -45,14 +45,6 @@ class PhysioNetDataBase(object):
         self.all_records = None
         self.device_id = None  # maybe data are imported into impala db, to facilitate analyzing
         self.verbose = verbose
-
-        if self.db_path is not None:
-            if '/' in self.db_path:
-                self.path_sep = '/'
-            else:
-                self.path_sep = '\\'
-        else:
-            self.path_sep = None
         
         try:
             all_dbs = wfdb.io.get_dbs()
@@ -370,11 +362,6 @@ class NSRRDataBase(object):
         self.all_records = None
         self.device_id = None  # maybe data are imported into impala db, to facilitate analyzing
         self.verbose = verbose
-
-        if '/' in self.db_path:
-            self.path_sep = '/'
-        else:
-            self.path_sep = '\\'
         
         all_dbs = [
             ["shhs", "Multi-cohort study focused on sleep-disordered breathing and cardiovascular outcomes"],
@@ -476,11 +463,6 @@ class OtherDataBase(object):
         self.all_records = None
         self.device_id = None  # maybe data are imported into impala db, to facilitate analyzing
         self.verbose = verbose
-
-        if '/' in self.db_path:
-            self.path_sep = '/'
-        else:
-            self.path_sep = '\\'
         
         self.kwargs = kwargs
         

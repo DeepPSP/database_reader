@@ -408,13 +408,13 @@ class SHHS(NSRRDataBase):
         """ 已完成，
 
         """
-        self.psg_data_path = self.db_path+"polysomnography{}edfs{}".format(self.path_sep, self.path_sep)
-        self.ann_path = self.db_path+"datasets{}".format(self.path_sep)
-        self.hrv_ann_path = self.ann_path+"hrv-analysis{}".format(self.path_sep)
-        self.eeg_ann_path = self.ann_path+"eeg-spectral-analysis{}".format(self.path_sep)
-        self.wave_deli_path = self.db_path+"polysomnography{}annotations-rpoints{}".format(self.path_sep, self.path_sep)
-        self.event_ann_path = self.db_path+"polysomnography{}annotations-events-nsrr{}".format(self.path_sep, self.path_sep)
-        self.event_profusion_ann_path = self.db_path+"polysomnography{}annotations-events-profusion{}".format(self.path_sep, self.path_sep)
+        self.psg_data_path = os.path.join(self.db_path, "polysomnography", "edfs")
+        self.ann_path = os.path.join(self.db_path, "datasets")
+        self.hrv_ann_path = os.path.join(self.db_path, "hrv-analysis")
+        self.eeg_ann_path = os.path.join(self.db_path, "eeg-spectral-analysis")
+        self.wave_deli_path = os.path.join(self.db_path, "polysomnography", "annotations-rpoints")
+        self.event_ann_path = os.path.join(self.db_path, "polysomnography", "annotations-events-nsrr")
+        self.event_profusion_ann_path = os.path.join(self.db_path, "polysomnography", "annotations-events-profusion")
 
 
     def update_sleep_stage_names(self) -> NoReturn:
@@ -619,7 +619,7 @@ class SHHS(NSRRDataBase):
         elif rec_type.split('_')[0] in ["hrv", "eeg"]:
             rp = folder_or_file[rec_type]
         else:
-            rp = folder_or_file[rec_type]+rec.split("-")[0]+self.path_sep+rec+extension[rec_type]
+            rp = os.path.join(folder_or_file[rec_type]+rec.split("-")[0], rec+extension[rec_type])
 
         return rp
 

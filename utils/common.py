@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 commonly used utilities, that do not belong to a particular category
 """
