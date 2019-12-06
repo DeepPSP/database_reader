@@ -17,6 +17,7 @@ __all__ = [
     "idx_to_ts",
     "timestamp_to_local_datetime_string",
     "modulo",
+    "angle_d2r",
 ]
 
 
@@ -138,3 +139,10 @@ def filter_by_percentile(s:ArrayLike, q:Union[int,List[int]], return_mask:bool=F
         return _s[validity], validity.reshape(original_shape[:-1])
     else:
         return _s[validity]
+
+
+def angle_d2r(angle:Union[Real,np.ndarray]) -> Union[Real,np.ndarray]:
+    """
+
+    """
+    return PI*angle/180.0
