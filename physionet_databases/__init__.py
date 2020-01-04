@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-facilities for easy reading of databases from physionet
+facilities for easy reading of `official` databases from physionet
 
-data from physionet databases can be loaded from its server at use,
+data from `official` physionet databases can be loaded from its server at use,
 or downloaded using `wfdb` easily beforehand
 """
 

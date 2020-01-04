@@ -38,6 +38,7 @@ class SleepAccel(OtherDataBase):
     -----------
     [1] Walch O, Huang Y, Forger D, et al. Sleep stage prediction with raw acceleration and photoplethysmography heart rate data derived from a consumer wearable device[J]. Sleep, 2019, 42(12): zsz180.
     [2] https://github.com/ojwalch/sleep_classifiers/
+    [3] to add acc_to_count references
     """
     def __init__(self, db_path:str, verbose:int=2, **kwargs):
         """

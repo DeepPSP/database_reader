@@ -190,7 +190,7 @@ class SHHS(NSRRDataBase):
         default db_path:
             "/export/algo/wenh06/ecg_data/shhs/"
         """
-        super().__init__(db_name='shhs', db_path=db_path, verbose=verbose, **kwargs)
+        super().__init__(db_name='SHHS', db_path=db_path, verbose=verbose, **kwargs)
 
         self.current_version = kwargs.get("current_version" , "0.14.0")
 

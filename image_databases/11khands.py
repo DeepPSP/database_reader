@@ -10,14 +10,14 @@ from ..base import ImageDataBases
 
 
 __all__ = [
-    "DERMNET"
+    "Hands11K"
 ]
 
 
-class DERMNET(ImageDataBases):
+class Hands11K(ImageDataBases):
     """
     """
     def __init__(self, db_path:str, verbose:int=2, **kwargs):
         """
         """
-        super().__init__(db_name="DermNet", db_path=db_path, verbose=verbose, **kwargs)
+        super().__init__(db_name="11kHands", db_path=db_path, verbose=verbose, **kwargs)
