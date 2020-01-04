@@ -4,6 +4,7 @@ import pprint
 import wfdb
 import numpy as np
 import pandas as pd
+from scipy import interpolate
 from datetime import datetime
 from typing import Union, Optional, Any, List, Tuple, NoReturn
 from numbers import Real
@@ -292,7 +293,7 @@ class SleepAccel(OtherDataBase):
         ct_secs = np.array([df_rsmpl.loc[0, 'sec']+idx*epoch_len for idx in range(len(ct_vals))])
         ct_secs_new = [-idx*epoch_len for idx in range(1,-ct_secs[0]//epoch_len+1) if -idx*epoch_len>=ct_secs[0]][::-1] + [idx*epoch_len for idx in range(ct_secs[-1]//epoch_len+1) if idx*epoch_len<ct_secs[-1]]
         f = interpolate.interp1d(ct_secs, ct_vals)
-        ct_vals_new = f(ct_secs_new)
+        ct_vals_new = f(ct_secs_new).astype(int)
         df_ct = pd.DataFrame()
         df_ct['sec'] = ct_secs_new
         df_ct['epoch_counts'] = ct_vals_new
@@ -305,6 +306,8 @@ class SleepAccel(OtherDataBase):
         # ax_ct.legend(loc='best')
         plt.show()
         df_stats = df_ct.merge(df_lb, on='sec')
+        if self.verbose >= 1:
+            print("len(df_stats) = {}".format(len(df_stats)))
         return df_lb, df_ct, df_rsmpl, df_stats
 
 
@@ -320,7 +323,8 @@ class SleepAccel(OtherDataBase):
         """
         acc_data = df_mt[['sec','x','y','z']].values
         acc_data[:,0] = np.vectorize(lambda t:round(1000*t))(acc_data[:,0])
-        # print(acc_data.shape)
+        if self.verbose >= 1:
+            print("acc_data.shape = {}".format(acc_data.shape))
         x_rsmpl = resample_irregular_timeseries(acc_data[:,[0,1]], output_fs=output_fs, return_with_time=True, method='interp1d', options={})
         y_rsmpl = resample_irregular_timeseries(acc_data[:,[0,2]], output_fs=output_fs, return_with_time=True, method='interp1d', options={})
         z_rsmpl = resample_irregular_timeseries(acc_data[:,[0,3]], output_fs=output_fs, return_with_time=True, method='interp1d', options={})
