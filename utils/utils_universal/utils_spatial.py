@@ -18,7 +18,8 @@ import random
 import numpy.linalg as LA
 from numpy import pi as PI
 # import cmath
-from scipy.spatial import ConvexHull, Delaunay
+# from scipy.spatial import ConvexHull, Delaunay, Rectangle
+from scipy import spatial as ss
 from numbers import Real
 from typing import Union, Optional, List, NoReturn
 import warnings
@@ -48,6 +49,7 @@ __all__ = [
     "Fan2D",
     "Ellipse",
     "Circle",
+    "Rectangle2D",
 ]
 
 
@@ -571,11 +573,47 @@ class Circle(Ellipse):
         raise NotImplementedError
 
 
+class Rectangle2D(ss.Rectangle):
+    """
+    """
+    def __init__(self, ymin:Real, xmin:Real, ymax:Real, xmax:Real):
+        """
+        """
+        super().__init__(maxes=[xmax,ymax], mins=[xmin,ymin])
+        self._area = None
+
+
+    @property
+    def area(self):
+        """
+        """
+        self._area = self.volume()
+        return self._area
+
+
+    def intersect_with(self, other):
+        """
+        """
+        pass
+
+
+    def __str__(self):
+        """
+        """
+        raise NotImplementedError
+
+
+    def __repr__(self):
+        """
+        """
+        raise NotImplementedError
+
+
 
 #----------------------------------------------------------
 # functions
 
-def is_in_hull(points:ArrayLike, hull:Union[Delaunay,ConvexHull,ArrayLike]) -> np.ndarray:
+def is_in_hull(points:ArrayLike, hull:Union[ss.Delaunay,ss.ConvexHull,ArrayLike]) -> np.ndarray:
     """
     test if points in `points` are in `hull`
 
@@ -590,17 +628,17 @@ def is_in_hull(points:ArrayLike, hull:Union[Delaunay,ConvexHull,ArrayLike]) -> n
     --------
     ndarray of bool
     """
-    if isinstance(hull, Delaunay):
+    if isinstance(hull, ss.Delaunay):
         _h = hull
-    elif isinstance(hull, ConvexHull):
-        _h = Delaunay(hull.points)
+    elif isinstance(hull, ss.ConvexHull):
+        _h = ss.Delaunay(hull.points)
     else:
-        _h = Delaunay(hull)
+        _h = ss.Delaunay(hull)
 
     return _h.find_simplex(points) >= 0
 
 
-def convex_hull_inflation(ch:ConvexHull, inflation_ratio:float=0.2, vertices_only:bool=True) -> ConvexHull:
+def convex_hull_inflation(ch:ss.ConvexHull, inflation_ratio:float=0.2, vertices_only:bool=True) -> ss.ConvexHull:
     """
 
     TODO: consider the choice of 'center_of_mass'
@@ -618,9 +656,9 @@ def convex_hull_inflation(ch:ConvexHull, inflation_ratio:float=0.2, vertices_onl
     ch_vertices = ch_vertices * (1+inflation_ratio)
     ch_vertices = ch_vertices + center_of_mass
     if vertices_only:
-        inflated_ch = ConvexHull(ch_vertices)
+        inflated_ch = ss.ConvexHull(ch_vertices)
     else:
-        inflated_ch = ConvexHull(ch_vertices,incremental=True)
+        inflated_ch = ss.ConvexHull(ch_vertices,incremental=True)
         inflated_ch.add_points(ch.points[is_in_hull(ch.points, inflated_ch)])
         inflated_ch.close()
     return inflated_ch
@@ -936,3 +974,18 @@ def get_circle_passing_through(p1:ArrayLike, p2:ArrayLike, p3:ArrayLike) -> dict
     }
 
     return circle
+
+
+def merge_boxes(box1:ArrayLike, box2:ArrayLike, **kwargs) -> Union[np.ndarray, NoReturn]:
+    """
+    """
+    ymin1, xmin1, ymax1, xmax1 = box1
+    ymin2, xmin2, ymax2, xmax2 = box2
+    ymin = max(ymin1, ymin2)
+    xmin = max(xmin1, xmin2)
+    ymax = min(ymax1, ymax2)
+    xmax = min(xmax1, xmax2)
+    overlap_threshold = kwargs('overlap_threshold', 0.7)
+    overlap_area = max(0,xmax-xmin) * max(0,ymax-ymin)
+    if (overlap_area/(xmax1-xmin1)/(ymax1-ymin1) > overlap_threshold) or (overlap_area/(xmax2-xmin2)/(ymax2-ymin2) > overlap_threshold):
+        return np.array([min(ymin1, ymin2)])

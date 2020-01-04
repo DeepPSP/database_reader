@@ -561,17 +561,25 @@ def filter_by_percentile(s:ArrayLike, q:Union[int,List[int]], return_mask:bool=F
         return _s[validity]
 
 
-def train_test_split_dataframe(df:pd.DataFrame, by:Union[str,List[str],Tuple[str]], test_ratio:float=0.2, verbose:int=0) -> Tuple[pd.DataFrame, pd.DataFrame]:
-    """
-    make a train-test-split of a DataFrame
+def train_test_split_dataframe(df:pd.DataFrame, split_cols:Optional[Union[str,List[str],Tuple[str]]]=None, non_split_cols:Optional[Union[str,List[str],Tuple[str]]]=None, test_ratio:float=0.2, verbose:int=0, **kwargs) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    """ partly finished,
+
+    make a train-test-split of a DataFrame,
+    so that each item in `by` is split by `test_ratio`,
+    in a way that
+    1. the distributions of certain features are the same in both the train and the test set
+    2. subjects with some certain features are not split, preventing data leakage
 
     Paramters:
     ----------
     df: DataFrame,
         the DataFrame to be split
-    by: str, or list or tuple of str,
-        name(s) of the column to be treated as the 'labels',
-        NOTE: all values of cells in each column of `by` should be hashable
+    split_cols: str, or list or tuple of str, optional,
+        name(s) of the column(s) to be treated as the 'labels',
+    non_split_cols: str, or list or tuple of str, optional,
+        name(s) of the column(s) that should not be split,
+        to prevent possible data leakage,
+        e.g. `subject_id` which assigns one number to each person,
     test_ratio: float, default 0.2,
         ratio of the test DataFrame, 0.0-1.0
     verbose: int, default 0
@@ -579,25 +587,82 @@ def train_test_split_dataframe(df:pd.DataFrame, by:Union[str,List[str],Tuple[str
     Returns:
     --------
     (df_train, df_test): tuple of DataFrame
-    """
-    if isinstance(by, str):
-        _by = [by]
-    else:
-        _by = [item for item in by]
 
-    df_inspection = df[_by]
-    for item in _by:
+    NOTE:
+    1. all values of cells in each column of `split_cols` and `non_split_cols` should be hashable
+    2. when `split_cols` or `non_split_cols` is a very large list,
+       or when some of these columns have large lists of unique values,
+       then each 'item' to be split can have very few elements,
+       even fewer than 1/`test_ratio`,
+       in which cases the test dataframe would be empty
+
+    TODO:
+    implement the method of hybrid splitting when `split_cols` and `non_split_cols` are both specified
+    """
+    _split_cols = split_cols or []
+    _non_split_cols = non_split_cols or []
+    if isinstance(_split_cols, str):
+        _split_cols = [_split_cols]
+    else:
+        _split_cols = [item for item in _split_cols]
+    if isinstance(_non_split_cols, str):
+        _non_split_cols = [_non_split_cols]
+    else:
+        _non_split_cols = [item for item in _non_split_cols]
+    
+    if not (split_cols or non_split_cols):
+        df_train, df_test = _train_test_split_dataframe_naive(
+            df=df,
+            test_ratio=test_ratio,
+            verbose=verbose,
+            **kwargs
+        )
+    elif len(_non_split_cols) == 0:
+        df_train, df_test = _train_test_split_dataframe_strafified(
+            df=df,
+            split_cols=_split_cols,
+            test_ratio=test_ratio,
+            verbose=verbose,
+            **kwargs
+        )
+    elif len(_split_cols) == 0:
+        df_train, df_test = _train_test_split_dataframe_with_nonsplits(
+            df=df,
+            non_split_cols=_non_split_cols,
+            test_ratio=test_ratio,
+            verbose=verbose,
+            **kwargs
+        )
+    else:
+        df_train, df_test = _train_test_split_dataframe_hybrid(
+            df=df,
+            split_cols=_split_cols,
+            non_split_cols=_non_split_cols,
+            test_ratio=test_ratio,
+            verbose=verbose,
+            **kwargs
+        )
+
+    return df_train, df_test
+
+
+def _train_test_split_dataframe_strafified(df:pd.DataFrame, split_cols:List[str], test_ratio:float=0.2, verbose:int=0, **kwargs) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    ref. the function `train_test_split_dataframe`
+    """
+    df_inspection = df[split_cols]
+    for item in split_cols:
         all_entities = df_inspection[item].unique().tolist()
         entities_dict = {e: str(i) for i, e in enumerate(all_entities)}
         df_inspection[item] = df_inspection[item].apply(lambda e:entities_dict[e])
 
-    inspection_col_name = "Inspection" * (max([len(c) for c in _by])//10+1)
+    inspection_col_name = "Inspection" * (max([len(c) for c in split_cols])//10+1)
     df_inspection[inspection_col_name] = df_inspection.apply(
         func=lambda row: "-".join(row.values.tolist()),
         axis=1
     )
     
-    item_names = list(set(df_inspection[inspection_col_name].values.tolist()))
+    item_names = df_inspection[inspection_col_name].unique().tolist()
     item_indices = {
         n: df_inspection.index[df_inspection[inspection_col_name]==n].tolist() for n in item_names
     }
@@ -610,7 +675,7 @@ def train_test_split_dataframe(df:pd.DataFrame, by:Union[str,List[str],Tuple[str
     
     test_indices = []
     for n in item_names:
-        item_test_indices = item_indices[n][:int(test_ratio*len(item_indices[n]))]
+        item_test_indices = item_indices[n][:int(round(test_ratio*len(item_indices[n])))]
         test_indices += item_test_indices
         if verbose >= 2:
             print("for the item `{}`, len(item_test_indices) = {}".format(n, len(item_test_indices)))
@@ -619,3 +684,38 @@ def train_test_split_dataframe(df:pd.DataFrame, by:Union[str,List[str],Tuple[str
     df_train = df.loc[~df.index.isin(test_indices)].reset_index(drop=True)
     
     return df_train, df_test
+
+
+def _train_test_split_dataframe_with_nonsplits(df:pd.DataFrame, non_split_cols:List[str], test_ratio:float=0.2, verbose:int=0, **kwargs) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    ref. the function `train_test_split_dataframe`
+    """
+    if len(non_split_cols) > 1:
+        raise NotImplementedError("not implemented for the cases where `non_split_cols` > 1")
+    tolerance = kwargs.get("tolerance", 0.05) * len(df)
+    df_inspection = df[non_split_cols]
+    acc = 0.0
+    test_indices = []
+    all_entities, entities_count = np.unique(df_inspection[non_split_cols[0]].values, return_counts=True)
+    pass
+
+
+def _train_test_split_dataframe_naive(df:pd.DataFrame, test_ratio:float=0.2, verbose:int=0, **kwargs) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    ref. the function `train_test_split_dataframe`
+    """
+    n_cols = len(df)
+    indices = list(range(n_cols))
+    random.shuffle(indices)
+    test_indices = indices[:int(round(test_ratio*n_cols))]
+    df_test = df.loc[df.index.isin(test_indices)].reset_index(drop=True)
+    df_train = df.loc[~df.index.isin(test_indices)].reset_index(drop=True)
+
+    return df_train, df_test
+
+
+def _train_test_split_dataframe_hybrid(df:pd.DataFrame, split_cols:List[str], non_split_cols:List[str], test_ratio:float=0.2, verbose:int=0, **kwargs) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    ref. the function `train_test_split_dataframe`
+    """
+    raise NotImplementedError

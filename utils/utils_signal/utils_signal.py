@@ -32,6 +32,9 @@ __all__ = [
     "wavelet_rec_iswt",
     "rr_interval_to_2d_timeseries",
     "resample_irregular_timeseries",
+    "resample_discontinuous_irregular_timeseries",
+    "butter_bandpass",
+    "butter_bandpass_filter",
 ]
 
 
@@ -996,10 +999,10 @@ def rr_interval_to_2d_timeseries(rr_intervals:ArrayLike_Int) -> np.ndarray:
     return np.column_stack((ts,rr_intervals))
 
 
-def resample_irregular_timeseries(s:ArrayLike, output_fs:Real=2, method:str="spline", return_with_time:bool=False, options:dict={}, verbose:int=0) -> np.ndarray:
+def resample_irregular_timeseries(s:ArrayLike, output_fs:Real=2, method:str="spline", return_with_time:bool=False, tnew:Optional[ArrayLike]=None, options:dict={}, verbose:int=0) -> np.ndarray:
     """ 已完成，已检查
 
-    resample the 2d irregular timeseries `s` into a 1d regular time series with frequency `output_fs`,
+    resample the 2d irregular timeseries `s` into a 1d or 2d regular time series with frequency `output_fs`,
     elements of `s` are in the form [time, value], where the unit of `time` is ms
 
     Parameters:
@@ -1012,12 +1015,14 @@ def resample_irregular_timeseries(s:ArrayLike, output_fs:Real=2, method:str="spl
         interpolation method, can be 'spline' or 'interp1d'
     return_with_time: bool, default False,
         return a 2d array, with the 0-th coordinate being time
+    tnew: array_like, optional,
+        the array of time of the output array
     options: dict, default {},
         additional options for the corresponding methods in scipy.interpolate
 
     Returns:
     --------
-    np.ndarray, a 1d regular time series with frequency `output_freq`
+    np.ndarray, a 1d or 2d regular time series with frequency `output_freq`
 
     NOTE:
     pandas also has the function to regularly resample irregular timeseries
@@ -1034,7 +1039,10 @@ def resample_irregular_timeseries(s:ArrayLike, output_fs:Real=2, method:str="spl
     time_series = np.atleast_2d(s)
     step_ts = 1000 / output_fs
     tot_len = int((time_series[-1][0]-time_series[0][0]) / step_ts) + 1
-    xnew = time_series[0][0] + np.arange(0, tot_len*step_ts, step_ts)
+    if tnew is None:
+        xnew = time_series[0][0] + np.arange(0, tot_len*step_ts, step_ts)
+    else:
+        xnew = np.array(tnew)
 
     if verbose >= 1:
         print('time_series start ts = {}, end ts = {}'.format(time_series[0][0], time_series[-1][0]))
@@ -1042,10 +1050,13 @@ def resample_irregular_timeseries(s:ArrayLike, output_fs:Real=2, method:str="spl
         print('xnew start = {}, end = {}'.format(xnew[0], xnew[-1]))
 
     if method == "spline":
-        if scipy.__version__ >= '1.3.0':
-            tck = interpolate.splrep([time_series[:,0],time_series[:,1]],**options)
-        else:
-            tck = interpolate.splrep(time_series[:,0],time_series[:,1],**options)
+        m = len(time_series)
+        w = options.get("w", np.ones(shape=(m,)))
+        # s = options.get("s", np.random.uniform(m-np.sqrt(2*m),m+np.sqrt(2*m)))
+        s = options.get("s", m-np.sqrt(2*m))
+        options.update(w=w, s=s)
+
+        tck = interpolate.splrep(time_series[:,0],time_series[:,1],**options)
 
         regular_timeseries = interpolate.splev(xnew, tck)
     elif method == "interp1d":
@@ -1059,6 +1070,57 @@ def resample_irregular_timeseries(s:ArrayLike, output_fs:Real=2, method:str="spl
         return regular_timeseries
 
 
+def resample_discontinuous_irregular_timeseries(s:ArrayLike, allowd_gap:Optional[Real]=None,output_fs:Real=2, method:str="spline", return_with_time:bool=True, tnew:Optional[ArrayLike]=None, options:dict={}, verbose:int=0) -> List[np.ndarray]:
+    """ 已完成，已检查
+
+    resample the 2d discontinuous irregular timeseries `s` into a list of 1d or 2d regular time series with frequency `output_fs`,
+    where discontinuity means time gap greater than `allowd_gap`,
+    elements of `s` are in the form [time, value], where the unit of `time` is ms
+
+    Parameters:
+    -----------
+    s: array_like,
+        the 2d irregular timeseries
+    output_fs: Real, default 2,
+        the frequency of the output 1d regular timeseries
+    method: str, default "spline"
+        interpolation method, can be 'spline' or 'interp1d'
+    return_with_time: bool, default False,
+        return a 2d array, with the 0-th coordinate being time
+    tnew: array_like, optional,
+        the array of time of the output array
+    options: dict, default {},
+        additional options for the corresponding methods in scipy.interpolate
+
+    Returns:
+    --------
+    list of np.ndarray, 1d or 2d regular time series with frequency `output_freq`
+
+    NOTE:
+    pandas also has the function to regularly resample irregular timeseries
+    """
+    time_series = np.atleast_2d(s)
+    allowd_gap = allowd_gap or 2*1000/output_fs
+    split_indices = [0] + (np.where(np.diff(time_series[:,0]) > allowd_gap)[0]+1).tolist() + [len(time_series)]
+    if tnew is not None:
+        l_tnew = [[p for p in tnew if time_series[split_indices[idx],0]<=p<time_series[split_indices[idx+1],0]] for idx in range(len(split_indices)-1)]
+    else:
+        l_tnew = [None for _ in range(len(split_indices)-1)]
+    result = []
+    for idx in range(len(split_indices)-1):
+        r = resample_irregular_timeseries(
+            s=time_series[split_indices[idx]: split_indices[idx+1]],
+            output_fs=output_fs,
+            method=method,
+            return_with_time=return_with_time,
+            tnew=l_tnew[idx],
+            options=options,
+            verbose=verbose
+        )
+        result.append(r)
+    return result
+
+
 def sft(s:ArrayLike) -> np.ndarray:
     """
 
@@ -1068,3 +1130,44 @@ def sft(s:ArrayLike) -> np.ndarray:
     _s = np.array(s)
     tmp = np.array(list(range(N)))
     return np.array([(_s*np.exp(-2*np.pi*1j*n*tmp/N)).sum() for n in range(N)])
+
+
+def butter_bandpass(lowcut:Real, highcut:Real, fs:Real, order:int) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Butterworth Bandpass Filter Design
+
+    References:
+    -----------
+    [2] scipy.signal.butter
+    [1] https://scipy-cookbook.readthedocs.io/items/ButterworthBandpass.html
+    """
+    nyq = 0.5 * fs
+    low = lowcut / nyq
+    if low >= 1:
+        raise ValueError("frequency out of range!")
+    high = highcut / nyq
+    if high >= 1:
+        Wn = low
+        btype = 'low'
+    elif lowcut==highcut:
+        Wn = high
+        btype = 'high'
+    else:
+        Wn = [low, high]
+        btype = 'band'
+    b, a = butter(order, Wn, btype=btype)
+    return b, a
+
+
+def butter_bandpass_filter(data:ArrayLike, lowcut:Real, highcut:Real, fs:Real, order:int) -> np.ndarray:
+    """
+    Butterworth Bandpass
+
+    References:
+    -----------
+    [1] https://scipy-cookbook.readthedocs.io/items/ButterworthBandpass.html
+    """
+    b, a = butter_bandpass(lowcut, highcut, fs, order=order)
+    y = lfilter(b, a, data)
+    return y
+
