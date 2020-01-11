@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 frequently used functions for statistics, mainly which have been implemented in matlab and R, rather than in python
 """

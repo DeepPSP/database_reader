@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 Savitzky-Golay Filter with SURE(Stein's unbiased risk estimator)
+
+currently very very slow!
 """
 
 import numpy as np
@@ -13,7 +15,6 @@ from .utils_signal import noise_std_estimator, uni_polyn_der, eval_uni_polyn
 
 __all__ = [
     "fit_savgol_sure",
-
     "savgol_polyn_coeffs", "generate_savgol_matrix",
     "sure_savgol_objective_func", "reg_sure_savgol_objective_func",
 ]
@@ -28,9 +29,20 @@ def fit_savgol_sure(data:ArrayLike, orders:Union[int,List[int],Tuple[int]], radi
 
     Paramters:
     ----------
+    data: array_like,
+        the signal to be filtered
+    orders: int or sequence of int,
+        orders of the filters
+    radii: int or sequence of int,
+        radii of the windows of the filters
+    mode: str, default 'reflect',
+    sure_reg: bool, default False,
+    verbose: int, default 0,
 
     Returns:
     --------
+    filtered: ndarray,
+        the filtered signal
 
     Reference:
     ----------
@@ -105,8 +117,10 @@ def fit_savgol_sure(data:ArrayLike, orders:Union[int,List[int],Tuple[int]], radi
             filtered.append(savgol_polyn_coeffs(x,all_orders[pos])[0][0])
         if verbose >= 1:
             print("opt_orders =", opt_orders)
+
+    filtered = np.array(filtered)
         
-    return np.array(filtered)
+    return filtered
 
 
 def generate_savgol_matrix(order:int, radius:int) -> np.ndarray:
@@ -114,20 +128,31 @@ def generate_savgol_matrix(order:int, radius:int) -> np.ndarray:
 
     Parameters:
     -----------
+    order: int,
+    radius: int,
 
     Returns:
     --------
+    sm: ndarray,
+        matrix of the filter of the given order and window radius
     """
     if 2*radius < order:
         raise ValueError('length of data must be larger than polynomial order')
     A = np.array([[np.power(m,p) for p in range(order+1)] for m in range(-radius,radius+1)])
-    return np.linalg.inv(A.T@A)@A.T
+    sm = np.linalg.inv(A.T@A)@A.T
+    return sm
 
 
 def savgol_polyn_coeffs(x:ArrayLike, order:int) -> Tuple[np.ndarray]:
     """ finished, checked,
 
     compute coefficients of the savitzky golay polynomial that best fit the data x
+
+    Paramters:
+    ----------
+    x: array_like,
+        the signal to be fitted to get the coefficients
+    order: int,
 
     Returns:
     --------
@@ -159,9 +184,14 @@ def sure_savgol_objective_func(order:int, radius:int, data:ArrayLike, verbose:in
 
     Paramters:
     ----------
+    order: int,
+    radius: int,
+    data: array_like,
+    verbose: int, default 0,
 
     Returns:
     --------
+    cost: float,
 
     Reference:
     ----------
@@ -202,11 +232,16 @@ def reg_sure_savgol_objective_func(order:int, radius:int, data:ArrayLike, verbos
     
     the 'regularized' SURE objective function with Savitzky-Golay filter for an instance centered in data
 
-    Parameters:
-    -----------
+    Paramters:
+    ----------
+    order: int,
+    radius: int,
+    data: array_like,
+    verbose: int, default 0,
 
     Returns:
     --------
+    cost: float,
 
     Reference:
     ----------

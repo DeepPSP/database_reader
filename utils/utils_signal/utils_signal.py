@@ -284,8 +284,16 @@ def phasor_transform(s:ArrayLike, rv:Real) -> np.ndarray:
 def compute_snr(original:ArrayLike, noised:ArrayLike) -> float:
     """
     computation of signal to noise ratio of the noised signal
+
+    Parameters:
+    -----------
+
+    Returns:
+    --------
+
     """
-    return 10*np.log10(np.sum(np.power(np.array(original),2))/np.sum(np.power(np.array(original)-np.array(noised),2)))
+    snr = 10*np.log10(np.sum(np.power(np.array(original),2))/np.sum(np.power(np.array(original)-np.array(noised),2)))
+    return snr
 
 
 def compute_snr_improvement(original:ArrayLike, noised:ArrayLike, denoised:ArrayLike) -> float:
@@ -297,7 +305,7 @@ def compute_snr_improvement(original:ArrayLike, noised:ArrayLike, denoised:Array
 
 
 def uni_polyn_der(coeff:ArrayLike, order:int=1, coeff_asc:bool=True) -> np.ndarray:
-    """ 已完成，已测试
+    """ finished, checked,
 
     compute the order-th derivative of a univariate polynomial with real (int,float) coefficients,
     faster than np.polyder
@@ -341,7 +349,13 @@ def uni_polyn_der(coeff:ArrayLike, order:int=1, coeff_asc:bool=True) -> np.ndarr
 
 
 def eval_uni_polyn(x:Union[int,float,list,tuple,np.ndarray], coeff:ArrayLike, coeff_asc:bool=True) -> Union[int,float,np.ndarray]:
-    """ 已完成，已测试
+    """ finished, checked,
+
+    Parameters:
+    -----------
+
+    Returns:
+    --------
 
     evaluate x at the univariate polynomial defined by coeff
     """
@@ -359,9 +373,15 @@ def eval_uni_polyn(x:Union[int,float,list,tuple,np.ndarray], coeff:ArrayLike, co
 
 
 def noise_std_estimator(data:ArrayLike) -> float:
-    """ 已完成，已测试
+    """ finished, checked,
 
     median estimator for the unknown std of the noise
+
+    Parameters:
+    -----------
+
+    Returns:
+    --------
 
     Reference:
     ----------
@@ -371,29 +391,46 @@ def noise_std_estimator(data:ArrayLike) -> float:
 
 
 def der_operator(responce_len:int, input_len:int, order:int) -> np.ndarray:
-    """ 未完成
+    """ not finished,
+
+    Parameters:
+    -----------
+
+    Returns:
+    --------
 
     derivation operator in matrix form
     """
     if responce_len+order > input_len:
         raise ValueError("responce_len+order should be no greater than input_len")
 
-    pass
+    raise NotImplementedError
 
 
 def lstsq_with_smoothness_prior(data:ArrayLike) -> np.ndarray:
-    """ 未完成
+    """ not finished,
 
+    Parameters:
+    -----------
+
+    Returns:
+    --------
 
     Reference:
     ----------
         [1]. Sameni, Reza. "Online Filtering Using Piecewise Smoothness Priors: Application to Normal and Abnormal Electrocardiogram Denoising." Signal Processing 133.C (2017): 52-63. Web.
     """
-    pass
+    raise NotImplementedError
 
 
 def generate_rr_interval(nb_beats:int, bpm_mean:Real, bpm_std:Real, lf_hf:float, lf_freq:float=0.1, hf_freq:float=0.25, lf_std:float=0.01, hf_std:float=0.01) -> np.ndarray:
-    """
+    """ finished, not checked,
+
+    Parameters:
+    -----------
+
+    Returns:
+    --------
     
     """
     expected_rr_mean = 60 / bpm_mean
@@ -415,7 +452,7 @@ def generate_rr_interval(nb_beats:int, bpm_mean:Real, bpm_std:Real, lf_hf:float,
 
 
 def is_ecg_signal(s:ArrayLike, freq:int, wavelet_name:str='db6', verbose:int=0) -> bool:
-    """ 已完成，持续优化
+    """ finished, to be improved,
 
     Parameters:
     -----------
@@ -614,7 +651,7 @@ def is_ecg_signal(s:ArrayLike, freq:int, wavelet_name:str='db6', verbose:int=0) 
 
 
 def wavelet_denoise(s:ArrayLike, freq:int, wavelet_name:str='db6', amplify_mode:str='ecg', sides_mode:str='nearest', cval:int=0, verbose:int=0, **kwargs) -> NamedTuple:
-    """ 已完成，待优化
+    """ finished, to be improved,
 
     denoise and amplify (if necessary) signal `s`, using wavelet decomposition
 
@@ -1136,6 +1173,12 @@ def butter_bandpass(lowcut:Real, highcut:Real, fs:Real, order:int) -> Tuple[np.n
     """
     Butterworth Bandpass Filter Design
 
+    Parameters:
+    -----------
+
+    Returns:
+    --------
+
     References:
     -----------
     [2] scipy.signal.butter
@@ -1162,6 +1205,12 @@ def butter_bandpass(lowcut:Real, highcut:Real, fs:Real, order:int) -> Tuple[np.n
 def butter_bandpass_filter(data:ArrayLike, lowcut:Real, highcut:Real, fs:Real, order:int) -> np.ndarray:
     """
     Butterworth Bandpass
+
+    Parameters:
+    -----------
+
+    Returns:
+    --------
 
     References:
     -----------

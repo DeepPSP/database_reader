@@ -1,8 +1,11 @@
-#-------------------------------------------------------
-# saliency base class and basic gradient tools for different methods
-# from:
-# https://github.com/PAIR-code/saliency/blob/master/saliency/base.py
-# https://github.com/PAIR-code/saliency/blob/master/saliency/integrated_gradients.py
+"""
+saliency base class and basic gradient tools for different methods
+from:
+    https://github.com/PAIR-code/saliency/blob/master/saliency/base.py
+    https://github.com/PAIR-code/saliency/blob/master/saliency/integrated_gradients.py
+
+NOTE: totally not checked
+"""
 
 import tensorflow
 if tensorflow.__version__.startswith("1."):

@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 Module: utils_image
-File: utils_geo_trans.py
-Author: wenhao71
-Date: 2019/10/15
+File: augmentors.py
+Author: wenhao
 remarks: utilities for image geometrical (pre-)processing, for the use of data augmentations, etc.
 
 NOTE:

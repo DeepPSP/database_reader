@@ -1,16 +1,14 @@
 # -*- coding: utf-8 -*-
-
 """
-remarks: 一些常用的与区间相关的函数
+remarks: commonly used functions related to intervals
 
-注意：
-    这里的interval指的是形如[a,b]的区间，
-    generalized_interval指的是多个interval的并
-考虑：
-    是否将interval与generalized_interval合并，
-    把单个的interval令成[[a,b]]，即长度为1的generalized_interval
+NOTE:
+    `interval` refers to interval of the form [a,b]
+    `generalized_interval` refers to some (finite) union of `interval`s
+TODO:
+    unify `interval` and `generalized_interval`,
+    by letting `interval` be of the form [[a,b]]
 
-TODO: to english
 """
 
 import numpy as np
@@ -50,7 +48,7 @@ GeneralizedInterval = Union[List[Interval], Tuple[Interval], type(EMPTY_SET)]
 
 
 def overlaps(interval:Interval, another:Interval) -> int:
-    """ 已完成，已检查
+    """ finished, checked,
 
     Return the amount of overlap, in bp between interval and anohter.
     If >0, the number of bp of overlap
@@ -64,7 +62,7 @@ def overlaps(interval:Interval, another:Interval) -> int:
 
 
 def validate_interval(interval:Union[Interval,GeneralizedInterval], join_book_endeds:bool=True) -> Tuple[bool,Union[Interval,GeneralizedInterval]]:
-    """ 已完成，
+    """ finished, not checked,
 
     check whether `interval` is an `Interval` or a `GeneralizedInterval`,
     if true, return True, and validated (of the form [a,b] with a<=b) interval,
@@ -84,7 +82,7 @@ def validate_interval(interval:Union[Interval,GeneralizedInterval], join_book_en
 
 
 def in_interval(val:Real, interval:Interval) -> bool:
-    """ 已完成，已检查
+    """ finished, checked,
 
     check whether val is inside interval or not
     """
@@ -104,7 +102,7 @@ def in_generalized_interval(val:Real, generalized_interval:GeneralizedInterval) 
 
 
 def get_confidence_interval(data:Optional[ArrayLike]=None, val:Optional[Real]=None, rmse:Optional[float]=None, confidence:float=0.95, **kwargs) -> np.ndarray:
-    """ 已完成，已检查
+    """ finished, checked,
 
     docstring, to write
     """
@@ -124,7 +122,7 @@ def get_confidence_interval(data:Optional[ArrayLike]=None, val:Optional[Real]=No
 
 
 def intervals_union(interval_list:GeneralizedInterval, join_book_endeds:bool=True) -> GeneralizedInterval:
-    """ 已完成，已测试
+    """ finished, checked,
 
     设interval_list为区间的列表（不必有序，区间为[a,b]的形式，a,b不必有序），
     返回其中所有区间的（有序，不交）并
@@ -190,7 +188,8 @@ def intervals_union(interval_list:GeneralizedInterval, join_book_endeds:bool=Tru
 
 
 def generalized_intervals_union(interval_list:Union[List[GeneralizedInterval],Tuple[GeneralizedInterval]], join_book_endeds:bool=True) -> GeneralizedInterval:
-    """
+    """ finished, checked,
+
     calculate the union of a list (or tuple) of `GeneralizedInterval`s
 
     Parameters:
@@ -209,7 +208,7 @@ def generalized_intervals_union(interval_list:Union[List[GeneralizedInterval],Tu
 
 
 def intervals_intersection(interval_list:GeneralizedInterval, drop_degenerate:bool=True) -> Interval:
-    """ 已完成，已检查
+    """ finished, checked,
 
     calculate the intersection of all intervals in interval_list
 
@@ -237,7 +236,7 @@ def intervals_intersection(interval_list:GeneralizedInterval, drop_degenerate:bo
 
 
 def generalized_intervals_intersection(generalized_interval:GeneralizedInterval, another_generalized_interval:GeneralizedInterval, drop_degenerate:bool=True) -> GeneralizedInterval:
-    """ 已完成，已检查
+    """ finished, checked,
 
     calculate the intersection of generalized_interval and another_generalized_interval,
     which are both generalized intervals
@@ -274,7 +273,7 @@ def generalized_intervals_intersection(generalized_interval:GeneralizedInterval,
 
 
 def generalized_interval_complement(total_interval:Interval, generalized_interval:GeneralizedInterval) -> GeneralizedInterval:
-    """ 已完成，已检查
+    """ finished, checked,
 
     暂时先处理total_interval是一个Interval的情况
     """
@@ -297,7 +296,7 @@ def generalized_interval_complement(total_interval:Interval, generalized_interva
 
 
 def get_optimal_covering(total_interval:Interval, to_cover:list, min_len:int, split_threshold:int, traceback:bool=False, **kwargs) -> Tuple[GeneralizedInterval,list]:
-    """ 已完成，已检查
+    """ finished, checked,
 
     获取覆盖to_cover中每一项的满足min_len, split_threshold条件的最佳覆盖
 
@@ -463,7 +462,7 @@ def get_optimal_covering(total_interval:Interval, to_cover:list, min_len:int, sp
 
 
 def find_max_cont_len(sub_list:Interval, tot_len:Real) -> dict:
-    """ 已完成，已检查
+    """ finished, checked,
 
     设sub_list为[0,1,2,...,tot_len-1]的一个子列，
     计算sub_list的最常的连续子列的长度，该子列在sub_list中起始位置，以及该最长连续子列
@@ -484,7 +483,7 @@ def find_max_cont_len(sub_list:Interval, tot_len:Real) -> dict:
 
 
 def interval_len(interval:Interval) -> Real:
-    """ 已完成，已检查
+    """ finished, checked,
 
     compute the length of an interval. -1 for the empty interval []
     """
@@ -493,7 +492,7 @@ def interval_len(interval:Interval) -> Real:
 
 
 def generalized_interval_len(generalized_interval:GeneralizedInterval) -> Real:
-    """ 已完成，已检查
+    """ finished, checked,
 
     compute the length of a generalized interval. -1 for the empty interval []
     """
@@ -501,7 +500,7 @@ def generalized_interval_len(generalized_interval:GeneralizedInterval) -> Real:
 
 
 def diff_with_step(a:ArrayLike, step:int=1, **kwargs) -> np.ndarray:
-    """ 已完成，已检查
+    """ finished, checked,
 
     compute a[n+step] - a[n] for all valid n
     """
@@ -509,7 +508,8 @@ def diff_with_step(a:ArrayLike, step:int=1, **kwargs) -> np.ndarray:
 
 
 def find_extrema(signal:Optional[ArrayLike]=None, mode:str='both') -> np.ndarray:
-    """Locate local extrema points in a signal. Based on Fermat's Theorem
+    """
+    Locate local extrema points in a signal. Based on Fermat's Theorem
 
     Parameters
     ----------
