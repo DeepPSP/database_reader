@@ -19,17 +19,17 @@ from ..base import NSRRDataBase
 
 
 __all__ = [
-    "MESA",
+    "OYA",
 ]
 
 
-class MESA(NSRRDataBase):
+class OYA(NSRRDataBase):
     """
     """
     def __init__(self, db_path:str, verbose:int=2, **kwargs):
         """
         """
-        super().__init__(db_name='MESA', db_path=db_path, verbose=verbose, **kwargs)
+        super().__init__(db_name='OYA', db_path=db_path, verbose=verbose, **kwargs)
 
 
     def get_patient_id(self,):

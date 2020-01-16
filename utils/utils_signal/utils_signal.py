@@ -270,7 +270,7 @@ def _plot(x, mph, mpd, threshold, edge, valley, ax, ind):
 
 
 def phasor_transform(s:ArrayLike, rv:Real) -> np.ndarray:
-    """ 已完成，已测试
+    """ finished, checked,
 
     phasor transform, applied to s, with sensitivity controlled by rv
 
@@ -975,7 +975,7 @@ def wavelet_denoise(s:ArrayLike, freq:int, wavelet_name:str='db6', amplify_mode:
 
 
 def wavelet_rec_iswt(coeffs:List[List[np.ndarray]], levels:ArrayLike_Int, wavelet_name:str, verbose:int=0) -> np.ndarray:
-    """ 已完成，已检查
+    """ finished, checked,
 
     reconstruct signal, using pywt.iswt, using coefficients obtained by pywt.swt of level in `levels`
 
@@ -1020,7 +1020,7 @@ def wavelet_rec_iswt(coeffs:List[List[np.ndarray]], levels:ArrayLike_Int, wavele
 
 
 def rr_interval_to_2d_timeseries(rr_intervals:ArrayLike_Int) -> np.ndarray:
-    """ 已完成，
+    """ finished, checked,
 
     transform the 1d array of rr intervals to a 2d irregular timeseries
 
@@ -1037,7 +1037,7 @@ def rr_interval_to_2d_timeseries(rr_intervals:ArrayLike_Int) -> np.ndarray:
 
 
 def resample_irregular_timeseries(s:ArrayLike, output_fs:Real=2, method:str="spline", return_with_time:bool=False, tnew:Optional[ArrayLike]=None, options:dict={}, verbose:int=0) -> np.ndarray:
-    """ 已完成，已检查
+    """ finished, checked,
 
     resample the 2d irregular timeseries `s` into a 1d or 2d regular time series with frequency `output_fs`,
     elements of `s` are in the form [time, value], where the unit of `time` is ms
@@ -1108,7 +1108,7 @@ def resample_irregular_timeseries(s:ArrayLike, output_fs:Real=2, method:str="spl
 
 
 def resample_discontinuous_irregular_timeseries(s:ArrayLike, allowd_gap:Optional[Real]=None,output_fs:Real=2, method:str="spline", return_with_time:bool=True, tnew:Optional[ArrayLike]=None, options:dict={}, verbose:int=0) -> List[np.ndarray]:
-    """ 已完成，已检查
+    """ finished, checked,
 
     resample the 2d discontinuous irregular timeseries `s` into a list of 1d or 2d regular time series with frequency `output_fs`,
     where discontinuity means time gap greater than `allowd_gap`,

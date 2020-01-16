@@ -58,7 +58,7 @@ except TypeError:
 
 
 def autocorr(x:ArrayLike, normalize:bool=False) -> np.ndarray:
-    """ 已完成，已检查
+    """ finished, checked,
 
     autocorrelation of the time series x
     """
@@ -72,7 +72,7 @@ def autocorr(x:ArrayLike, normalize:bool=False) -> np.ndarray:
 
 
 def kmeans2_is_correct(data:np.ndarray, centroids:np.ndarray, labels:np.ndarray, verbose:int=0) -> bool:
-    """ 已完成，已检查
+    """ finished, checked,
 
     检查from scipy.cluster.vq.kmeans2的结果是否正确
     """
@@ -103,7 +103,7 @@ def kmeans2_is_correct(data:np.ndarray, centroids:np.ndarray, labels:np.ndarray,
 
 
 def is_outlier(to_check_val:Real, normal_vals:Union[List[int],List[float],Tuple[int],Tuple[float],np.ndarray], verbose:int=0) -> bool:
-    """ 已完成，已检查
+    """ finished, checked,
 
     check if to_check_val is an outlier in normal_vals
     """
@@ -264,7 +264,7 @@ def rand_student_t(df:Real, mu:Real=0, std:Real=1) -> Real:
 
 
 def samp_ent(s:ArrayLike, m:int, r:Real) -> float:
-    """ 已完成，
+    """ finished,
 
     sample entropy of signal `s`, equals ent.sample_entropy(s, m, r)[-1], a simple version
 

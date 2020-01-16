@@ -91,7 +91,7 @@ def in_interval(val:Real, interval:Interval) -> bool:
 
 
 def in_generalized_interval(val:Real, generalized_interval:GeneralizedInterval) -> bool:
-    """ 已完成，已检查
+    """ finished, checked,
 
     check whether val is inside generalized_interval or not
     """

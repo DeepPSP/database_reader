@@ -405,7 +405,7 @@ class SHHS(NSRRDataBase):
 
 
     def form_paths(self) -> NoReturn:
-        """ 已完成，
+        """ finished,
 
         """
         self.psg_data_path = os.path.join(self.db_path, "polysomnography", "edfs")
@@ -418,7 +418,7 @@ class SHHS(NSRRDataBase):
 
 
     def update_sleep_stage_names(self) -> NoReturn:
-        """ 已完成，
+        """ finished,
 
         """
         if self.sleep_stage_protocol == "aasm":
@@ -433,35 +433,8 @@ class SHHS(NSRRDataBase):
         self.sleep_stage_names = self.all_sleep_stage_names[:nb_stages]
 
 
-    def safe_edf_file_operation(self, operation:str='close', full_file_path:Optional[str]=None) -> Union[EdfReader, NoReturn]:
-        """ 已完成，
-
-        Parameters:
-        -----------
-        operation: str, default 'close',
-            operation name, can be 'open' and 'close'
-        full_file_path: str, optional,
-            path of the file which contains the psg data,
-            if not given, default path will be used
-        
-        Returns:
-        --------
-
-        """
-        if operation == 'open':
-            if self.file_opened is not None:
-                self.file_opened._close()
-            self.file_opened = EdfReader(full_file_path)
-        elif operation =='close':
-            if self.file_opened is not None:
-                self.file_opened._close()
-                self.file_opened = None
-        else:
-            raise ValueError("Illegal operation")
-
-
     def get_patient_id(self, rec:str) -> int:
-        """ 已完成，
+        """ finished,
 
         Parameters:
         -----------
@@ -482,7 +455,7 @@ class SHHS(NSRRDataBase):
 
 
     def get_visit_number(self, rec:str) -> int:
-        """ 已完成，
+        """ finished,
 
         Parameters:
         -----------
@@ -497,7 +470,7 @@ class SHHS(NSRRDataBase):
 
 
     def get_nsrrid(self, rec:str) -> int:
-        """ 已完成，
+        """ finished,
 
         Parameters:
         -----------
@@ -512,7 +485,7 @@ class SHHS(NSRRDataBase):
 
 
     def get_fs(self, rec:str, sig:str='ECG', rec_path:Optional[str]=None) -> int:
-        """ 已完成，
+        """ finished,
 
         Parameters:
         -----------
@@ -538,7 +511,7 @@ class SHHS(NSRRDataBase):
 
     
     def get_chn_num(self, rec:str, sig:str='ECG', rec_path:Optional[str]=None) -> int:
-        """ 已完成，
+        """ finished,
 
         Parameters:
         -----------
@@ -563,7 +536,7 @@ class SHHS(NSRRDataBase):
 
 
     def match_channel(self, channel:str) -> str:
-        """ 已完成，
+        """ finished,
 
         Parameters:
         -----------
@@ -581,7 +554,7 @@ class SHHS(NSRRDataBase):
 
 
     def match_full_rec_path(self, rec:str, rec_path:Optional[str]=None, rec_type:str="psg") -> str:
-        """ 已完成，
+        """ finished,
 
         Parameters:
         -----------
@@ -632,7 +605,7 @@ class SHHS(NSRRDataBase):
 
 
     def database_info(self, detailed:bool=False) -> NoReturn:
-        """ 已完成，
+        """ finished,
 
         print information about the database
 
@@ -656,7 +629,7 @@ class SHHS(NSRRDataBase):
 
 
     def show_rec_stats(self, rec:str, rec_path:Optional[str]=None) -> NoReturn:
-        """ 已完成，
+        """ finished,
 
         Parameters:
         -----------
@@ -680,7 +653,7 @@ class SHHS(NSRRDataBase):
 
 
     def load_psg_data(self, rec:str, channel:str='all', rec_path:Optional[str]=None) -> Dict[str, np.ndarray]:
-        """ 已完成，
+        """ finished,
 
         Parameters:
         -----------
@@ -712,7 +685,7 @@ class SHHS(NSRRDataBase):
 
 
     def load_ecg_data(self, rec:str, rec_path:Optional[str]=None) -> np.ndarray:
-        """ 已完成，
+        """ finished,
 
         Parameters:
         -----------
@@ -730,7 +703,7 @@ class SHHS(NSRRDataBase):
 
 
     def load_event_ann(self, rec:str, event_ann_path:Optional[str]=None, simplify:bool=False) -> pd.DataFrame:
-        """ 已完成，
+        """ finished,
 
         Parameters:
         -----------
@@ -758,7 +731,7 @@ class SHHS(NSRRDataBase):
 
 
     def load_event_profusion_ann(self, rec:str, event_profusion_ann_path:Optional[str]=None) -> dict:
-        """ 已完成，
+        """ finished,
 
         Parameters:
         -----------
@@ -790,7 +763,7 @@ class SHHS(NSRRDataBase):
 
 
     def load_hrv_summary_ann(self, rec:Optional[str]=None, hrv_ann_path:Optional[str]=None) -> pd.DataFrame:
-        """ 已完成，
+        """ finished,
 
         Parameters:
         -----------
@@ -823,7 +796,7 @@ class SHHS(NSRRDataBase):
 
 
     def load_hrv_detailed_ann(self, rec:str, hrv_ann_path:Optional[str]=None) -> pd.DataFrame:
-        """ 已完成，
+        """ finished,
 
         Parameters:
         -----------
@@ -856,7 +829,7 @@ class SHHS(NSRRDataBase):
 
 
     def load_sleep_ann(self, rec:str, source:str, sleep_ann_path:Optional[str]=None) -> Union[pd.DataFrame,dict]:
-        """ 已完成，
+        """ finished,
 
         Parameters:
         -----------
@@ -895,7 +868,7 @@ class SHHS(NSRRDataBase):
 
 
     def load_sleep_stage_ann(self, rec:str, source:str, sleep_stage_ann_path:Optional[str]=None, sleep_stage_protocol:str="aasm", with_stage_names:bool=True) -> pd.DataFrame:
-        """ 已完成，
+        """ finished,
 
         Parameters:
         -----------
@@ -979,7 +952,7 @@ class SHHS(NSRRDataBase):
 
 
     def load_sleep_event_ann(self, rec:str, source:str, event_types:Optional[List[str]]=None, sleep_event_ann_path:Optional[str]=None) -> pd.DataFrame:
-        """ 已完成，
+        """ finished,
 
         Parameters:
         -----------
@@ -1093,7 +1066,7 @@ class SHHS(NSRRDataBase):
 
 
     def load_apnea_ann(self, rec:str, source:str, apnea_types:Optional[List[str]]=None, apnea_ann_path:Optional[str]=None) -> pd.DataFrame:
-        """ 已完成，
+        """ finished,
 
         Parameters:
         -----------
@@ -1125,7 +1098,7 @@ class SHHS(NSRRDataBase):
 
 
     def load_wave_delineation(self, rec:str, wave_deli_path:Optional[str]=None) -> pd.DataFrame:
-        """ 已完成，
+        """ finished,
 
         Parameters:
         -----------
@@ -1153,7 +1126,7 @@ class SHHS(NSRRDataBase):
 
 
     def load_rpeak_ann(self, rec:str, rpeak_ann_path:Optional[str]=None, exclude_artifacts:bool=True, exclude_abnormal_beats:bool=True, to_ts:bool=False) -> np.ndarray:
-        """ 已完成，
+        """ finished,
 
         Parameters:
         -----------
@@ -1191,7 +1164,7 @@ class SHHS(NSRRDataBase):
 
 
     def load_rr_ann(self, rec:str, rpeak_ann_path:Optional[str]=None) -> np.ndarray:
-        """ 已完成，
+        """ finished,
 
         Parameters:
         -----------
@@ -1218,7 +1191,7 @@ class SHHS(NSRRDataBase):
 
 
     def load_nn_ann(self, rec:str, rpeak_ann_path:Optional[str]=None) -> np.ndarray:
-        """ 已完成，
+        """ finished,
 
         Parameters:
         -----------
@@ -1246,7 +1219,7 @@ class SHHS(NSRRDataBase):
 
 
     def locate_artifacts(self, rec:str, wave_deli_path:Optional[str]=None) -> np.ndarray:
-        """ 已完成，
+        """ finished,
 
         Parameters:
         -----------
@@ -1266,7 +1239,7 @@ class SHHS(NSRRDataBase):
 
 
     def locate_abnormal_beats(self, rec:str, wave_deli_path:Optional[str]=None, abnormal_type:Optional[str]=None) -> Dict[str, np.ndarray]:
-        """ 已完成，
+        """ finished,
 
         Parameters:
         -----------
@@ -1304,7 +1277,7 @@ class SHHS(NSRRDataBase):
 
 
     def load_eeg_band_ann(self, rec:str, eeg_band_ann_path:Optional[str]=None) -> pd.DataFrame:
-        """ 未完成，
+        """ not finished,
 
         Parameters:
         -----------
@@ -1322,7 +1295,7 @@ class SHHS(NSRRDataBase):
 
 
     def load_eeg_spectral_ann(self, rec:str, eeg_spectral_ann_path:Optional[str]=None) -> pd.DataFrame:
-        """ 未完成，
+        """ not finished,
 
         Parameters:
         -----------
@@ -1378,7 +1351,7 @@ class SHHS(NSRRDataBase):
 
 
     def _plot_ann(self, df_sleep_stage:Optional[pd.DataFrame]=None, df_sleep_event:Optional[pd.DataFrame]=None) -> NoReturn:
-        """ 未完成，
+        """ not finished,
 
         Paramters:
         ----------
@@ -1454,7 +1427,7 @@ class SHHS(NSRRDataBase):
 
 
     def str_to_real_number(self, s:Union[str,Real]) -> Real:
-        """ 已完成
+        """ finished,
 
         some columns in the annotations might incorrectly been converted from real number to string, using `xmltodict`.
 

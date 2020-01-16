@@ -6,6 +6,7 @@ docstring, to write
 import pprint
 import wfdb
 import pandas as pd
+from pyedflib import EdfReader
 from typing import Union, Optional, Any, List, NoReturn
 from numbers import Real
 from utils.common import *
@@ -209,7 +210,7 @@ class PhysioNetDataBase(object):
         --------
         int, a `patient_id` attached to the record `rec`
         """
-        return 0
+        raise NotImplementedError
 
 
     def database_info(self, detailed:bool=False) -> NoReturn:
@@ -220,7 +221,7 @@ class PhysioNetDataBase(object):
             if False, an short introduction of the database will be printed,
             if True, then docstring of the class will be printed additionally
         """
-        return
+        raise NotImplementedError
 
 
     def helper(self, items:Union[List[str],str,type(None)]=None, **kwargs) -> NoReturn:
@@ -361,6 +362,7 @@ class NSRRDataBase(object):
         self.freq = None
         self.all_records = None
         self.device_id = None  # maybe data are imported into impala db, to facilitate analyzing
+        self.file_opened = None
         self.verbose = verbose
         
         all_dbs = [
@@ -375,6 +377,33 @@ class NSRRDataBase(object):
             }
         )
         self.kwargs = kwargs
+
+
+    def safe_edf_file_operation(self, operation:str='close', full_file_path:Optional[str]=None) -> Union[EdfReader, NoReturn]:
+        """ finished, checked,
+
+        Parameters:
+        -----------
+        operation: str, default 'close',
+            operation name, can be 'open' and 'close'
+        full_file_path: str, optional,
+            path of the file which contains the psg data,
+            if not given, default path will be used
+        
+        Returns:
+        --------
+
+        """
+        if operation == 'open':
+            if self.file_opened is not None:
+                self.file_opened._close()
+            self.file_opened = EdfReader(full_file_path)
+        elif operation =='close':
+            if self.file_opened is not None:
+                self.file_opened._close()
+                self.file_opened = None
+        else:
+            raise ValueError("Illegal operation")
         
 
     def get_patient_id(self, rec:str) -> int:
@@ -390,7 +419,7 @@ class NSRRDataBase(object):
         --------
         int, a `patient_id` attached to the record `rec`
         """
-        return 0
+        raise NotImplementedError
 
 
     def show_rec_stats(self, rec:str) -> NoReturn:
@@ -402,7 +431,7 @@ class NSRRDataBase(object):
         rec: str,
             record name
         """
-        return
+        raise NotImplementedError
 
 
     def database_info(self, detailed:bool=False) -> NoReturn:
@@ -480,7 +509,7 @@ class OtherDataBase(object):
         --------
         int, a `patient_id` attached to the record `rec`
         """
-        return 0
+        raise NotImplementedError
     
 
     def database_info(self, detailed:bool=False) -> NoReturn:
