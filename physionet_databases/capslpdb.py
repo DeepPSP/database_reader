@@ -13,34 +13,30 @@ from ..base import PhysioNetDataBase
 
 
 __all__ = [
-    "CINC2018",
+    "CAPSLPDB",
 ]
 
 
-class CINC2018(PhysioNetDataBase):
-    """ NOT Finished
+class CAPSLPDB(PhysioNetDataBase):
+    """ NOT finished,
 
-    You Snooze You Win - The PhysioNet Computing in Cardiology Challenge 2018
+    CAP Sleep Database
 
-    about CINC2018: to write
+    About capslpdb: to write
 
     References:
     -----------
-    [1] https://physionet.org/content/challenge-2018/1.0.0/
+    [1] https://physionet.org/content/capslpdb/1.0.0/
     """
     def __init__(self, db_path:Optional[str]=None, **kwargs):
-        super().__init__(db_name='challenge/2018/', db_path=db_path, **kwargs)
+        super().__init__(db_name='capslpdb', db_path=db_path, **kwargs)
 
 
     def get_patient_id(self, rec) -> int:
         """
 
         """
-        head = '2018'
-        mid = rec[2:4]
-        tail = rec[-4:]
-        pid = int(head+mid+tail)
-        return pid
+        raise NotImplementedError
 
 
     def database_info(self) -> NoReturn:

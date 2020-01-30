@@ -20,13 +20,18 @@ __all__ = [
 class BIDMC(PhysioNetDataBase):
     """ NOT finished,
 
+    BIDMC PPG and Respiration Dataset
+
     about bidmc: to write
 
+    References:
+    -----------
+    [1] https://physionet.org/content/bidmc/1.0.0/
     """
     def __init__(self, db_path:Optional[str]=None, **kwargs):
         super().__init__(db_name='bidmc', db_path=db_path, **kwargs)
         try:
-            self.all_records = wfdb.get_record_list('qtdb')
+            self.all_records = wfdb.get_record_list('bidmc')
         except:
             try:
                 self.all_records = os.listdir(self.db_path)
@@ -39,7 +44,7 @@ class BIDMC(PhysioNetDataBase):
         """
 
         """
-        return
+        raise NotImplementedError
 
 
     def database_info(self) -> NoReturn:

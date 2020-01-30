@@ -20,8 +20,13 @@ __all__ = [
 class EDB(PhysioNetDataBase):
     """ NOT finished,
 
+    European ST-T Database
+
     about edb: to write
 
+    References:
+    -----------
+    [1] https://physionet.org/content/edb/1.0.0/
     """
     def __init__(self, db_path:Optional[str]=None, **kwargs):
         super().__init__(db_name='edb', db_path=db_path, **kwargs)
@@ -40,7 +45,7 @@ class EDB(PhysioNetDataBase):
         """
 
         """
-        return
+        raise NotImplementedError
 
 
     def database_info(self) -> NoReturn:

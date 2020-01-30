@@ -20,6 +20,8 @@ __all__ = [
 class ApneaECG(PhysioNetDataBase):
     """ Finished, to be improved,
 
+    Apnea-ECG Database
+
     About apnea-ecg (CinC Challenge 2000) database:\n
     1. consist of 70 records, divided into a learning set of 35 records (a01 through a20, b01 through b05, and c01 through c10), and a test set of 35 records (x01 through x35)\n
     2. recordings vary in length from slightly less than 7 hours to nearly 10 hours (401 - 578 min) each\n
@@ -33,9 +35,10 @@ class ApneaECG(PhysioNetDataBase):
     10. eight records (a01 through a04, b01, and c01 through c03) that include respiration signals have several additional files each.\n
     11. *r.* files contains respiration information correspondingly\n
 
-    References:\n
-    -----------\n
-    [1]. T Penzel, GB Moody, RG Mark, AL Goldberger, JH Peter. The Apnea-ECG Database. Computers in Cardiology 2000;27:255-258
+    References:
+    -----------
+    [1] https://physionet.org/content/apnea-ecg/1.0.0/
+    [2] T Penzel, GB Moody, RG Mark, AL Goldberger, JH Peter. The Apnea-ECG Database. Computers in Cardiology 2000;27:255-258
     """
     def __init__(self, db_path:Optional[str]=None, **kwargs):
         super().__init__(db_name='apnea-ecg', db_path=db_path, **kwargs)

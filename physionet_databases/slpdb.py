@@ -20,6 +20,8 @@ __all__ = [
 class SLPDB(PhysioNetDataBase):
     """ Finished, to be improved,
 
+    MIT-BIH Polysomnographic Database
+
     about slpdb:\n
     ------------\n
     1. slpdb contains over 80 hours' worth of four-, six-, and seven-channel polysomnographic records\n
@@ -28,6 +30,10 @@ class SLPDB(PhysioNetDataBase):
     4. Records 'slp01a' and 'slp01b' are segments of one subject's polysomnogram, separated by a gap of about one hour; records 'slp02a' and 'slp02b' are segments of another subject's polysomnogram, separated by a ten-minute gap\n
     5. Data files have an attribute 'comments' which contains age, gender, and weight (in kg) of the subjects\n
     6. calibration originally provided for the BP signal of record slp37 is incorrect (since it yielded negative BPs). slp37.hea now contains an estimated BP calibration that yields more plausible BPs; these should not be regarded as accurate\n
+
+    References:
+    -----------
+    [1] https://physionet.org/content/slpdb/1.0.0/
     """
     def __init__(self, db_path:Optional[str]=None, **kwargs):
         super().__init__(db_name='slpdb', db_path=db_path, **kwargs)

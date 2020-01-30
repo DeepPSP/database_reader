@@ -20,8 +20,13 @@ __all__ = [
 class QTDB(PhysioNetDataBase):
     """ NOT finished,
 
+    QT Database
+
     about qtdb: to write
 
+    References:
+    -----------
+    [1] https://www.physionet.org/content/qtdb/1.0.0/
     """
     def __init__(self, db_path:Optional[str]=None, **kwargs):
         super().__init__(db_name='qtdb', db_path=db_path, **kwargs)
@@ -54,7 +59,7 @@ class QTDB(PhysioNetDataBase):
         """
 
         """
-        return
+        raise NotImplementedError
 
 
     def database_info(self) -> NoReturn:

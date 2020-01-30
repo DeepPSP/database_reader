@@ -20,6 +20,8 @@ __all__ = [
 class LTSTDB(PhysioNetDataBase):
     """ Finished, to be improved,
 
+    Long Term ST Database
+
     About ltstdb:\n
     1. contains 86 lengthy ECG recordings of 80 human subjects\n
     2. all records are between 21 and 24 hours in duration, and contain two or three ECG signals\n
@@ -28,6 +30,10 @@ class LTSTDB(PhysioNetDataBase):
     5. each record includes a set of meticulously verified ST episode and signal quality annotations, together with additional beat-by-beat QRS annotations and ST level measurements\n
     6. for annotations: experts examine the time series of ST level measurements in order to locate and to mark a set of local reference points, which are used to construct a piecewise linear baseline ST level function\n
     7. measurements in .16a files were used to construct ST level and deviation functions for each signal\n
+
+    References:
+    -----------
+    [1] https://physionet.org/content/ltstdb/1.0.0/
     """
     def __init__(self, db_path:Optional[str]=None, **kwargs):
         """
@@ -252,7 +258,7 @@ class LTSTDB(PhysioNetDataBase):
         """
 
         """
-        return
+        raise NotImplementedError
 
 
     def database_info(self) -> NoReturn:
