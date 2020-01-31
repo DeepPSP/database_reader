@@ -22,6 +22,22 @@ __all__ = [
 class CHAT(NSRRDataBase):
     """
 
+    About chat:
+    -----------
+    to write
+
+    NOTE:
+    -----
+
+    ISSUES:
+    -------
+
+    Usage:
+    ------
+
+    References:
+    -----------
+    [1] 
     """
     def __init__(self, db_path:Optional[str]=None, **kwargs):
         """

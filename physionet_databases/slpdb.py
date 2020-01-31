@@ -22,14 +22,25 @@ class SLPDB(PhysioNetDataBase):
 
     MIT-BIH Polysomnographic Database
 
-    about slpdb:\n
-    ------------\n
-    1. slpdb contains over 80 hours' worth of four-, six-, and seven-channel polysomnographic records\n
-    2. each record has an ECG signal annotated beat-by-beat, and EEG and respiration signals annotated w.r.t. sleep stages and apnea\n
-    3. all 16 subjects were male, aged 32 to 56 (mean age 43), with weights ranging from 89 to 152 kg (mean weight 119 kg)\n
-    4. Records 'slp01a' and 'slp01b' are segments of one subject's polysomnogram, separated by a gap of about one hour; records 'slp02a' and 'slp02b' are segments of another subject's polysomnogram, separated by a ten-minute gap\n
-    5. Data files have an attribute 'comments' which contains age, gender, and weight (in kg) of the subjects\n
-    6. calibration originally provided for the BP signal of record slp37 is incorrect (since it yielded negative BPs). slp37.hea now contains an estimated BP calibration that yields more plausible BPs; these should not be regarded as accurate\n
+    About slpdb:
+    ------------
+    1. slpdb contains over 80 hours' worth of four-, six-, and seven-channel polysomnographic records
+    2. each record has an ECG signal annotated beat-by-beat, and EEG and respiration signals annotated w.r.t. sleep stages and apnea
+    3. all 16 subjects were male, aged 32 to 56 (mean age 43), with weights ranging from 89 to 152 kg (mean weight 119 kg)
+    4. Records 'slp01a' and 'slp01b' are segments of one subject's polysomnogram, separated by a gap of about one hour; records 'slp02a' and 'slp02b' are segments of another subject's polysomnogram, separated by a ten-minute gap
+    5. Data files have an attribute 'comments' which contains age, gender, and weight (in kg) of the subjects
+    6. calibration originally provided for the BP signal of record slp37 is incorrect (since it yielded negative BPs). slp37.hea now contains an estimated BP calibration that yields more plausible BPs; these should not be regarded as accurate
+
+    NOTE:
+    -----
+
+    ISSUES:
+    -------
+
+    Usage:
+    ------
+    1. sleep stage
+    2. sleep apnea
 
     References:
     -----------
@@ -95,7 +106,7 @@ class SLPDB(PhysioNetDataBase):
         """
 
     
-    def get_patient_id(self, rec) -> int:
+    def get_subject_id(self, rec) -> int:
         """
 
         """

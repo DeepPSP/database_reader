@@ -21,10 +21,8 @@ __all__ = [
 class SleepAccel(OtherDataBase):
     """
 
-    ABOUT the database (ref. [1])
-
-    NOTE:
-    -----
+    ABOUT sleep_accel:
+    ------------------
     1. sleep stages in the records:
         wake = 0
         n1 = 1
@@ -34,6 +32,17 @@ class SleepAccel(OtherDataBase):
         rem = 5
         unscored = -1
     2. 
+
+    NOTE:
+    -----
+
+    ISSUES:
+    -------
+    1. 
+
+    Usage:
+    ------
+    1. sleep stage
 
     References:
     -----------

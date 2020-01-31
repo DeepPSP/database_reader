@@ -22,18 +22,29 @@ class ApneaECG(PhysioNetDataBase):
 
     Apnea-ECG Database
 
-    About apnea-ecg (CinC Challenge 2000) database:\n
-    1. consist of 70 records, divided into a learning set of 35 records (a01 through a20, b01 through b05, and c01 through c10), and a test set of 35 records (x01 through x35)\n
-    2. recordings vary in length from slightly less than 7 hours to nearly 10 hours (401 - 578 min) each\n
-    3. control group (c01 through c10): records having fewer than 5 min of disorder breathing\n
-    4. borderline group (b01 through b05): records having 10-96 min of disorder breathing\n
-    5. apnea group (a01 through a20): records having 100 min or more of disorder breathing\n
-    6. .dat files contain the digitized ECGs\n
-    7. .apn files are (binary) annotation files (only for the learning set), containing an annotation for each minute of each recording indicating the presence or absence of apnea at that time. labels are in the member 'symbol', 'N' for normal, 'A' for apnea\n
-    8. .qrs files are machine-generated (binary) annotation files, unaudited and containing errors, provided for the convenience of those who do not wish to use their own QRS detectors\n
-    9. c05 and c06 come from the same original recording (c05 begins 80 seconds later than c06). c06 may have been a corrected version of c05\n
-    10. eight records (a01 through a04, b01, and c01 through c03) that include respiration signals have several additional files each.\n
-    11. *r.* files contains respiration information correspondingly\n
+    About apnea-ecg (CinC 2000):
+    --------------------------------------
+    1. consist of 70 records, divided into a learning set of 35 records (a01 through a20, b01 through b05, and c01 through c10), and a test set of 35 records (x01 through x35)
+    2. recordings vary in length from slightly less than 7 hours to nearly 10 hours (401 - 578 min) each
+    3. control group (c01 through c10): records having fewer than 5 min of disorder breathing
+    4. borderline group (b01 through b05): records having 10-96 min of disorder breathing
+    5. apnea group (a01 through a20): records having 100 min or more of disorder breathing
+    6. .dat files contain the digitized ECGs
+    7. .apn files are (binary) annotation files (only for the learning set), containing an annotation for each minute of each recording indicating the presence or absence of apnea at that time. labels are in the member 'symbol', 'N' for normal, 'A' for apnea
+    8. .qrs files are machine-generated (binary) annotation files, unaudited and containing errors, provided for the convenience of those who do not wish to use their own QRS detectors
+    9. c05 and c06 come from the same original recording (c05 begins 80 seconds later than c06). c06 may have been a corrected version of c05
+    10. eight records (a01 through a04, b01, and c01 through c03) that include respiration signals have several additional files each.
+    11. *r.* files contains respiration information correspondingly
+
+    NOTE:
+    -----
+
+    ISSUES:
+    -------
+
+    Usage:
+    ------
+    1. sleep apnea
 
     References:
     -----------
@@ -63,7 +74,7 @@ class ApneaECG(PhysioNetDataBase):
         }
 
 
-    def get_patient_id(self, rec:str) -> int:
+    def get_subject_id(self, rec:str) -> int:
         """
 
         Parameters:

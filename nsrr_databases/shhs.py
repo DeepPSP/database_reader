@@ -26,7 +26,7 @@ __all__ = [
 class SHHS(NSRRDataBase):
     """
 
-    ***ABOUT SHHS (Sleep Heart Health Study):\n
+    ***ABOUT SHHS (Sleep Heart Health Study):
     1. shhs1 (Visit 1): 
         1.1. the baseline clinic visit and polysomnogram performed between November 1, 1995 and January 31, 1998
         1.2. in all, 6,441 men and women aged 40 years and older were enrolled
@@ -49,7 +49,7 @@ class SHHS(NSRRDataBase):
     7. `annotations-events-nsrr` and `annotations-events-profusion`: annotation files both contain xml files, the former processed in the EDF Editor and Translator tool, the latter exported from Compumedics Profusion
     8. about 10% of the records have HRV (including sleep stages and sleep events) annotations
 
-    ***DATA Analysis Tips:\n
+    ***DATA Analysis Tips:
     1. Respiratory Disturbance Index (RDI):
         1.1. A number of RDI variables exist in the data set. These variables are highly skewed.
         1.2. log-transformation is recommended, among which the following transformation performed best, at least in some subsets:
@@ -82,7 +82,7 @@ class SHHS(NSRRDataBase):
     9. body position (using a mercury gauge sensor)
     10. ambient light (on/off, by a light sensor secured to the recording garment)
 
-    ***ABOUT annotations (NOT including 'nsrrid','visitnumber','pptid' etc.):\n
+    ***ABOUT annotations (NOT including 'nsrrid','visitnumber','pptid' etc.):
     1. hrv annotations: (in csv files, ref. [2])
         Start__sec_ --- 5 minute window start time
         NN_RR	    --- Ratio of consecutive normal sinus beats (NN) over all cardiac inter-beat (RR) intervals
@@ -132,7 +132,7 @@ class SHHS(NSRRDataBase):
     3. event annotations: (in xml files) TODO
     4. event_profusion annotations: (in xml files) TODO
 
-    ***DEFINITION of concepts in sleep study:\n
+    ***DEFINITION of concepts in sleep study:
     1. Arousal: (ref. [3],[4])
         1.1. interruptions of sleep lasting 3 to 15 seconds
         1.2. can occur spontaneously or as a result of sleep-disordered breathing or other sleep disorders
@@ -168,11 +168,21 @@ class SHHS(NSRRDataBase):
             - moderate: 80% - 89%
             - severe: < 80%
 
-    ISSUES:\n
+    NOTE:
+    -----
+
+    ISSUES:
+    -------
     1. `Start__sec_` might not be the start time, but rather the end time, of the 5 minute windows in some records
     2. 
 
-    References:\n
+    Usage:
+    ------
+    1. sleep stage
+    2. sleep apnea
+
+    References:
+    -----------
     [1] https://sleepdata.org/datasets/shhs/pages/
     [2] https://sleepdata.org/datasets/shhs/pages/13-hrv-analysis.md
     [3] https://en.wikipedia.org/wiki/Sleep_apnea
@@ -433,7 +443,7 @@ class SHHS(NSRRDataBase):
         self.sleep_stage_names = self.all_sleep_stage_names[:nb_stages]
 
 
-    def get_patient_id(self, rec:str) -> int:
+    def get_subject_id(self, rec:str) -> int:
         """ finished,
 
         Parameters:
@@ -443,7 +453,7 @@ class SHHS(NSRRDataBase):
 
         Returns:
         --------
-        pid, int, `patient_id` derived from `rec`
+        pid, int, `subject_id` derived from `rec`
         """
         head_shhs1,head_shhs2v3,head_shhs2v4 = '30000', '30001', '30002'
         dataset_no, no = rec.split('-')

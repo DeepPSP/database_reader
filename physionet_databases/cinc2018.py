@@ -22,7 +22,20 @@ class CINC2018(PhysioNetDataBase):
 
     You Snooze You Win - The PhysioNet Computing in Cardiology Challenge 2018
 
-    about CINC2018: to write
+    About CINC2018:
+    ---------------
+    to write
+
+    NOTE:
+    -----
+
+    ISSUES:
+    -------
+
+    Usage:
+    ------
+    1. sleep stage
+    2. sleep apnea
 
     References:
     -----------
@@ -32,7 +45,7 @@ class CINC2018(PhysioNetDataBase):
         super().__init__(db_name='challenge/2018/', db_path=db_path, **kwargs)
 
 
-    def get_patient_id(self, rec) -> int:
+    def get_subject_id(self, rec) -> int:
         """
 
         """

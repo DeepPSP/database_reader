@@ -22,7 +22,19 @@ class EDB(PhysioNetDataBase):
 
     European ST-T Database
 
-    about edb: to write
+    About edb:
+    ----------
+    to write
+
+    NOTE:
+    -----
+
+    ISSUES:
+    -------
+
+    Usage:
+    ------
+    1. ST segment
 
     References:
     -----------
@@ -41,7 +53,7 @@ class EDB(PhysioNetDataBase):
         self.all_leads = ['V1', 'V2', 'V3', 'V4', 'V5', 'D3', 'MLI', 'MLIII']
 
 
-    def get_patient_id(self, rec) -> int:
+    def get_subject_id(self, rec) -> int:
         """
 
         """

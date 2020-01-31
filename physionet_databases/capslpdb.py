@@ -22,7 +22,20 @@ class CAPSLPDB(PhysioNetDataBase):
 
     CAP Sleep Database
 
-    About capslpdb: to write
+    About capslpdb:
+    ---------------
+    to write
+
+    NOTE:
+    -----
+
+    ISSUES:
+    -------
+
+    Usage:
+    ------
+    1. sleep stage
+    1. sleep cyclic alternating pattern
 
     References:
     -----------
@@ -32,7 +45,7 @@ class CAPSLPDB(PhysioNetDataBase):
         super().__init__(db_name='capslpdb', db_path=db_path, **kwargs)
 
 
-    def get_patient_id(self, rec) -> int:
+    def get_subject_id(self, rec) -> int:
         """
 
         """

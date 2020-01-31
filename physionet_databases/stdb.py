@@ -22,10 +22,21 @@ class STDB(PhysioNetDataBase):
 
     MIT-BIH ST Change Database
 
-    About stdb:\n
-    1. includes 28 ECG recordings of varying lengths, most of which were recorded during exercise stress tests and which exhibit transient ST depression\n
-    2. the last five records (323 through 327) are excerpts of long-term ECG recordings and exhibit ST elevation\n
-    3. annotation files contain only beat labels; they do not include ST change annotations\n
+    About stdb:
+    -----------
+    1. includes 28 ECG recordings of varying lengths, most of which were recorded during exercise stress tests and which exhibit transient ST depression
+    2. the last five records (323 through 327) are excerpts of long-term ECG recordings and exhibit ST elevation
+    3. annotation files contain only beat labels; they do not include ST change annotations
+
+    NOTE:
+    -----
+
+    ISSUES:
+    -------
+
+    Usage:
+    ------
+    1. ST segment
 
     References:
     -----------
@@ -44,7 +55,7 @@ class STDB(PhysioNetDataBase):
         self.all_leads = ['ECG']
 
 
-    def get_patient_id(self, rec) -> int:
+    def get_subject_id(self, rec) -> int:
         """
 
         """

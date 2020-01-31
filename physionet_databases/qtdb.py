@@ -22,7 +22,21 @@ class QTDB(PhysioNetDataBase):
 
     QT Database
 
-    about qtdb: to write
+    About qtdb:
+    -----------
+    1. contains 105 fifteen-minute two-lead ECG recordings
+    2. contains onset, peak, and end markers for P, QRS, T, and (where present) U waves of from 30 to 50 selected beats in each recording
+
+    NOTE:
+    -----
+
+    ISSUES:
+    -------
+
+    Usage:
+    ------
+    1. ecg wave delineation
+    2. ST segment
 
     References:
     -----------
@@ -55,7 +69,7 @@ class QTDB(PhysioNetDataBase):
         self.all_annotations = ['(', ')', 'N', 't', 'p']
 
 
-    def get_patient_id(self, rec) -> int:
+    def get_subject_id(self, rec) -> int:
         """
 
         """

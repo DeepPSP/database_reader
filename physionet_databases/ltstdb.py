@@ -22,14 +22,25 @@ class LTSTDB(PhysioNetDataBase):
 
     Long Term ST Database
 
-    About ltstdb:\n
-    1. contains 86 lengthy ECG recordings of 80 human subjects\n
-    2. all records are between 21 and 24 hours in duration, and contain two or three ECG signals\n
-    3. digitized at 250 samples per second with 12-bit resolution over a range of ±10 millivolts\n
-    4. exhibits a variety of events of ST segment changes, including ischemic ST episodes, axis-related non-ischemic ST episodes, episodes of slow ST level drift, and episodes containing mixtures of these phenomena\n
-    5. each record includes a set of meticulously verified ST episode and signal quality annotations, together with additional beat-by-beat QRS annotations and ST level measurements\n
-    6. for annotations: experts examine the time series of ST level measurements in order to locate and to mark a set of local reference points, which are used to construct a piecewise linear baseline ST level function\n
-    7. measurements in .16a files were used to construct ST level and deviation functions for each signal\n
+    About ltstdb:
+    -------------
+    1. contains 86 lengthy ECG recordings of 80 human subjects
+    2. all records are between 21 and 24 hours in duration, and contain two or three ECG signals
+    3. digitized at 250 samples per second with 12-bit resolution over a range of ±10 millivolts
+    4. exhibits a variety of events of ST segment changes, including ischemic ST episodes, axis-related non-ischemic ST episodes, episodes of slow ST level drift, and episodes containing mixtures of these phenomena
+    5. each record includes a set of meticulously verified ST episode and signal quality annotations, together with additional beat-by-beat QRS annotations and ST level measurements
+    6. for annotations: experts examine the time series of ST level measurements in order to locate and to mark a set of local reference points, which are used to construct a piecewise linear baseline ST level function
+    7. measurements in .16a files were used to construct ST level and deviation functions for each signal
+
+    NOTE:
+    -----
+
+    ISSUES:
+    -------
+
+    Usage:
+    ------
+    1. ST segment
 
     References:
     -----------
@@ -254,7 +265,7 @@ class LTSTDB(PhysioNetDataBase):
         self.urd_eps_with_lead_conditions = lambda note, lead_number: 'urd'+str(lead_number) in note
 
 
-    def get_patient_id(self, rec) -> int:
+    def get_subject_id(self, rec) -> int:
         """
 
         """

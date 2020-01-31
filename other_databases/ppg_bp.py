@@ -20,7 +20,8 @@ __all__ = [
 class PPGBP(OtherDataBase):
     """
 
-    ABOUT the database PPG_BP (ref. [1]):
+    ABOUT PPG_BP (ref. [1]):
+    ------------------------
     1. the PPG sensor:
         1.1. sensor model was SEP9AF-2 (SMPLUS Company, Korea)
         1.2. contains dual LED with 660nm (Red light) and 905 nm (Infrared) wavelengths
@@ -28,8 +29,16 @@ class PPGBP(OtherDataBase):
         1.4. hardware filter design is 0.5‒12Hz bandpass
     more to be written
 
-    PPG analysis tips (ref. [1],[2]):
-    1. Taking the first and second derivatives of the PPG signals may help in detecting the informative inflection points more accurately
+    NOTE:
+    -----
+    1. PPG analysis tips (ref. [1],[2]):
+        1.1. Taking the first and second derivatives of the PPG signals may help in detecting the informative inflection points more accurately
+
+    ISSUES:
+    -------
+
+    Usage:
+    ------
 
     References:
     -----------

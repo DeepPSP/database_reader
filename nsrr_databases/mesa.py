@@ -25,6 +25,23 @@ __all__ = [
 
 class MESA(NSRRDataBase):
     """
+
+    About mesa:
+    -----------
+    to write
+
+    NOTE:
+    -----
+
+    ISSUES:
+    -------
+
+    Usage:
+    ------
+
+    References:
+    -----------
+    [1] 
     """
     def __init__(self, db_path:str, verbose:int=2, **kwargs):
         """
@@ -32,17 +49,18 @@ class MESA(NSRRDataBase):
         super().__init__(db_name='MESA', db_path=db_path, verbose=verbose, **kwargs)
 
 
-    def get_patient_id(self,):
-        """ not finished,
+    def get_subject_id(self, rec:str) -> int:
+        """
+        Attach a `subject_id` to the record, in order to facilitate further uses
 
         Parameters:
         -----------
         rec: str,
-            record name, typically in the form ...
+            record name
 
         Returns:
         --------
-        pid, int, `patient_id` derived from `rec`
+        int, a `subject_id` attached to the record `rec`
         """
         raise NotImplementedError
 

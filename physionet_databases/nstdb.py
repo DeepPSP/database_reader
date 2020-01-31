@@ -22,7 +22,19 @@ class NSTDB(PhysioNetDataBase):
 
     MIT-BIH Noise Stress Test Database
 
-    about qtdb: to write
+    About qtdb:
+    -----------
+    to write
+
+    NOTE:
+    -----
+
+    ISSUES:
+    -------
+
+    Usage:
+    ------
+    1. ecg denoising
 
     References:
     -----------
@@ -40,7 +52,7 @@ class NSTDB(PhysioNetDataBase):
                 self.all_records = []
         
 
-    def get_patient_id(self, rec) -> int:
+    def get_subject_id(self, rec) -> int:
         """
 
         """

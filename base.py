@@ -1,6 +1,14 @@
 # -*- coding: utf-8 -*-
 """
-docstring, to write
+Base classes for datasets from different sources:
+    Physionet
+    NSRR
+    Image datasets
+    Other
+
+Remarks:
+1. for whole-dataset visualizing: http://zzz.bwh.harvard.edu/luna/vignettes/dataplots/
+2. 
 """
 
 import pprint
@@ -195,11 +203,11 @@ class PhysioNetDataBase(object):
                 "db_description": [item[1] for item in all_dbs]
             }
         )
-        
 
-    def get_patient_id(self, rec:str) -> int:
+
+    def get_subject_id(self, rec:str) -> int:
         """
-        Attach a `patient_id` to the record, in order to facilitate further uses
+        Attach a `subject_id` to the record, in order to facilitate further uses
 
         Parameters:
         -----------
@@ -208,9 +216,16 @@ class PhysioNetDataBase(object):
 
         Returns:
         --------
-        int, a `patient_id` attached to the record `rec`
+        int, a `subject_id` attached to the record `rec`
         """
         raise NotImplementedError
+        
+
+    def get_patient_id(self, rec:str) -> int:
+        """
+        synonym for func `self.get_subject_id`
+        """
+        return self.get_subject_id(rec=rec)
 
 
     def database_info(self, detailed:bool=False) -> NoReturn:
@@ -406,9 +421,9 @@ class NSRRDataBase(object):
             raise ValueError("Illegal operation")
         
 
-    def get_patient_id(self, rec:str) -> int:
+    def get_subject_id(self, rec:str) -> int:
         """
-        Attach a `patient_id` to the record, in order to facilitate further uses
+        Attach a `subject_id` to the record, in order to facilitate further uses
 
         Parameters:
         -----------
@@ -417,9 +432,16 @@ class NSRRDataBase(object):
 
         Returns:
         --------
-        int, a `patient_id` attached to the record `rec`
+        int, a `subject_id` attached to the record `rec`
         """
         raise NotImplementedError
+        
+
+    def get_patient_id(self, rec:str) -> int:
+        """
+        synonym for func `self.get_subject_id`
+        """
+        return self.get_subject_id(rec=rec)
 
 
     def show_rec_stats(self, rec:str) -> NoReturn:
@@ -496,9 +518,9 @@ class OtherDataBase(object):
         self.kwargs = kwargs
         
 
-    def get_patient_id(self, rec:str) -> int:
+    def get_subject_id(self, rec:str) -> int:
         """
-        Attach a `patient_id` to the record, in order to facilitate further uses
+        Attach a `subject_id` to the record, in order to facilitate further uses
 
         Parameters:
         -----------
@@ -507,9 +529,16 @@ class OtherDataBase(object):
 
         Returns:
         --------
-        int, a `patient_id` attached to the record `rec`
+        int, a `subject_id` attached to the record `rec`
         """
         raise NotImplementedError
+        
+
+    def get_patient_id(self, rec:str) -> int:
+        """
+        synonym for func `self.get_subject_id`
+        """
+        return self.get_subject_id(rec=rec)
     
 
     def database_info(self, detailed:bool=False) -> NoReturn:

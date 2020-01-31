@@ -26,3 +26,10 @@ class MIMIC3(PhysioNetDataBase):
 
         """
         super().__init__(db_name='ltstdb', db_path=db_path, **kwargs)
+
+
+    def get_subject_id(self, rec) -> int:
+        """
+
+        """
+        raise NotImplementedError
