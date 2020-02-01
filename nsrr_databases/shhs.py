@@ -26,7 +26,11 @@ __all__ = [
 class SHHS(NSRRDataBase):
     """
 
-    ***ABOUT SHHS (Sleep Heart Health Study):
+    Sleep Heart Health Study
+
+    ABOUT shhs:
+    -----------
+    ***ABOUT the dataset:
     1. shhs1 (Visit 1): 
         1.1. the baseline clinic visit and polysomnogram performed between November 1, 1995 and January 31, 1998
         1.2. in all, 6,441 men and women aged 40 years and older were enrolled

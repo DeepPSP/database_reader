@@ -22,7 +22,9 @@ __all__ = [
 class CHAT(NSRRDataBase):
     """
 
-    About chat:
+    Childhood Adenotonsillectomy Trial
+
+    ABOUT chat:
     -----------
     to write
 

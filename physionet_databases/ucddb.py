@@ -22,9 +22,11 @@ class UCDDB(PhysioNetDataBase):
 
     St. Vincent's University Hospital / University College Dublin Sleep Apnea Database
 
-    About ucddb:
+    ABOUT ucddb:
     ------------
-    1. contains 25 full overnight polysomnograms with simultaneous three-channel Holter ECG
+    1. contains 25 full overnight polysomnograms (PSGs) with simultaneous three-channel Holter ECGs
+        *.rec --- PSG data in EDF format
+        *_lifecard.edf --- ECG data in EDF format 
     2. PSG signals recorded were:
         EEG (C3-A2),
         EEG (C4-A1),
@@ -59,14 +61,16 @@ class UCDDB(PhysioNetDataBase):
 
     NOTE:
     -----
-    1. in record ucddb002, only two distinct ECG signals were recorded; the second ECG signal was also used as the third signal.
+    1. this dataset is not in the standard wfdb format, but rather in EDF format
+    2. in record ucddb002, only two distinct ECG signals were recorded; the second ECG signal was also used as the third signal.
 
     ISSUES:
     -------
 
     Usage:
     ------
-    1. 
+    1. sleep stage
+    2. sleep apnea
 
     References:
     -----------
@@ -74,6 +78,35 @@ class UCDDB(PhysioNetDataBase):
     """
     def __init__(self, db_path:Optional[str]=None, **kwargs):
         super().__init__(db_name='ucddb', db_path=db_path, **kwargs)
+        self.freq = None
+        self.file_opened = None    
+
+
+    def safe_edf_file_operation(self, operation:str='close', full_file_path:Optional[str]=None) -> Union[EdfReader, NoReturn]:
+        """ finished, checked,
+
+        Parameters:
+        -----------
+        operation: str, default 'close',
+            operation name, can be 'open' and 'close'
+        full_file_path: str, optional,
+            path of the file which contains the psg data,
+            if not given, default path will be used
+        
+        Returns:
+        --------
+
+        """
+        if operation == 'open':
+            if self.file_opened is not None:
+                self.file_opened._close()
+            self.file_opened = EdfReader(full_file_path)
+        elif operation =='close':
+            if self.file_opened is not None:
+                self.file_opened._close()
+                self.file_opened = None
+        else:
+            raise ValueError("Illegal operation")
 
 
     def get_subject_id(self, rec) -> int:

@@ -26,7 +26,9 @@ __all__ = [
 class OYA(NSRRDataBase):
     """
 
-    About oya:
+    One Year of Actigraphy
+
+    ABOUT oya:
     ----------
     to write
 

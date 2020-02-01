@@ -26,9 +26,11 @@ __all__ = [
 class MESA(NSRRDataBase):
     """
 
-    About mesa:
+    Multi-Ethnic Study of Atherosclerosis
+
+    ABOUT mesa:
     -----------
-    to write
+    1. 
 
     NOTE:
     -----
@@ -38,10 +40,11 @@ class MESA(NSRRDataBase):
 
     Usage:
     ------
+    1. 
 
     References:
     -----------
-    [1] 
+    [1] https://sleepdata.org/datasets/mesa
     """
     def __init__(self, db_path:str, verbose:int=2, **kwargs):
         """

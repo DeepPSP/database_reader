@@ -22,9 +22,9 @@ class SLPDB(PhysioNetDataBase):
 
     MIT-BIH Polysomnographic Database
 
-    About slpdb:
+    ABOUT slpdb:
     ------------
-    1. slpdb contains over 80 hours' worth of four-, six-, and seven-channel polysomnographic records
+    1. slpdb contains over 80 hours' worth of four-, six-, and seven-channel polysomnographic (PSG) records
     2. each record has an ECG signal annotated beat-by-beat, and EEG and respiration signals annotated w.r.t. sleep stages and apnea
     3. all 16 subjects were male, aged 32 to 56 (mean age 43), with weights ranging from 89 to 152 kg (mean weight 119 kg)
     4. Records 'slp01a' and 'slp01b' are segments of one subject's polysomnogram, separated by a gap of about one hour; records 'slp02a' and 'slp02b' are segments of another subject's polysomnogram, separated by a ten-minute gap
@@ -36,6 +36,7 @@ class SLPDB(PhysioNetDataBase):
 
     ISSUES:
     -------
+    1. it is weird that record 'slp45' has annotations 'M\x00' which is not in the table, should be 'MT'?
 
     Usage:
     ------
@@ -48,13 +49,13 @@ class SLPDB(PhysioNetDataBase):
     """
     def __init__(self, db_path:Optional[str]=None, **kwargs):
         super().__init__(db_name='slpdb', db_path=db_path, **kwargs)
-        self.freq = 250
+        self.freq = 250  # for ecg
         try:
             self.all_records = wfdb.get_record_list('slpdb')
         except:
             try:
                 self.all_records = os.listdir(self.db_path)
-                self.all_records = list(set([item.split('.')[0] for item in self.all_records]))
+                self.all_records = list(set([os.path.splitext(item)[0] for item in self.all_records]))
             except:
                 self.all_records = ['slp01a', 'slp01b', 'slp02a', 'slp02b', 'slp03', 'slp04', 'slp14', 'slp16', 'slp32', 'slp37', 'slp41', 'slp45', 'slp48', 'slp59', 'slp60', 'slp61', 'slp66', 'slp67x']
         self.epoch_len_t = 30  # 30 seconds

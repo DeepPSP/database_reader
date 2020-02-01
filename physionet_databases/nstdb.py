@@ -22,7 +22,7 @@ class NSTDB(PhysioNetDataBase):
 
     MIT-BIH Noise Stress Test Database
 
-    About qtdb:
+    ABOUT qtdb:
     -----------
     to write
 
@@ -47,7 +47,7 @@ class NSTDB(PhysioNetDataBase):
         except:
             try:
                 self.all_records = os.listdir(self.db_path)
-                self.all_records = list(set([item.split('.')[0] for item in self.all_records]))
+                self.all_records = list(set([os.path.splitext(item)[0] for item in self.all_records]))
             except:
                 self.all_records = []
         

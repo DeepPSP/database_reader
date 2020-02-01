@@ -22,7 +22,7 @@ class STDB(PhysioNetDataBase):
 
     MIT-BIH ST Change Database
 
-    About stdb:
+    ABOUT stdb:
     -----------
     1. includes 28 ECG recordings of varying lengths, most of which were recorded during exercise stress tests and which exhibit transient ST depression
     2. the last five records (323 through 327) are excerpts of long-term ECG recordings and exhibit ST elevation
@@ -49,7 +49,7 @@ class STDB(PhysioNetDataBase):
         except:
             try:
                 self.all_records = os.listdir(self.db_path)
-                self.all_records = list(set([item.split('.')[0] for item in self.all_records]))
+                self.all_records = list(set([os.path.splitext(item)[0] for item in self.all_records]))
             except:
                 self.all_records = ['300', '301', '302', '303', '304', '305', '306', '307', '308', '309', '310', '311', '312', '313', '314', '315', '316', '317', '318', '319', '320', '321', '322', '323', '324', '325', '326', '327']
         self.all_leads = ['ECG']

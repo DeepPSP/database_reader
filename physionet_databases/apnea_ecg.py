@@ -5,7 +5,7 @@ import wfdb
 import numpy as np
 import pandas as pd
 from datetime import datetime
-from typing import Union, Optional, Any, List, NoReturn
+from typing import Union, Optional, Any, List, Tuple, NoReturn
 from numbers import Real
 from ..utils import ArrayLike
 
@@ -22,19 +22,21 @@ class ApneaECG(PhysioNetDataBase):
 
     Apnea-ECG Database
 
-    About apnea-ecg (CinC 2000):
+    ABOUT apnea-ecg (CinC 2000):
     --------------------------------------
-    1. consist of 70 records, divided into a learning set of 35 records (a01 through a20, b01 through b05, and c01 through c10), and a test set of 35 records (x01 through x35)
+    1. consist of 70 single lead ECG records, divided into a learning set of 35 records (a01 through a20, b01 through b05, and c01 through c10), and a test set of 35 records (x01 through x35)
     2. recordings vary in length from slightly less than 7 hours to nearly 10 hours (401 - 578 min) each
     3. control group (c01 through c10): records having fewer than 5 min of disorder breathing
     4. borderline group (b01 through b05): records having 10-96 min of disorder breathing
     5. apnea group (a01 through a20): records having 100 min or more of disorder breathing
-    6. .dat files contain the digitized ECGs
+    6. .dat files contain the digitized ECGs, and respiration signals, all with frequency 100 Hz
     7. .apn files are (binary) annotation files (only for the learning set), containing an annotation for each minute of each recording indicating the presence or absence of apnea at that time. labels are in the member 'symbol', 'N' for normal, 'A' for apnea
     8. .qrs files are machine-generated (binary) annotation files, unaudited and containing errors, provided for the convenience of those who do not wish to use their own QRS detectors
     9. c05 and c06 come from the same original recording (c05 begins 80 seconds later than c06). c06 may have been a corrected version of c05
-    10. eight records (a01 through a04, b01, and c01 through c03) that include respiration signals have several additional files each.
-    11. *r.* files contains respiration information correspondingly
+    10. eight records (a01 through a04, b01, and c01 through c03) that include respiration signals have several additional files each:
+        10.1. *r.dat files contains respiration signals correspondingly, with 4 channels: 'Resp C', 'Resp A', 'Resp N', 'SpO2'
+        10.2. *er.* files only contain annotations
+        10.3. annotations for the respiration signals are identical to the corresponding ECG signals
 
     NOTE:
     -----
@@ -57,13 +59,16 @@ class ApneaECG(PhysioNetDataBase):
         try:
             self.all_records = wfdb.get_record_list('apnea-ecg')
         except:
-            try:
-                self.all_records = os.listdir(self.db_path)
-                self.all_records = list(set([item.split('.')[0] for item in self.all_records]))
-            except:
-                self.all_records = ['a01', 'a01er', 'a01r', 'a02', 'a02er', 'a02r', 'a03', 'a03er', 'a03r', 'a04', 'a04er', 'a04r', 'a05', 'a06', 'a07', 'a08', 'a09', 'a10', 'a11', 'a12', 'a13', 'a14', 'a15', 'a16', 'a17', 'a18', 'a19', 'a20', 'b01', 'b01er', 'b01r', 'b02', 'b03', 'b04', 'b05', 'c01', 'c01er', 'c01r', 'c02', 'c02er', 'c02r', 'c03', 'c03er', 'c03r', 'c04', 'c05', 'c06', 'c07', 'c08', 'c09', 'c10', 'x01', 'x02', 'x03', 'x04', 'x05', 'x06', 'x07', 'x08', 'x09', 'x10', 'x11', 'x12', 'x13', 'x14', 'x15', 'x16', 'x17', 'x18', 'x19', 'x20', 'x21', 'x22', 'x23', 'x24', 'x25', 'x26', 'x27', 'x28', 'x29', 'x30', 'x31', 'x32', 'x33', 'x34', 'x35']
-        self.learning_set = [r for r in self.all_records if 'x' not in r and 'r' not in r]
-        self.test_set = [r for r in self.all_records if 'x' in r and 'r' not in r]
+            # try:
+            #     self.all_records = os.listdir(self.db_path)
+            #     self.all_records = list(set([os.path.splitext(item)[0] for item in self.all_records]))
+            # except:
+            self.all_records = ['a01', 'a01er', 'a01r', 'a02', 'a02er', 'a02r', 'a03', 'a03er', 'a03r', 'a04', 'a04er', 'a04r', 'a05', 'a06', 'a07', 'a08', 'a09', 'a10', 'a11', 'a12', 'a13', 'a14', 'a15', 'a16', 'a17', 'a18', 'a19', 'a20', 'b01', 'b01er', 'b01r', 'b02', 'b03', 'b04', 'b05', 'c01', 'c01er', 'c01r', 'c02', 'c02er', 'c02r', 'c03', 'c03er', 'c03r', 'c04', 'c05', 'c06', 'c07', 'c08', 'c09', 'c10', 'x01', 'x02', 'x03', 'x04', 'x05', 'x06', 'x07', 'x08', 'x09', 'x10', 'x11', 'x12', 'x13', 'x14', 'x15', 'x16', 'x17', 'x18', 'x19', 'x20', 'x21', 'x22', 'x23', 'x24', 'x25', 'x26', 'x27', 'x28', 'x29', 'x30', 'x31', 'x32', 'x33', 'x34', 'x35']
+        self.ecg_records = [r for r in self.all_records if 'r' not in r]
+        self.rsp_records = [r for r in self.all_records if 'r' in r and 'er' not in r]
+        self.rsp_channels = ['Resp C', 'Resp A', 'Resp N', 'SpO2']
+        self.learning_set = [r for r in self.ecg_records if 'x' not in r]
+        self.test_set = [r for r in self.ecg_records if 'x' in r]
         self.control_group = [r for r in self.learning_set if 'c' in r]
         self.borderline_group = [r for r in self.learning_set if 'b' in r]
         self.apnea_group = [r for r in self.learning_set if 'a' in r]
@@ -83,7 +88,7 @@ class ApneaECG(PhysioNetDataBase):
             record name
         """
         stoi = {'a':'1', 'b':'2', 'c':'3', 'x':'4'}
-        return int('2000' + stoi[rec[0]] + rec[1:])
+        return int('2000' + stoi[rec[0]] + rec[1:3])
 
 
     def database_info(self, detailed:bool=False) -> NoReturn:
@@ -102,7 +107,7 @@ class ApneaECG(PhysioNetDataBase):
             print(self.__doc__)
 
 
-    def load_ecg_data(self, rec:str, lead:int=0, rec_path:Optional[str]=None) -> np.ndarray:
+    def load_data(self, rec:str, lead:int=0, rec_path:Optional[str]=None) -> np.ndarray:
         """
 
         Parameters:
@@ -115,11 +120,39 @@ class ApneaECG(PhysioNetDataBase):
             path of the file which contains the ecg data,
             if not given, default path will be used
         """
-        file_path = rec_path if rec_path is not None else self.db_path+rec
-        return wfdb.rdrecord(file_path).p_signal[:,0]
+        file_path = rec_path if rec_path is not None else os.path.join(self.db_path, rec)
+        self.wfdb_rec = wfdb.rdrecord(file_path)
+        sig = self.wfdb_rec.p_signal
+        if not rec.endswith(('r', 'er')):
+            sig = sig[:,0]  # flatten ECG signal
+        return sig
 
 
-    def load_ann(self, rec:str, ann_path:Optional[str]=None) -> list:
+    def load_ecg_data(self, rec:str, lead:int=0, rec_path:Optional[str]=None) -> np.ndarray:
+        """
+        """
+        if rec.endswith(('r', 'er')):
+            raise ValueError("{} is not a record of ECG signals".format(rec))
+        return self.load_data(rec=rec, lead=lead, rec_path=rec_path)
+
+
+    def load_rsp_data(self, rec:str, lead:int=0, channels:Optional[Union[str, List[str], Tuple[str]]]=None, rec_path:Optional[str]=None) -> np.ndarray:
+        """
+        """
+        if not rec.endswith(('r', 'er')):
+            raise ValueError("{} is not a record of RSP signals".format(rec))
+        sig = self.load_data(rec=rec, lead=lead, rec_path=rec_path)
+        if channels is not None:
+            chns = [channels] if isinstance(channels, str) else list(channels)
+            if any([c not in self.rsp_channels for c in chns]):
+                raise ValueError("Invalid channel(s): {}".format([c for c in chns if c not in self.rsp_channels]))
+        else:
+            chns = self.rsp_channels
+        sig = {c: sig[:,self.wfdb_rec.sig_name.index(c)] for c in chns}
+        return sig
+
+
+    def load_ann(self, rec:str, ann_path:Optional[str]=None, **kwargs) -> list:
         """
 
         Parameters:
@@ -129,11 +162,17 @@ class ApneaECG(PhysioNetDataBase):
         ann_path: str, optional,
             path of the file which contains the annotations,
             if not given, default path will be used
+
+        Returns:
+        --------
+        detailed_ann: list,
+            annotations of the form [idx, ann]
         """
-        file_path = ann_path if ann_path is not None else self.db_path+rec
-        anno = wfdb.rdann(file_path, extension='apn')
-        detailed_anno = [[si//(self.freq*60), sy] for si, sy in zip(anno.sample, anno.symbol)]
-        return detailed_anno
+        file_path = ann_path if ann_path is not None else os.path.join(self.db_path, rec)
+        extension = kwargs.get('extension', 'apn')
+        self.wfdb_ann = wfdb.rdann(file_path, extension=extension)
+        detailed_ann = [[si//(self.freq*60), sy] for si, sy in zip(self.wfdb_ann.sample, self.wfdb_ann.symbol)]
+        return detailed_ann
 
 
     def load_apnea_event_ann(self, rec:str, ann_path:Optional[str]=None) -> pd.DataFrame:
@@ -146,8 +185,13 @@ class ApneaECG(PhysioNetDataBase):
         ann_path: str, optional,
             path of the file which contains the annotations,
             if not given, default path will be used
+
+        Returns:
+        --------
+        df_apnea_ann: DataFrame,
+            apnea annotations with columns 'event_start','event_end', 'event_name', 'event_duration'
         """
-        detailed_anno = self.load_ann(rec, ann_path)
+        detailed_anno = self.load_ann(rec, ann_path, extension='apn')
         apnea = np.array([p[0] for p in detailed_anno if p[1] == 'A'])
 
         if len(apnea) > 0:

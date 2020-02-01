@@ -8,11 +8,12 @@ Base classes for datasets from different sources:
 
 Remarks:
 1. for whole-dataset visualizing: http://zzz.bwh.harvard.edu/luna/vignettes/dataplots/
-2. 
+2. visualizing using UMAP: http://zzz.bwh.harvard.edu/luna/vignettes/nsrr-umap/
 """
 
 import pprint
 import wfdb
+import numpy as np
 import pandas as pd
 from pyedflib import EdfReader
 from typing import Union, Optional, Any, List, NoReturn
@@ -43,6 +44,9 @@ class PhysioNetDataBase(object):
             if not specified, `wfdb` will fetch data from the website of PhysioNet
         verbose: int, default 2,
 
+        NOTE:
+        -----
+
         typical `db_path`:
         ------------------
             "E:\\notebook_dir\\ecg\\data\\PhysioNet\\xxx\\"
@@ -50,8 +54,15 @@ class PhysioNetDataBase(object):
         """
         self.db_name = db_name
         self.db_path = db_path
+        """
+        `self.freq` for those with single signal source, e.g. ECG,
+        for those with multiple signal sources like PSG, self.freq is default to the frequency of ECG if ECG applicable
+        """
         self.freq = None
         self.all_records = None
+
+        self.wfdb_rec = None
+        self.wfdb_ann = None
         self.device_id = None  # maybe data are imported into impala db, to facilitate analyzing
         self.verbose = verbose
         
@@ -228,6 +239,29 @@ class PhysioNetDataBase(object):
         return self.get_subject_id(rec=rec)
 
 
+    def load_data(self, rec:str, **kwargs):
+        """
+        load data from the record `rec`
+        """
+        raise NotImplementedError
+
+
+    def load_ecg_data(self, rec:str, **kwargs) -> np.ndarray:
+        """
+        load ECG data from the record `rec`
+        """
+        raise NotImplementedError
+
+
+    def load_ann(self, rec:str, **kwargs):
+        """
+        load annotations of the record `rec`
+
+        NOTE that the records might have several annotation files
+        """
+        raise NotImplementedError
+
+
     def database_info(self, detailed:bool=False) -> NoReturn:
         """
         print the information about the database
@@ -382,8 +416,11 @@ class NSRRDataBase(object):
         
         all_dbs = [
             ["shhs", "Multi-cohort study focused on sleep-disordered breathing and cardiovascular outcomes"],
+            ["mesa", ""],
+            ["oya", ""],
             ["chat", "Multi-center randomized trial comparing early adenotonsillectomy to watchful waiting plus supportive care"],
             ["heartbeat", "Multi-center Phase II randomized controlled trial that evaluates the effects of supplemental nocturnal oxygen or Positive Airway Pressure (PAP) therapy"],
+            # more to be added
         ]
         self.df_all_db_info = pd.DataFrame(
             {
