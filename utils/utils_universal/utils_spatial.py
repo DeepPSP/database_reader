@@ -49,6 +49,7 @@ __all__ = [
     "Fan2D",
     "Ellipse",
     "Circle",
+    "BoundingBox",
     "Rectangle2D",
 ]
 
@@ -113,9 +114,15 @@ class GeometricObject(object):
 
 class LineSegment2D(GeometricObject):
     """
+    class of line segment in 2D (real) space
     """
     def __init__(self, *points, **kwargs):
         """
+
+        Parameters:
+        -----------
+        points: array like, of shape (2,2)
+            the 2 end points of the line segment
         """
         super().__init__(name='Line Segment in 2D Space')
         self.ends = np.array(points)
@@ -139,6 +146,11 @@ class LineSegment2D(GeometricObject):
 
     def affine_transform(self, mat:ArrayLike, shift:Optional[ArrayLike]=None):
         """
+
+        Parameters:
+        -----------
+        mat: array like,
+        shift: array like,
         """
         pass
 
@@ -152,20 +164,26 @@ class LineSegment2D(GeometricObject):
     def __str__(self):
         """
         """
-        raise NotImplementedError
+        return "Line segment in the 2D real space, with end points = {}".format(self.ends)
 
 
     def __repr__(self):
         """
         """
-        raise NotImplementedError
+        return "LineSegment2D(points={})".format(self.ends)
 
 
 class Triangle2D(GeometricObject):
     """
+    class of triangle in 2D (real) space
     """
     def __init__(self, *points, **kwargs):
         """
+
+        Parameters:
+        -----------
+        points: array like, of shape (3,2)
+            the 3 apexes of the triangle
         """
         super().__init__(name='Triangle in 2D Space')
         self.apexes = rearrange_convex_contour_points_2d(np.array(points))
@@ -243,19 +261,19 @@ class Triangle2D(GeometricObject):
     def __str__(self):
         """
         """
-        raise NotImplementedError
+        return "Triangle in the 2D real space, with apexes = {}".format(self.apexes)
 
 
     def __repr__(self):
         """
         """
-        raise NotImplementedError
+        return "Triangle2D(apexes={})".format(self.apexes)
 
 
 class ConvexCone2D(GeometricObject):
     """ partly finished, under improving,
 
-    class of convex cone in 2D space
+    class of convex cone in 2D (real) space
     """
     def __init__(self,
             apex:Optional[ArrayLike]=None,
@@ -451,6 +469,16 @@ class ConvexCone2D(GeometricObject):
     @classmethod
     def _check_dimensions(cls, points_and_vectors:List[ArrayLike], in_details:bool=False) -> Union[bool, np.ndarray]:
         """
+        check the dimension of the ambient space of the passed points or vectors is 2 or not
+
+        Parameters:
+        -----------
+        points_and_vectors: array_like,
+            the points and vectors to check
+        in_details: bool, default False,
+            to specify for each point or vector, or return a boolean conclusion for all of them
+        
+        Returns: bool, or ndarray
         """
         is_valid = np.array([np.array(item).flatten().shape[0]==2 for item in points_and_vectors if item is not None])
         if in_details:
@@ -462,20 +490,26 @@ class ConvexCone2D(GeometricObject):
     def __str__(self):
         """
         """
-        raise NotImplementedError
+        return "Convex cone in the 2D real space, with apex = {}, axis vector = {}, angle = {}".format(self.apex, self.axis_vec, self.angle)
 
 
     def __repr__(self):
         """
         """
-        raise NotImplementedError
+        return "ConvexCone2D(apex={}, axis_vec={}, angle={})".format(self.apex, self.axis_vec, self.angle)
 
 
 class Fan2D(ConvexCone2D):
     """ not finished,
+
+    class of fan in 2D (real) space
     """
     def __init__(self, radius:Real, apex:ArrayLike, axis_vec:Optional[ArrayLike]=None, angle:Optional[Real]=None, left_vec:Optional[ArrayLike]=None, right_vec:Optional[ArrayLike]=None, **kwargs):
         """
+
+        Parameters:
+        -----------
+        to write
         """
         super().__init__(apex, axis_vec, angle, left_vec, right_vec, **kwargs)
         self.radius = radius
@@ -492,6 +526,10 @@ class Fan2D(ConvexCone2D):
     
     def is_inside(self, point:ArrayLike, strict:bool=False) -> bool:
         """
+
+        Parameters:
+        -----------
+        to write
         """
         dist_to_apex = LA.norm(np.array(point)-self.apex)
         result = dist_to_apex < self.radius if strict else dist_to_apex <= self.radius
@@ -507,17 +545,20 @@ class Fan2D(ConvexCone2D):
     def __str__(self):
         """
         """
-        raise NotImplementedError
+        return "Fan in the 2D real space, with apex = {}, axis vector = {}, angle = {}, radius = {}".format(self.apex, self.axis_vec, self.angle, self.radius)
 
 
     def __repr__(self):
         """
         """
-        raise NotImplementedError
+        return "Fan2D(apex={}, axis_vec={}, angle={}, radius={})".format(self.apex, self.axis_vec, self.angle, self.radius)
 
 
 class Ellipse(GeometricObject):
     """ not finished,
+
+    class of ellipse in 2D (real) space
+
     seems `sympy` has implemented a class named `Ellipse`
     """
     def __init__(self, center:ArrayLike, axis_vecs:ArrayLike):
@@ -547,7 +588,7 @@ class Ellipse(GeometricObject):
 
 class Circle(Ellipse):
     """
-
+    class of circle in 2D (real) space
     """
     def __init__(self, center:ArrayLike, radius:Real):
         """
@@ -573,11 +614,181 @@ class Circle(Ellipse):
         raise NotImplementedError
 
 
+class BoundingBox(ss.Rectangle):
+    """
+
+    Bounding boxes in the 2D real space
+    """
+    def __init__(self, xmin:Real, ymin:Real, xmax:Real, ymax:Real, verbose:int=0):
+        """
+
+        Parameters:
+        -----------
+        xmin, ymin, xmax, ymax: real,
+            as the names indicate
+        verbose: int, default 0,
+        """
+        self.xmin = xmin
+        self.xmax = xmax
+        if xmin > xmax:
+            self.xmin, self.xmax = xmax, xmin
+            print("xmin, xmax swapped")
+        self.ymin = ymin
+        self.ymax = ymax
+        if ymin > ymax:
+            self.ymin, self.ymax = ymax, ymin
+            print("ymin, ymax swapped")
+        super().__init__(maxes=[self.xmax,self.ymax], mins=[self.xmin,self.ymin])
+        self.verbose = verbose
+        self._area = None
+
+
+    @property
+    def area(self):
+        """
+        """
+        self._area = self.volume()
+        return self._area
+
+
+    def intersect_with(self, other):
+        """ finished, checked,
+
+        compute the intersection with another BoundingBox
+
+        Parameters:
+        -----------
+        other: BoundingBox,
+            the other BoundingBox to intersect with
+
+        Returns:
+        --------
+        BoundingBox or None
+        """
+        x_itv = intervals_intersection(
+            interval_list=[[self.xmin, self.xmax], [other.xmin, other.xmax]],
+            drop_degenerate=False,
+        )
+        y_itv = intervals_intersection(
+            interval_list=[[self.ymin, self.ymax], [other.ymin, other.ymax]],
+            drop_degenerate=False,
+        )
+
+        if self.verbose >= 1:
+            print("intersection info:")
+            print("x_itv = {}\ny_itv = {}".format(x_itv, y_itv))
+        
+        if any([len(x_itv)==0, len(y_itv)==0]):
+            return None
+        else:
+            return BoundingBox(xmin=x_itv[0], xmax=x_itv[1], ymin=y_itv[0], ymax=y_itv[1])
+
+
+    def union_with(self, other, force:bool=True, inplace:bool=False):
+        """ finished, checked,
+
+        compute the union with another BoundingBox,
+        union refers to the smallest BoundingBox that contains both BoundingBox
+
+        Parameters:
+        -----------
+        other: BoundingBox,
+            the other BoundingBox to make union
+        force: bool, default True,
+            force to make union, or return None if the two BoundingBox doesnot intersect
+        inplace: bool, default False,
+            perform union inplace or return a new instance
+
+        Returns:
+        BoudingBox or None
+        """
+        if (not force) and self.intersect_with(other) is None:
+            return None
+        new_xmin=min(self.xmin, other.xmin)
+        new_xmax=max(self.xmax, other.xmax)
+        new_ymin=min(self.ymin, other.ymin)
+        new_ymax=max(self.ymax, other.ymax)
+        if not inplace:
+            return BoundingBox(xmin=new_xmin, xmax=new_xmax, ymin=new_ymin, ymax=new_ymax)
+        self.xmin, self.xmax, self.ymin, self.ymax = new_xmin, new_xmax, new_ymin, new_ymax
+
+
+    def resize(self, ratio:float, x_thre:list, y_thre:list, inplace:bool=False):
+        """ finished, checked,
+        
+        resize the BoundingBox by `ratio`
+
+        Parameters:
+        -----------
+        ratio: float,
+            the ratio for resize, must be > -1
+        x_thre: list, of two numbers,
+            the threholds in the x axis that the resized BoundingBox can not exceed
+        y_thre: list, of two numbers,
+            the threholds in the y axis that the resized BoundingBox can not exceed
+        inplace: bool, default False,
+            perform resize inplace or return a new instance
+
+        Returns:
+        --------
+        BoundingBox or None
+        """
+        assert ratio > -1
+        xlen = self.xmax-self.xmin
+        ylen = self.ymax-self.ymin
+        x_re = max(1, int(abs(ratio)*xlen/2)) * np.sign(ratio)
+        y_re = max(1, int(abs(ratio)*ylen/2)) * np.sign(ratio)
+        new_xmax = min(max(x_thre), self.xmax+x_en)
+        new_xmin = max(min(x_thre), self.xmin-x_en)
+        new_ymax = min(max(y_thre), self.ymax+y_en)
+        new_ymin = max(min(x_thre), self.ymin-y_en)
+        if not inplace:
+            return BoundingBox(xmin=new_xmin, xmax=new_xmax, ymin=new_ymin, ymax=new_ymax)
+        self.xmin, self.xmax, self.ymin, self.ymax = new_xmin, new_xmax, new_ymin, new_ymax
+
+
+    def enlarge(self, ratio:float, x_thre:list, y_thre:list, inplace:bool=False):
+        """
+        ref. func self.resize
+        """
+        assert ratio >= 0
+        return self.resize(ratio, x_thre, y_thre, inplace)
+
+
+    def shrink(self, ratio:float, x_thre:list, y_thre:list, inplace:bool=False):
+        """
+        ref. func self.resize
+
+        NOTE that `ratio` is positive
+        """
+        assert 0 < ratio < 1
+        return self.resize(-ratio, x_thre, y_thre, inplace)
+
+
+    def __str__(self):
+        """
+        """
+        return "Bounding box in the 2D real space, with ymin = {}, xmin = {}, ymax = {}, xmax = {}".format(self.ymin, self.xmin, self.ymax, self.xmax)
+
+
+    def __repr__(self):
+        """
+        """
+        return "BoundingBox(ymin={}, xmin={}, ymax={}, xmax={})".format(self.ymin, self.xmin, self.ymax, self.xmax)
+
+
 class Rectangle2D(ss.Rectangle):
     """
+
+    arbitrary rectangle in the 2D real space
     """
     def __init__(self, ymin:Real, xmin:Real, ymax:Real, xmax:Real):
         """
+
+        Parameters:
+        -----------
+        xmin, ymin, xmax, ymax: real,
+            as the names indicate
         """
         super().__init__(maxes=[xmax,ymax], mins=[xmin,ymin])
         self._area = None

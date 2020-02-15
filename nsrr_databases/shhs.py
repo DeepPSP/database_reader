@@ -206,7 +206,7 @@ class SHHS(NSRRDataBase):
         """
         super().__init__(db_name='SHHS', db_path=db_path, verbose=verbose, **kwargs)
 
-        self.current_version = kwargs.get("current_version" , "0.14.0")
+        self.current_version = kwargs.get("current_version" , "0.15.0")
 
         self.psg_data_path = None
         self.ann_path = None
