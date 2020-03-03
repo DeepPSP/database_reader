@@ -16,6 +16,7 @@ __all__ = [
     "RandomImagePicker",
     "random_image_picker",
     "get_labeled_exif",
+    "dataset_to_tfrecords",
 ]
 
 
@@ -81,10 +82,16 @@ def get_labeled_exif(img: Union[Image, str]) -> dict:
     [3] https://www.exif.org/
     [4] https://en.wikipedia.org/wiki/Exif
     """
-    if isinstance(img, Image):
-        exif = img._getexif() or {}
-    elif isinstance(img, str):
-        exif = (PIL.Image.open(img))._getexif() or {}
+    
+    if isinstance(img, str):
+        pil_img = PIL.Image.open(img)
+    elif isinstance(img, Image):
+        pil_img = img
+
+    try:
+        exif = pil_img._getexif() or {}
+    except:
+        exif = dict(pil_img.getexif()) or {}
 
     labeled = {}
     for (key, val) in exif.items():
