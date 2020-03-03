@@ -10,7 +10,7 @@ from math import atan2, factorial
 from scipy import interpolate
 from collections import namedtuple
 from numbers import Number, Real
-from typing import Union, List, NamedTuple
+from typing import Union, List, NamedTuple, Optional, Tuple
 
 from ..common import ArrayLike, ArrayLike_Int
 

@@ -531,7 +531,7 @@ class OtherDataBase(object):
 
     """
     def __init__(self, db_name:str, db_path:str, verbose:int=2, **kwargs):
-        """
+        r"""
         Parameters:
         -----------
         db_name: str,

@@ -22,9 +22,9 @@ from numpy.random import randint, choice, uniform
 from copy import deepcopy
 from numbers import Real
 from typing import Union, Optional, Any, Callable, Tuple, Dict, List, NoReturn
-from utils.units_converter import ArrayLike, ArrayLike_Int, ArrayLike_Float
 
-from utils.common import angle_d2r
+from utils import ArrayLike, ArrayLike_Int, ArrayLike_Float
+from utils import angle_d2r
 
 
 __all__ = [

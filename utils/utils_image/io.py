@@ -6,7 +6,8 @@ Date: 2019/12/3
 remarks: utilities for io of images
 """
 import os
-from typing import Tuple, Union
+import numpy as np
+from typing import Tuple, Union, Optional, Tuple
 from random import shuffle
 
 from utils.common import ArrayLike

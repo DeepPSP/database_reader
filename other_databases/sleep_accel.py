@@ -255,7 +255,7 @@ class SleepAccel(OtherDataBase):
         return df_lb, df_mt
 
 
-    def plot_ct_lb(self, subject_id:str, style:str, bin_state:bool=False, lag:Optional[Real]=None, lag:Optional[Real]=None) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    def plot_ct_lb(self, subject_id:str, style:str, bin_state:bool=False, lag:Optional[Real]=None) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
         """ not finished,
 
         plot labels of sleep stages together with the actigraph count data
