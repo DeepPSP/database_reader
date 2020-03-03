@@ -10,7 +10,7 @@ import keras.backend as K
 import tensorflow as tf
 import numpy as np
 import cv2
-from typing import Union, Optional, Tuple
+from typing import Union, Optional, Tuple, List
 from numbers import Real
 
 from utils.common import ArrayLike, modulo

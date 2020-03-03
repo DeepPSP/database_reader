@@ -22,9 +22,7 @@ from numbers import Real
 from typing import Optional, List
 
 from utils import ArrayLike
-from .common import SaliencyMask
-from .common import IntegratedGradients
-from .common import normalize_image
+from .io import normalize_image
 
 
 __all__ = ["XRAI"]

@@ -16,6 +16,7 @@ __all__ = [
     "RandomImagePicker",
     "random_image_picker",
     "get_labeled_exif",
+    "normalize_image",
 ]
 
 
@@ -156,3 +157,49 @@ def exif_color_space(img: Image, verbose:int=0) -> str:
 
 
 #TODO: add utilities for writing exif data
+
+
+
+# -------------------------------------------------
+
+def normalize_image(img:np.ndarray, value_range:ArrayLike, resize_shape:Optional[Tuple[int,int]]=None, backend:str='skimage', **kwargs) -> np.ndarray:
+    """
+    Normalize an image by resizing it and rescaling its values
+
+    Parameters:
+    -----------
+    img: ndarray,
+        input image, in RGB
+    value_range: array_like,
+        range of values of output image, in a form similar to [min_value, max_value]
+    resize_shape: tuple, optional,
+        output image shape, of the form (w,h)
+    
+    Returns:
+    --------
+    normalized_img: ndarray
+        resized and rescaled image
+    """
+    if backend == 'skimage':
+        from skimage.transform import resize
+    elif backend == 'cv2':
+        from cv2 import resize
+    dtype = kwargs.get("dtype", np.float32)
+    verbose = kwargs.get("verbose", 0)
+
+    img_max = np.max(img)
+    img_min = np.min(img)
+    normalized_img = (img - img_min) / (img_max - img_min)
+    normalized_img = normalized_img * (value_range[1] - value_range[0]) + value_range[0]
+    if resize_shape is not None:
+        if backend == 'skimage':
+            normalized_img = resize(normalized_img,
+                        resize_shape,
+                        order=3,
+                        mode='constant',
+                        preserve_range=True,
+                        anti_aliasing=True)
+        elif backend == 'cv2':
+            normalized_img = resize(normalized_img, resize_shape[::-1])
+    normalized_img = normalized_img.astype(dtype)
+    return normalized_img
