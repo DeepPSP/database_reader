@@ -11,6 +11,7 @@ from scipy import interpolate
 from collections import namedtuple
 from numbers import Number, Real
 from typing import Union, List, NamedTuple
+
 from ..common import ArrayLike, ArrayLike_Int
 
 

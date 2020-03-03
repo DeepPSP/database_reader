@@ -13,7 +13,7 @@ import cv2
 from typing import Union, Optional, Tuple
 from numbers import Real
 
-from ..common import ArrayLike, modulo
+from utils.common import ArrayLike, modulo
 
 
 __all__ = [

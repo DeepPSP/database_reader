@@ -21,7 +21,7 @@ from skimage.transform import resize
 from numbers import Real
 from typing import Optional, List
 
-from ..units_converter import ArrayLike
+from utils import ArrayLike
 from .common import SaliencyMask
 from .common import IntegratedGradients
 from .common import normalize_image

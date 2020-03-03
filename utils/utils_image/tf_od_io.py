@@ -1,8 +1,4 @@
 """
-Module: utils_image
-File: tf_od_io.py
-Author: wenhao71
-Date: 2020/2/26
 remarks: utilities for io of images for tensorflow object detection
 """
 import os

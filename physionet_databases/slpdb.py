@@ -7,9 +7,9 @@ import pandas as pd
 from datetime import datetime
 from typing import Union, Optional, Any, List, NoReturn
 from numbers import Real
-from ..utils import ArrayLike
 
-from ..base import PhysioNetDataBase
+from utils import ArrayLike
+from base import PhysioNetDataBase
 
 
 __all__ = [

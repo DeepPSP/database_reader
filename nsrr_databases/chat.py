@@ -9,9 +9,9 @@ import pandas as pd
 from datetime import datetime
 from typing import Union, Optional, Any, List, Dict, Iterable, Sequence, NoReturn
 from numbers import Real
-from ..utils import ArrayLike
 
-from ..base import NSRRDataBase
+from utils import ArrayLike
+from base import NSRRDataBase
 
 
 __all__ = [

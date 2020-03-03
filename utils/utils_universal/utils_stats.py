@@ -15,7 +15,8 @@ import warnings
 
 from numbers import Real
 from typing import Union, Optional, List, Tuple
-from ..common import ArrayLike
+
+from utils import ArrayLike
 
 
 __all__ = [
@@ -69,6 +70,16 @@ def autocorr(x:ArrayLike, normalize:bool=False) -> np.ndarray:
     else:
         result = np.correlate(x, x, mode='full')[result.size//2:]
     return result
+
+
+def gamrnd(k, theta, shape):
+    """ not finished,
+
+    docstring, to write
+    """
+    ret = np.full(shape, np.nan)
+
+    return ret
 
 
 def kmeans2_is_correct(data:np.ndarray, centroids:np.ndarray, labels:np.ndarray, verbose:int=0) -> bool:
