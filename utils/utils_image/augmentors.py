@@ -316,6 +316,7 @@ def add_background(raw_img:np.ndarray, bkgd_img:np.ndarray, mask_func:callable, 
     crop_ratio = kwargs.get("crop_ratio", 0.2)
 
     if verbose >= 2:
+        import matplotlib.pyplot as plt
         plt.figure()
         plt.imshow(raw_img[...,::-1])
         plt.show()
@@ -326,7 +327,7 @@ def add_background(raw_img:np.ndarray, bkgd_img:np.ndarray, mask_func:callable, 
     if kw_mask_func is None:
         refined_mask = mask_func(raw_img)
     else:
-        refined_mask = mask_func(ras_img, **kw_mask_func)
+        refined_mask = mask_func(raw_img, **kw_mask_func)
     
     if verbose >= 2:
         plt.figure()
