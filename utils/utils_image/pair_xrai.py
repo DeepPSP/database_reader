@@ -21,7 +21,7 @@ from skimage.transform import resize
 from numbers import Real
 from typing import Optional, List
 
-from utils import ArrayLike
+from ..common import ArrayLike
 from .io import normalize_image
 
 

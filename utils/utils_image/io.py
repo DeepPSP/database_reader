@@ -10,7 +10,7 @@ import numpy as np
 from typing import Tuple, Union, Optional, Tuple
 from random import shuffle
 
-from utils.common import ArrayLike
+from ..common import ArrayLike
 
 
 __all__ = [

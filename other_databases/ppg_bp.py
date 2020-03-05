@@ -8,8 +8,8 @@ from datetime import datetime
 from typing import Union, Optional, Any, List, NoReturn
 from numbers import Real
 
-from utils import ArrayLike
-from base import OtherDataBase
+from ..utils import ArrayLike
+from ..base import OtherDataBase
 
 
 __all__ = [
@@ -46,6 +46,7 @@ class PPGBP(OtherDataBase):
     [2] Allen J. Photoplethysmography and its application in clinical physiological measurement[J]. Physiological measurement, 2007, 28(3): R1.
     [3] Elgendi M. On the analysis of fingertip photoplethysmogram signals[J]. Current cardiology reviews, 2012, 8(1): 14-25.
     """
+    
     def __init__(self, db_path:str, verbose:int=2, **kwargs):
         """ finished, to be improved,
 
@@ -55,7 +56,7 @@ class PPGBP(OtherDataBase):
             storage path of the database
         verbose: int, default 2,
 
-        typical 'db_path':
+        typical 'db_path': '/export/servers/kuangzhexiang/data/PPG_BP/'
         ------------------
         to be written
         """
@@ -97,7 +98,7 @@ class PPGBP(OtherDataBase):
         Returns:
         int, the `patient_id` corr. to `rec_no`
         """
-        return 0
+        return int(self.all_records[rec_no])
     
 
     def database_info(self, detailed:bool=False) -> NoReturn:
@@ -117,7 +118,7 @@ class PPGBP(OtherDataBase):
             print(self.__doc__)
         
 
-    def load_ppg_data(self, rec_no:int, seg_no:int) -> np.ndarray:
+    def load_ppg_data(self, rec_no:int, seg_no:int, verbose: int=None) -> np.ndarray:
         """ finished, checked,
 
         Parameters:
@@ -131,16 +132,17 @@ class PPGBP(OtherDataBase):
         --------
         ndarray, the ppg data
         """
+        verbose = self.verbose if verbose is None else verbose
         rec_fn = "{}_{}.txt".format(self.all_records[rec_no], seg_no)
         data = []
         with open(self.ppg_data_path+rec_fn, 'r') as f:
             data = f.readlines()
         data = np.array([float(i) for i in data[0].split('\t') if len(i)>0]).astype(int)
         
-        if self.verbose >= 2:
+        if verbose >= 2:
             import matplotlib.pyplot as plt
             fig,ax = plt.subplots(figsize=(8,4))
-            ax.plot(np.arange(0,len(data)/freq,1/freq),data)
+            ax.plot(np.arange(0,len(data)/self.freq, 1/self.freq),data)
             plt.show()
         
         return data
@@ -213,6 +215,6 @@ class PPGBP(OtherDataBase):
         df_info = self.load_ann(rec_no)[info_items]
         
         if len(info_items) == 1:
-            return  df_info.iloc[0].values[0]
+            return df_info.iloc[0].values[0]
         else:
             return df_info

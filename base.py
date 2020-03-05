@@ -18,7 +18,8 @@ import pandas as pd
 from pyedflib import EdfReader
 from typing import Union, Optional, Any, List, NoReturn
 from numbers import Real
-from utils.common import *
+
+from .utils.common import *
 
 
 __all__ = [
