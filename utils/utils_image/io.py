@@ -83,16 +83,19 @@ def get_labeled_exif(img: Union[Image, str]) -> dict:
     [3] https://www.exif.org/
     [4] https://en.wikipedia.org/wiki/Exif
     """
-    
     if isinstance(img, str):
         pil_img = PIL.Image.open(img)
-    elif isinstance(img, Image):
+    # elif isinstance(img, Image):
+    else:
         pil_img = img
 
     try:
         exif = pil_img._getexif() or {}
     except:
-        exif = dict(pil_img.getexif()) or {}
+        try:
+            exif = dict(pil_img.getexif()) or {}
+        except:
+            raise ValueError("Invalid input image")
 
     labeled = {}
     for (key, val) in exif.items():

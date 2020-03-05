@@ -183,7 +183,7 @@ class PPGBP(OtherDataBase):
         list, the list of diagnosis or empty list for the normal subjects
         """
         diagonosis_items = ['Hypertension', 'Diabetes', 'cerebral infarction', 'cerebrovascular disease']
-        df_ann = load_ann(rec_no)[diagonosis_items].dropna(axis=1)
+        df_ann = self.load_ann(rec_no)[diagonosis_items].dropna(axis=1)
         diagonosis = [item for item in df_ann.iloc[0].tolist() if item != 'Normal']
         return diagonosis
 

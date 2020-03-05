@@ -25,6 +25,7 @@ __all__ = [
     "PhysioNetDataBase",
     "NSRRDataBase",
     "ImageDataBases",
+    "AudioDataBases",
     "OtherDataBases",
 ]
 
@@ -515,6 +516,18 @@ class NSRRDataBase(object):
 
 
 class ImageDataBases(object):
+    """
+
+    """
+    def __init__(self, db_name:str, db_path:str, verbose:int=2, **kwargs):
+        """
+        """
+        self.db_name = db_name
+        self.db_path = db_path
+        self.verbose = verbose
+
+
+class AudioDataBases(object):
     """
 
     """
