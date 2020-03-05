@@ -14,7 +14,7 @@ from typing import Union, Optional, Any, List, Dict, Iterable, Sequence, NoRetur
 from numbers import Real
 
 from utils import ArrayLike
-from utils.utils_interval import intervals_union
+from utils.utils_universal import intervals_union
 from base import NSRRDataBase
 
 

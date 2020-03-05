@@ -196,6 +196,7 @@ class SleepAccel(OtherDataBase):
         df_lb: DataFrame,
             ref. `self.load_labels`
         """
+        import matplotlib.pyplot as plt
         df_lb = self.load_labels(subject_id)
         fig,ax = plt.subplots(figsize=(20,4))
         ax.plot(df_lb['sec'].values, df_lb['sleep_stage'].values)
@@ -228,6 +229,7 @@ class SleepAccel(OtherDataBase):
         df_lb, df_mt: DataFrame,
             ref. `self.load_labels` and `self.load_motion_data`
         """
+        import matplotlib.pyplot as plt
         df_lb = self.load_labels(subject_id)
         fig, ax_lb = plt.subplots(figsize=(20,4))
         if bin_state:
@@ -278,6 +280,7 @@ class SleepAccel(OtherDataBase):
         df_lb, df_ct, df_rsmpl, df_stats: DataFrame,
             ref. `self.load_labels` and `self.load_motion_data`
         """
+        import matplotlib.pyplot as plt
         df_lb = self.load_labels(subject_id)
         fig, ax_lb = plt.subplots(figsize=(20,4))
         if bin_state:
