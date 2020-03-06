@@ -1171,15 +1171,30 @@ def sft(s:ArrayLike) -> np.ndarray:
     return np.array([(_s*np.exp(-2*np.pi*1j*n*tmp/N)).sum() for n in range(N)])
 
 
-def butter_bandpass(lowcut:Real, highcut:Real, fs:Real, order:int) -> Tuple[np.ndarray, np.ndarray]:
+def butter_bandpass(lowcut:Real, highcut:Real, fs:Real, order:int, verbose:int=0) -> Tuple[np.ndarray, np.ndarray]:
     """
     Butterworth Bandpass Filter Design
 
     Parameters:
     -----------
+    lowcut: real,
+        low cutoff frequency
+    highcut: real,
+        high cutoff frequency
+    fs: real,
+        frequency of `data`
+    order: int,
+        order of the filter
+    verbose: int, default 0
 
     Returns:
     --------
+    b, a: tuple of ndarray,
+        coefficients of numerator and denominator of the filter
+
+    NOTE:
+    -----
+    according to `lowcut` and `highcut`, the filter type might fall to lowpass or highpass filter
 
     References:
     -----------
@@ -1191,28 +1206,53 @@ def butter_bandpass(lowcut:Real, highcut:Real, fs:Real, order:int) -> Tuple[np.n
     if low >= 1:
         raise ValueError("frequency out of range!")
     high = highcut / nyq
-    if high >= 1:
-        Wn = low
+
+    if low <= 0 and high >= 1:
+        b, a = [1], [1]
+        return b, a
+    
+    if low <= 0:
+        Wn = high
         btype = 'low'
+    elif high >= 1:
+        Wn = low
+        btype = 'high'
     elif lowcut==highcut:
         Wn = high
-        btype = 'high'
+        btype = 'low'
     else:
         Wn = [low, high]
         btype = 'band'
+    
+    if verbose >= 1:
+        print('by the setup of lowcut and highcut, the filter type falls to {}, with Wn = {}'.format(btype, Wn))
+    
     b, a = butter(order, Wn, btype=btype)
     return b, a
 
 
-def butter_bandpass_filter(data:ArrayLike, lowcut:Real, highcut:Real, fs:Real, order:int) -> np.ndarray:
+def butter_bandpass_filter(data:ArrayLike, lowcut:Real, highcut:Real, fs:Real, order:int, verbose:int=0) -> np.ndarray:
     """
     Butterworth Bandpass
 
     Parameters:
     -----------
+    data: array_like,
+        data to be filtered
+    lowcut: real,
+        low cutoff frequency
+    highcut: real,
+        high cutoff frequency
+    fs: real,
+        frequency of `data`
+    order: int,
+        order of the filter
+    verbose: int, default 0
 
     Returns:
     --------
+    y, ndarray,
+        the filtered signal
 
     References:
     -----------

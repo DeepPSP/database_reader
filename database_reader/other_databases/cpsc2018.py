@@ -140,8 +140,6 @@ class CPSC2018(OtherDataBase):
         -----------
         rec_no: int,
             number of the record, NOTE that rec_no starts from 1
-        seg_no: int,
-            number of the segment measured from the subject
         
         Returns:
         --------
