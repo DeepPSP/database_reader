@@ -15,6 +15,10 @@ __all__ = [
 class CASIA_CESC(AudioDataBases):
     """
     CASIA-Chinese Emotional Speech Corpus
+
+    References：
+    -----------
+    [1] http://shachi.org/resources/27
     """
     def __init__(self, db_path:str, verbose:int=2, **kwargs):
         """

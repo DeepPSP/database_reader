@@ -15,6 +15,10 @@ __all__ = [
 class IEMOCAP(AudioDataBases):
     """
     Interactive Emotional Dyadic Motion Capture database
+
+    References：
+    -----------
+    [1] https://sail.usc.edu/iemocap/
     """
     def __init__(self, db_path:str, verbose:int=2, **kwargs):
         """

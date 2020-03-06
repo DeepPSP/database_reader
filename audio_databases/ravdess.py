@@ -14,9 +14,14 @@ __all__ = [
 
 class RAVDESS(AudioDataBases):
     """
+    Ryerson Audio-Visual Database of Emotional Speech and Song
+
+    References：
+    -----------
+    [1] https://zenodo.org/record/1188976#.XmCugqgzY2w
     """
     def __init__(self, db_path:str, verbose:int=2, **kwargs):
         """
-        Ryerson Audio-Visual Database of Emotional Speech and Song
+        
         """
         super().__init__(db_name="RAVDESS", db_path=db_path, verbose=verbose, **kwargs)

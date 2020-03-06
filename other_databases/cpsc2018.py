@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
+import io
 import os
 import pprint
 import wfdb
+import glob
 import numpy as np
 import pandas as pd
 from datetime import datetime
@@ -20,9 +22,26 @@ __all__ = [
 class CPSC2018(OtherDataBase):
     """
 
+    The China Physiological Signal Challenge 2018:
+    Automatic identification of the rhythm/morphology abnormalities in 12-lead ECGs
+
     ABOUT CPSC2018:
     ---------------
-    more to be written
+    1. training set contains 6,877 (female: 3178; male: 3699) 12 leads ECG recordings lasting from 6 s to just 60 s
+    2. ECG recordings were sampled as 500 Hz
+    3. the training data can be downloaded using links in Ref.[1], but the link in Ref.[2] is recommended. File structure will be assumed to follow Ref.[2]
+    4. types of abnormal rhythm/morphology + normal in the training set:
+            name                                    abbr.       number of records
+        (0) Normal                                  N           918
+        (1) Atrial fibrillation                     AF          1098
+        (2) First-degree atrioventricular block     I-AVB       704
+        (3) Left bundle brunch block                LBBB        207
+        (4) Right bundle brunch block               RBBB        1695
+        (5) Premature atrial contraction            PAC         556
+        (6) Premature ventricular contraction       PVC         672
+        (7) ST-segment depression                   STD         825
+        (8) ST-segment elevated                     STE         202
+    5. meanings in the .hea files: to write
 
     NOTE:
     -----
@@ -47,36 +66,40 @@ class CPSC2018(OtherDataBase):
         db_path: str,
             storage path of the database
         verbose: int, default 2,
-
-        typical 'db_path':
-        ------------------
-        to be written
         """
-        super().__init__(db_name="PPG_BP", db_path=db_path, verbose=verbose, **kwargs)
+        super().__init__(db_name="CPSC2018", db_path=db_path, verbose=verbose, **kwargs)
 
-        self.ppg_data_path = None
-        self.unkown_file = None
-        self.ann_file = None
-        self.form_paths()
-
-        self.freq = 1000
-        self.all_records = sorted(list(set([fn.split('_')[0] for fn in os.listdir(self.ppg_data_path)])), key=lambda r:int(r))
-        self.rec_ext = '.txt'
+        self.freq = 500
+        self.rec_ext = '.mat'
+        self.ann_ext = '.hea'
+        self.all_records = [os.path.splitext(os.path.basename(item))[0] for item in glob.glob(os.path.join(db_path, '*'+self.rec_ext))]
+        self.nb_records = 6877
+        self.diagnosis_abbr_to_full = {
+            'N': 'Normal',
+            'AF': 'Atrial fibrillation',
+            'I-AVB': 'First-degree atrioventricular block',
+            'LBBB': 'Left bundle brunch block',
+            'RBBB': 'Right bundle brunch block',
+            'PAC': 'Premature atrial contraction',
+            'PVC': 'Premature ventricular contraction',
+            'STD': 'ST-segment depression',
+            'STE': 'ST-segment elevated',
+        }
 
         self.ann_items = [
-            'Num.', 'subject_ID', 'Sex(M/F)', 'Age(year)', 'Height(cm)', 'Weight(kg)', 'BMI(kg/m^2)',
-            'Systolic Blood Pressure(mmHg)', 'Diastolic Blood Pressure(mmHg)', 'Heart Rate(b/m)',
-            'Hypertension', 'Diabetes', 'cerebral infarction', 'cerebrovascular disease',
+            'rec_name',
+            'nb_leads',
+            'freq',
+            'nb_samples',
+            'datetime',
+            'age',
+            'sex',
+            'diagnosis',
+            'medical_prescription',
+            'history',
+            'symptom_or_surgery',
+            'df_leads',
         ]
-
-
-    def form_paths(self) -> NoReturn:
-        """ finished, checked, to be improved,
-
-        """
-        self.ppg_data_path = self.db_path + '0_subject/'
-        self.unkown_file = self.db_path + 'Table 1.xlsx'
-        self.ann_file = self.db_path + 'PPG-BP dataset.xlsx'
 
 
     def get_patient_id(self, rec_no:int) -> int:
@@ -90,7 +113,7 @@ class CPSC2018(OtherDataBase):
         Returns:
         int, the `patient_id` corr. to `rec_no`
         """
-        return 0
+        raise NotImplementedError
     
 
     def database_info(self, detailed:bool=False) -> NoReturn:
@@ -110,13 +133,13 @@ class CPSC2018(OtherDataBase):
             print(self.__doc__)
         
 
-    def load_ppg_data(self, rec_no:int, seg_no:int) -> np.ndarray:
-        """ finished, checked,
+    def load_data(self, rec_no:int) -> np.ndarray:
+        """ finished, not checked,
 
         Parameters:
         -----------
         rec_no: int,
-            number of the record, or 'subject_ID'
+            number of the record, NOTE that rec_no starts from 1
         seg_no: int,
             number of the segment measured from the subject
         
@@ -124,11 +147,9 @@ class CPSC2018(OtherDataBase):
         --------
         ndarray, the ppg data
         """
-        rec_fn = "{}_{}.txt".format(self.all_records[rec_no], seg_no)
-        data = []
-        with open(self.ppg_data_path+rec_fn, 'r') as f:
-            data = f.readlines()
-        data = np.array([float(i) for i in data[0].split('\t') if len(i)>0]).astype(int)
+        rec_fp = os.path.join(self.db_path, "A{0:04d}".format(rec_no) + self.rec_ext)
+        data = loadmat(rec_fp)
+        data = np.asarray(data['val'], dtype=np.float64)
         
         if self.verbose >= 2:
             import matplotlib.pyplot as plt
@@ -139,8 +160,8 @@ class CPSC2018(OtherDataBase):
         return data
 
 
-    def load_ann(self, rec_no:Optional[int]=None) -> pd.DataFrame:
-        """ finished, checked,
+    def load_ann(self, rec_no:int) -> dict:
+        """ finished, not checked,
         
         Parameters:
         -----------
@@ -150,39 +171,82 @@ class CPSC2018(OtherDataBase):
         
         Returns:
         --------
-        DataFrame, the annotations
+        ann_dict, dict,
+            the annotations with items:
+            
         """
-        df_ann = pd.read_excel(self.ann_file)
-        df_ann.columns = df_ann.iloc[0]
-        df_ann = df_ann[1:].reset_index(drop=True)
-        
-        if rec_no is None:
-            return df_ann
-        
-        df_ann = df_ann[df_ann['subject_ID']==int(self.all_records[rec_no])].reset_index(drop=True)
-        return df_ann
+        assert rec_no in range(1, self.nb_records+1), "rec_no should be in range(1,{})".format(self.nb_records+1)
+        ann_fp = os.path.join(self.db_path, "A{0:04d}".format(rec_no) + self.ann_ext)
+        with open(input_header_file,'r') as f:
+            header_data = f.readlines()
+        header_data = [l.replace("\n", "") for l in header_data]
+
+        ann_dict = {}
+        ann_dict['rec_name'], ann_dict['nb_leads'], ann_dict['freq'], ann_dict['nb_samples'], ann_dict['datetime'], daytime = header_data[0].split(' ')
+        ann_dict['nb_leads'] = int(ann_dict['nb_leads'])
+        ann_dict['freq'] = int(ann_dict['freq'])
+        ann_dict['nb_samples'] = int(ann_dict['nb_samples'])
+        ann_dict['datetime'] = datetime.strptime(' '.join([ann_dict['datetime'], daytime]), '%d-%b-%Y %H:%M:%S')
+        ann_dict['age'] = int([l for l in header_data if l.startswith('#Age')][0].split(": ")[-1])
+        ann_dict['sex'] = [l for l in header_data if l.startswith('#Sex')][0].split(": ")[-1]
+        ann_dict['diagnosis'] = [l for l in header_data if l.startswith('#Dx')][0].split(": ")[-1].split(",")
+        for idx, d in enumerate(ann_dict['diagnosis']):
+            if d == 'Normal':
+                ann_dict['diagnosis'] = 'N'
+        ann_dict['medical_prescription'] = [l for l in header_data if l.startswith('#Rx')][0].split(": ")[-1]
+        ann_dict['history'] = [l for l in header_data if l.startswith('#Hx')][0].split(": ")[-1]
+        ann_dict['symptom_or_surgery'] = [l for l in header_data if l.startswith('#Sx')][0].split(": ")[-1]
+        df_leads = pd.read_csv(io.StringIO('\n'.join(header_data[1:13])), delim_whitespace=True, header=None)
+        df_leads.columns = ['filename', 'res+offset', 'resolution(mV)', 'ADC', 'baseline', 'first_value', 'checksum', 'redundant', 'lead_name']
+        df_leads['resolution(bits)'] = df_leads['res+offset'].apply(lambda s: s.split('+')[0])
+        df_leads['offset'] = df_leads['res+offset'].apply(lambda s: s.split('+')[1])
+        df_leads = df_leads[['filename', 'resolution(bits)', 'offset', 'resolution(mV)', 'ADC', 'baseline', 'first_value', 'checksum', 'lead_name']]
+        df_leads['resolution(mV)'] = df_leads['resolution(mV)'].apply(lambda s: s.split('/')[0])
+        for k in ['resolution(bits)', 'offset', 'resolution(mV)', 'ADC', 'baseline', 'first_value', 'checksum']:
+            df_leads[k] = df_leads[k].apply(lambda s: int(s))
+        ann_dict['df_leads'] = df_leads
+
+        return ann_dict
 
 
-    def load_diagnosis(self, rec_no:int) -> Union[List[str],list]:
-        """ finished, checked,
+    def get_labels(self, rec_no:int) -> List[str]:
+        """ finished, not checked,
         
         Parameters:
         -----------
         rec_no: int,
-            number of the record, or 'subject_ID'
+            number of the record
         
         Returns:
         --------
-        list, the list of diagnosis or empty list for the normal subjects
+        labels, list,
+            the list of labels (abbr. diagnosis)
         """
-        diagonosis_items = ['Hypertension', 'Diabetes', 'cerebral infarction', 'cerebrovascular disease']
-        df_ann = load_ann(rec_no)[diagonosis_items].dropna(axis=1)
-        diagonosis = [item for item in df_ann.iloc[0].tolist() if item != 'Normal']
+        ann_dict = self.load_ann(rec_no)
+        labels = ann_dict['diagnosis']
+        return labels
+
+
+    def get_diagnosis(self, rec_no:int) -> List[str]:
+        """ finished, not checked,
+        
+        Parameters:
+        -----------
+        rec_no: int,
+            number of the record
+        
+        Returns:
+        --------
+        diagonosis, list,
+            the list of (full) diagnosis
+        """
+        diagonosis = self.get_labels(rec_no)
+        diagonosis = [self.diagnosis_abbr_to_full(item) for item in diagonosis]
         return diagonosis
 
 
-    def get_patient_info(self, rec_no:int, items:Optional[List[str]]=None,verbose:int=2) -> Union[Real,str,pd.DataFrame]:
-        """ not finished,
+    def get_patient_info(self, rec_no:int, items:Optional[List[str]]=None, verbose:int=2) -> dict:
+        """ finished, not checked,
 
         Parameters:
         -----------
@@ -193,19 +257,21 @@ class CPSC2018(OtherDataBase):
         
         Returns:
         --------
-        if `items` contains only one item, then value of this item in the subject's information will be returned,
-        otherwise, a dataframe of all information of the subject will be returned
+        patient_info, dict,
         """
         if items is None or len(items) == 0:
             info_items = [
-                'Sex(M/F)','Age(year)','Height(cm)','Weight(kg)','BMI(kg/m^2)',
-                'Systolic Blood Pressure(mmHg)','Diastolic Blood Pressure(mmHg)','Heart Rate(b/m)',
+                'age', 'sex', 'medical_prescription', 'history', 'symptom_or_surgery',
             ]
         else:
             info_items = items
-        df_info = self.load_ann(rec_no)[info_items]
-        
-        if len(info_items) == 1:
-            return  df_info.iloc[0].values[0]
-        else:
-            return df_info
+        ann_dict = self.load_ann(rec_no)
+        patient_info = [ann_dict[item] for item in info_items]
+
+        return patient_info
+
+
+    def plot(self, leads:Optional[List[str]]=None, **kwargs) -> NoReturn:
+        """
+        """
+        raise NotImplementedError

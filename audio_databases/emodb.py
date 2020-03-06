@@ -15,6 +15,10 @@ __all__ = [
 class EmoDB(AudioDataBases):
     """
     Berlin Database of Emotional Speech
+
+    References：
+    -----------
+    [1] http://emodb.bilderbar.info/index-1024.html
     """
     def __init__(self, db_path:str, verbose:int=2, **kwargs):
         """
