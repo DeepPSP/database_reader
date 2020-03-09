@@ -37,6 +37,7 @@ __all__ = [
     "resample_discontinuous_irregular_timeseries",
     "butter_bandpass",
     "butter_bandpass_filter",
+    "MovingAverage",
 ]
 
 
@@ -1262,3 +1263,62 @@ def butter_bandpass_filter(data:ArrayLike, lowcut:Real, highcut:Real, fs:Real, o
     y = lfilter(b, a, data)
     return y
 
+
+class MovingAverage(object):
+    """
+
+    moving average
+
+    References:
+    -----------
+    [1] https://en.wikipedia.org/wiki/Moving_average
+    """
+    def __init__(self, data:ArrayLike, **kwargs):
+        """
+        """
+        self.data = np.array(data)
+
+        self.verbose = kwargs.get("verbose", 0)
+
+    def cal(self, kind:str, **kwargs) -> np.ndarray:
+        """
+        """
+        k = kind.lower().replace('_', ' ')
+        if k in ['ema', 'ewma', 'exponential moving average', 'exponential weighted moving average']:
+            func = self._ema
+        elif k in ['cma', 'cumulative moving average']:
+            func = self._cma
+        elif k in ['wma', 'weighted moving average']:
+            func = self._wma
+        else:
+            raise NotImplementedError
+        return func(**kwargs)
+
+    def _naive(self, **kwargs) -> np.ndarray:
+        """
+        """
+        smoothed = []
+        raise NotImplementedError
+
+    def _ema(self, weight:float=0.6, **kwargs) -> np.ndarray:
+        """
+        """
+        smoothed = []
+        last = self.data[0]
+        for d in self.data:
+            s = last * weight + (1 - weight) * d
+            last = s
+            smoothed.append(s)
+        return smoothed
+
+    def _cma(self, **kwargs) -> np.ndarray:
+        """
+        """
+        smoothed = []
+        raise NotImplementedError
+
+    def _wma(self, **kwargs) -> np.ndarray:
+        """
+        """
+        smoothed = []
+        raise NotImplementedError
