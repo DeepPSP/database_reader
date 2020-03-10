@@ -2,8 +2,8 @@
 '''
 use various backends for audio reading, features extracting, etc.
 
-About the backends:
--------------------
+About the python backends:
+--------------------------
 wave:
     the native python module,
     only has basic audio io operations
@@ -18,11 +18,17 @@ pydub:
     https://github.com/jiaaro/pydub
 SoundFile:
     https://github.com/bastibe/SoundFile
-
+audioread
+    https://github.com/beetbox/audioread
 
 other packages；
     https://github.com/tuffy/python-audio-tools (or http://audiotools.sourceforge.net)
-    ...
+
+Libraries behind the python packages:
+FFmpeg, libsndfile, praat, MAD,
+
+installation for centos7:
+https://gist.github.com/wenh06/de3f1a35b242df8059ce7c24e4c1784c
 '''
 import wave
 import librosa
@@ -30,6 +36,7 @@ import pydub
 import parselmouth as pm
 import soundfile as sf
 import pyAudioAnalysis as paa
+import os
 import numpy as np
 from collections import namedtuple
 from numbers import Real
@@ -56,6 +63,8 @@ __all__ = [
 
 class Voice(object):
     """
+    class for analyzing human voice
+
     TODO:
     1. automatic switching backends for robust reading of audio files
     2. better plot
@@ -72,7 +81,8 @@ class Voice(object):
         start_time: real, optional,
             start time of the audio recording, units in seconds
         l_file_path: list of str, optional,
-            list of the paths of the audio files
+            list of the paths of the audio files,
+            voices in these files will be concatenated
         """
         self.values = values
         self.filtered_values = None
@@ -188,6 +198,59 @@ class Voice(object):
             print("len(self.values) = {}, self.freq = {}".format(len(self.values), self.freq))
 
 
+    def resample(self, new_freq:Real) -> NoReturn:
+        """
+
+        Paramters:
+        ----------
+        new_freq: real,
+            the new frequency
+        """
+        if not self._loaded:
+            self.load(backend='librosa', sr=new_freq)
+            return
+        
+        self.values = librosa.resample(
+            self.values,
+            orig_sr=self.freq, target_sr=new_freq,
+            res_type='kaiser_best', fix=True, scale=False,
+        )
+        if self.filtered_values is not None:
+            self.bandpass_filter()
+        self.freq = new_freq
+        self.dt = 1/self.freq
+        self.reset()
+
+
+    def save(self, filename:str, fmt:Optional[str]='wav', freq:Optional[Real]=None, **kwargs):
+        """
+
+        Parameters:
+        -----------
+        filename: str,
+            name of the file to save
+        fmt: str, default 'wav', optional,
+            format of the file to save
+        freq: real, optional,
+            sampling frequency of the file to save
+        """
+        fmt = os.path.splitext(filename)[1].replace('.', '') or fmt
+        if not self._loaded:
+            self.load(backend='librosa', sr=freq)
+            freq = self.freq
+            to_save_values = self.values
+        elif freq is not None:
+            to_save_values = librosa.resample(
+                self.values,
+                orig_sr=self.freq, target_sr=freq,
+                res_type='kaiser_best', fix=True, scale=False,
+            )
+        else:
+            freq = self.freq
+            to_save_values = self.values
+        sf.write(filename, to_save_values, freq, format=fmt, **kwargs)
+
+
     def preprocess(self,):
         """ not finished,
         """
@@ -199,16 +262,15 @@ class Voice(object):
 
         Parameters:
         -----------
-
-        Returns:
-        --------
+        kwargs: dict,
+            arguments for butter bandpass filter, including 'lowcut', 'highcut', 'order'
         """
         self.filtered_values = butter_bandpass_filter(
             data=self.values,
             lowcut=kwargs.get('lowcut', 80),
             highcut=kwargs.get('highcut', 8000),
             fs=self.freq,
-            order=kwargs.get('order', 2)
+            order=kwargs.get('order', 3)
         )
 
 
@@ -222,16 +284,21 @@ class Voice(object):
 # low level features
 
     @indicator_enter_leave_func(verbose=_VERBOSE_LEVEL)
-    def obtain_intensity(self, backend='praat', time_range=None, is_filtered=False, **kwargs) -> NoReturn:
+    def obtain_intensity(self, backend:str='praat', time_range:Optional[ArrayLike]=None, is_filtered:bool=False, **kwargs) -> NoReturn:
         """ partly finished,
 
         Parameters:
         -----------
-        time_range = [st_sec, ed_sec]
+        backend: str, default 'praat',
+            backend for computation of voice intensity
+        time_range: array_like, optional,
+            of the form [start_sec, end_sec], time range for computation
+        is_filtered: bool, default False,
+            if True, the (butter bandpass) filtered voice values will be used for computation
 
-        Returns:
-        --------
-        
+        References:
+        -----------
+        [1] https://en.wikipedia.org/wiki/Sound_intensity
         """
         # if self.verbose >= 1:
         #     print("\n"+"*"*10+"  entering function obtain_intensity  "+"*"*10+"\n")
@@ -265,7 +332,10 @@ class Voice(object):
 
         Parameters:
         -----------
-        time_range = [st_sec, ed_sec]
+        backend: str, default 'praat',
+            backend for computation of voice intensity
+        time_range: array_like, optional,
+            of the form [start_sec, end_sec], time range for computation
 
         Returns:
         --------
@@ -294,7 +364,10 @@ class Voice(object):
 
         Parameters:
         -----------
-        time_range = [st_sec, ed_sec]
+        backend: str, default 'praat',
+            backend for computation of voice intensity
+        time_range: array_like, optional,
+            of the form [start_sec, end_sec], time range for computation
 
         Returns:
         --------
@@ -327,7 +400,10 @@ class Voice(object):
 
         Parameters:
         -----------
-        time_range = [st_sec, ed_sec]
+        backend: str, default 'praat',
+            backend for computation of voice intensity
+        time_range: array_like, optional,
+            of the form [start_sec, end_sec], time range for computation
 
         Returns:
         --------
@@ -375,7 +451,10 @@ class Voice(object):
 
         Parameters:
         -----------
-        time_range = [st_sec, ed_sec]
+        backend: str, default 'praat',
+            backend for computation of voice intensity
+        time_range: array_like, optional,
+            of the form [start_sec, end_sec], time range for computation
 
         Returns:
         --------
@@ -405,6 +484,10 @@ class Voice(object):
 
         Parameters:
         -----------
+        backend: str, default 'praat',
+            backend for computation of voice intensity
+        time_range: array_like, optional,
+            of the form [start_sec, end_sec], time range for computation
 
         Returns:
         --------
@@ -430,6 +513,10 @@ class Voice(object):
 
         Parameters:
         -----------
+        backend: str, default 'praat',
+            backend for computation of voice intensity
+        time_range: array_like, optional,
+            of the form [start_sec, end_sec], time range for computation
 
         Returns:
         --------
@@ -455,6 +542,10 @@ class Voice(object):
 
         Parameters:
         -----------
+        backend: str, default 'praat',
+            backend for computation of voice intensity
+        time_range: array_like, optional,
+            of the form [start_sec, end_sec], time range for computation
 
         Returns:
         --------
@@ -480,7 +571,10 @@ class Voice(object):
         
         Parameters:
         -----------
-        time_range = [st_sec, ed_sec]
+        backend: str, default 'praat',
+            backend for computation of voice intensity
+        time_range: array_like, optional,
+            of the form [start_sec, end_sec], time range for computation
 
         Returns:
         --------
@@ -511,11 +605,16 @@ class Voice(object):
             raise NotImplementedError
 
 
-    def equalize(self, freqs:list, gains:Union[list,Real], inplace:bool=False, **kwargs):
+    def equalize(self, freqs:List[ArrayLike], gains:Union[List[Real],Real], inplace:bool=False, **kwargs):
         """
 
         Parameters:
         -----------
+        freqs: list of array_like,
+            list of frequency bands to be equalized
+        gains: real, or list of real,
+            the gains corresponding to the `freqs` for equalization
+        inplace: bool, default False
 
         Returns:
         --------
@@ -538,6 +637,12 @@ class Voice(object):
 
         Parameters:
         -----------
+        lowcut: real,
+            lower bound of the frequency band to compute energy proportion
+        highcut: real,
+            higher bound of the frequency band to compute energy proportion
+        time_range: array_like, optional,
+            of the form [start_sec, end_sec], time range for computation
 
         Returns:
         --------
@@ -568,6 +673,12 @@ class Voice(object):
 
         Parameters:
         -----------
+        lowcut: real,
+            lower bound of the frequency band to compute energy proportion
+        highcut: real,
+            higher bound of the frequency band to compute energy proportion
+        time_range: array_like, optional,
+            of the form [start_sec, end_sec], time range for computation
 
         Returns:
         --------
@@ -586,6 +697,12 @@ class Voice(object):
 
         Parameters:
         -----------
+        backend: str, default 'praat',
+            backend for computation of voice intensity
+        time_range: array_like, optional,
+            of the form [start_sec, end_sec], time range for computation
+        intensity_threshold: real, default 40,
+        t_threshold: real, default 0.06,
 
         Returns:
         --------
@@ -641,7 +758,11 @@ class Voice(object):
         
         Parameters:
         -----------
-        time_range = [st_sec, ed_sec]
+        backend: str, default 'praat',
+            backend for computation of voice intensity
+        time_range: array_like, optional,
+            of the form [start_sec, end_sec], time range for computation
+        trim_by_syllable: bool, default True,
 
         Returns:
         --------
@@ -742,6 +863,7 @@ class Voice(object):
         Parameters:
         -----------
 
+        TODO: add time_range
         """
         font_prop = kwargs.get("font_prop", None)
         import matplotlib.pyplot as plt
@@ -749,6 +871,15 @@ class Voice(object):
             items = ['signal']
         elif items == 'all':
             items = ['spectrogram', 'signal', 'pitches', 'formants', 'intensity', 'vuv']
+
+        if isinstance(items, str):
+            items = [items.lower()]
+        else:
+            items = [i.lower() for i in items]
+
+        if 'praat' in items:
+            self._plot_praat(**kwargs)
+            return
 
         if 'signal' in items:
             fig, ax = plt.subplots(figsize=(20,4))
@@ -820,6 +951,82 @@ class Voice(object):
             ax.legend()
             ax.set_title('spectrogram')
             plt.show()
+
+    
+    def _plot_praat(self, **kwargs):
+        """
+        Parameters:
+        -----------
+
+        """
+        if 'plt' not in dir():
+            import matplotlib.pyplot as plt
+        silence_threshold = kwargs.get('silence_threshold', 0.003)
+        
+        snd = pm.Sound(
+                values=self.values,
+                sampling_frequency=self.freq,
+            )
+        
+        fig, (ax_t, ax_f) = plt.subplots(2,1,figsize=(int(25*snd.xmax),10),sharex=True)
+        plt.subplots_adjust(hspace=0)
+        ax_t.plot(snd.xs(), snd.values.T)
+        ax_t.axhline(silence_threshold, linestyle='dashed', linewidth=0.5, color='red')
+        ax_t.axhline(-silence_threshold, linestyle='dashed', linewidth=0.5, color='red')
+
+        # plot intensity
+        ax_t2 = ax_t.twinx()
+        snd_intensity = snd.to_intensity()
+        ax_t2.plot(snd_intensity.xs(), snd_intensity.values.T, 'o-', markersize=4, linewidth=0.6, color='yellow')
+        if len(self.syllable_segments) == 0:
+            self.obtain_syllable_segments()
+        for seg in self.syllable_segments:
+            ax_t2.axvspan(seg.start_time, seg.end_time, color='green', alpha=0.3)
+        ax_t2.grid(False)
+        ax_t2.set_ylim(0)
+        ax_t2.set_ylabel("intensity [dB]")
+        ax_t2.set_xlim([snd.xmin, snd.xmax])
+
+        # plot spectrogram
+        dynamic_range = kwargs.get('dynamic_range', 70)
+        snd_spectrogram = snd.to_spectrogram()
+        X, Y = snd_spectrogram.x_grid(), snd_spectrogram.y_grid()
+        sg_db = 10 * np.log10(snd_spectrogram.values)
+        cm = kwargs.get("cmap", plt.get_cmap("afmhot"))
+        ax_f.pcolormesh(X, Y, sg_db, vmin=sg_db.max() - dynamic_range, cmap=cm)
+        ax_f.set_ylim([snd_spectrogram.ymin, snd_spectrogram.ymax])
+        ax_f.set_xlabel("time [s]")
+        ax_f.set_ylabel("frequency [Hz]")
+
+        # plot pitches
+        ax_f2 = ax_f.twinx()
+        snd_pitches = snd.to_pitch()
+        pitch_values = snd_pitches.selected_array['frequency']
+        pitch_values[pitch_values==0] = np.nan
+        ax_f2.plot(snd_pitches.xs(), pitch_values, 'o-', markersize=9, color='w')
+        ax_f2.plot(snd_pitches.xs(), pitch_values, 'o-', markersize=5, color='b')
+        ax_f2.grid(False)
+        ax_f2.set_ylim(0, snd_pitches.ceiling)
+        ax_f2.set_ylabel("fundamental frequency [Hz]")
+        ax_f2.set_xlim([snd.xmin, snd.xmax])
+
+        # plot vowels
+        if len(self.vowels) == 0:
+            self.obtain_vowels()
+        for v in self.vowels:
+            ax_t.axvspan(v.start_time, v.end_time, color='red', alpha=0.5)
+
+        # plot formants
+        maximum_formant = kwargs.get("maximum_formant", 5)
+        snd_formants = snd.to_formant_burg()
+        x = snd_formants.xs()
+        nb_x = snd_formants.nx
+        for fn in range(1,maximum_formant+1):
+            y = np.array([snd_formants.get_value_at_time(fn, x[idx]) for idx in range(nb_x)])
+            ax_f.plot(x, y, 'o', markersize=5, color='w')
+            ax_f.plot(x, y, 'o', markersize=2, color='r')
+
+        plt.show()
 
 
     def _plot_spectrogram(self, ax, cmap, dynamic_range=70, **kwargs):

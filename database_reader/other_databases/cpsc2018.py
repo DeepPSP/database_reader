@@ -6,6 +6,7 @@ import wfdb
 import glob
 import numpy as np
 import pandas as pd
+from scipy.io import loadmat
 from datetime import datetime
 from typing import Union, Optional, Any, List, NoReturn
 from numbers import Real
@@ -74,6 +75,8 @@ class CPSC2018(OtherDataBase):
         self.ann_ext = '.hea'
         self.all_records = [os.path.splitext(os.path.basename(item))[0] for item in glob.glob(os.path.join(db_path, '*'+self.rec_ext))]
         self.nb_records = 6877
+        self.all_leads = ['I', 'II', 'III', 'aVR', 'aVL', 'aVF', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6',]
+        self.all_diagnosis = ['N', 'AF', 'I-AVB', 'LBBB', 'RBBB', 'PAC', 'PVC', 'STD', 'STE',]
         self.diagnosis_abbr_to_full = {
             'N': 'Normal',
             'AF': 'Atrial fibrillation',
@@ -143,17 +146,11 @@ class CPSC2018(OtherDataBase):
         
         Returns:
         --------
-        ndarray, the ppg data
+        ndarray, the ecg data
         """
         rec_fp = os.path.join(self.db_path, "A{0:04d}".format(rec_no) + self.rec_ext)
         data = loadmat(rec_fp)
         data = np.asarray(data['val'], dtype=np.float64)
-        
-        if self.verbose >= 2:
-            import matplotlib.pyplot as plt
-            fig,ax = plt.subplots(figsize=(8,4))
-            ax.plot(np.arange(0,len(data)/freq,1/freq),data)
-            plt.show()
         
         return data
 
@@ -269,7 +266,45 @@ class CPSC2018(OtherDataBase):
         return patient_info
 
 
-    def plot(self, leads:Optional[List[str]]=None, **kwargs) -> NoReturn:
+    def save_challenge_predictions(self, rec_no:int, output_dir:str, scores:List[Real], labels:List[int], classes:List[str]) -> NoReturn:
         """
+
+        Parameters:
+        -----------
+        rec_no: int,
+            number of the record, or 'subject_ID'
+        output_dir: str,
+            directory to save the predictions
+        scores: list of real,
+            ...
+        labels: list of int,
+            0 or 1
+        classes: list of str,
+            ...
         """
+        recording = self.all_records[rec_no]
+        new_file = recording + '.csv'
+        output_file = os.path.join(output_dir, new_file)
+
+        # Include the filename as the recording number
+        recording_string = '#{}'.format(recording)
+        class_string = ','.join(classes)
+        label_string = ','.join(str(i) for i in labels)
+        score_string = ','.join(str(i) for i in scores)
+
+        with open(output_file, 'w') as f:
+            f.write(recording_string + '\n' + class_string + '\n' + label_string + '\n' + score_string + '\n')
+
+
+    def plot(self, leads:Optional[Union[str, List[str]]]=None, **kwargs) -> NoReturn:
+        """
+
+        Parameters:
+        -----------
+        leads: str or list of str, optional,
+            the leads to plot
+        """
+        if leads is None or leads == 'all':
+            leads = self.all_leads
+        
         raise NotImplementedError
