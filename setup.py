@@ -2,8 +2,10 @@
 from setuptools import setup
 # from importlib.machinery import SourceFileLoader
 
+from version import version as __version__
+
 setup(name='database_reader',
-      version='0.0.1',
+      version=__version__,
       description='Reader for various databases',
       author='WEN Hao',
       author_email='wenh06@gmail.com',
