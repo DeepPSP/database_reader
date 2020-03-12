@@ -44,6 +44,7 @@ from typing import Union, Optional, List, NoReturn
 from parselmouth.praat import call
 from scipy.interpolate import interp1d
 
+from ._praat import PMSound
 from utils import ArrayLike
 from utils.utils_signal import butter_bandpass_filter, MovingAverage
 from utils.utils_universal import generalized_intervals_intersection
@@ -69,7 +70,6 @@ class Voice(object):
     1. automatic switching backends for robust reading of audio files
     2. better plot
     3. more voice features
-    4. replace pm.Sound by PMSound
     """
     def __init__(self, values:Optional[np.ndarray]=None, freq:Optional[Real]=None, start_time:Optional[Real]=None, l_file_path:Optional[List[str]]=None, **kwargs):
         """
@@ -167,10 +167,10 @@ class Voice(object):
         if backend.lower() == 'praat':
             self.values = np.array([])
             for file_path in self.l_file_path:
-                be_praat_tmp = pm.Sound(file_path, **kwargs) # TODO: 多个文件拼接
+                be_praat_tmp = PMSound(file_path, **kwargs) # TODO: 多个文件拼接
                 self.values = np.append(self.values, be_praat_tmp.values[0], axis=0)
                 self.freq = be_praat_tmp.sampling_frequency
-            self.be_praat = pm.Sound(
+            self.be_praat = PMSound(
                 values=self.values,
                 sampling_frequency=self.freq,
             )
@@ -189,7 +189,10 @@ class Voice(object):
             self.dt = 1/self.freq
             self._loaded = True
         elif backend.lower() == 'soundfile':
-            self.values, self.freq = sf.read(file=self.l_file_path[0], **kwargs)# TODO: 多个文件拼接
+            self.values = np.array([])
+            for f in self.l_file_path:
+                v, self.freq = sf.read(file=f, **kwargs)
+                self.values = np.append(self.values, v)
             self._loaded = True
         elif backend.lower() == 'wave':
             self.be_wave = wave
@@ -319,20 +322,20 @@ class Voice(object):
             st_idx, ed_idx = int(time_range[0] * self.freq), int(time_range[1] * self.freq)
         if backend == 'praat':
             if not is_filtered:
-                snd = pm.Sound(
+                snd = PMSound(
                     values=self.values[st_idx:ed_idx],
                     sampling_frequency=self.freq,
                 )
             else:
                 if self.filtered_values is None:
                     self.bandpass_filter()
-                snd = pm.Sound(
+                snd = PMSound(
                     values=self.filtered_values[st_idx:ed_idx],
                     sampling_frequency=self.freq,
                 )
             intensity = snd.to_intensity()
             self._intensity = {}
-            self._intensity['ts'] = intensity.ts()
+            self._intensity['xs'] = intensity.xs()
             self._intensity['values'] = intensity.values.flatten()
         else:
             raise NotImplementedError
@@ -348,10 +351,40 @@ class Voice(object):
         time_range: array_like, optional,
             of the form [start_sec, end_sec], time range for computation
         
-        kwargs for 'praat'
-            time_step: Optional[Positive[float]]=None,
-            pitch_floor: Positive[float]=75.0,
-            pitch_ceiling: Positive[float]=600.0
+        kwargs for 'praat':
+            method: one of None, 'AC', 'CC', 'SHS', 'SPINET',
+            general kw without method:
+                time_step: Optional[Positive[float]]=None,
+                pitch_floor: Positive[float]=75.0,
+                pitch_ceiling: Positive[float]=600.0,
+            specific kw for method 'AC' and 'CC':
+                time_step: Optional[Positive[float]]=None,
+                pitch_floor: Positive[float]=75.0,
+                max_number_of_candidates: Positive[int]=15,
+                very_accurate: bool=True,
+                silence_threshold: float=0.03,
+                voicing_threshold: float=0.45,
+                octave_cost: float=0.01,
+                octave_jump_cost: float=0.35,
+                voiced_unvoiced_cost: float=0.14,
+                pitch_ceiling: Positive[float]=600.0,
+            specific kw for method 'SHS':
+                time_step: Positive[float]=0.01,
+                minimum_pitch: Positive[float]=50.0,
+                max_number_of_candidates: Positive[int]=15,
+                maximum_frequency_component: Positive[float]=1250.0,
+                max_number_of_subharmonics: Positive[int]=15,
+                compression_factor: Positive[float]=0.84,
+                ceiling: Positive[float]=600.0,
+                number_of_points_per_octave: Positive[int]=48,
+            specific kw for method 'SPINET':
+                time_step: Positive[float]=0.005,
+                window_length: Positive[float]=0.04,
+                minimum_filter_frequency: Positive[float]=70.0,
+                maximum_filter_frequency: Positive[float]=5000.0,
+                number_of_filters: Positive[int]=250,
+                ceiling: Positive[float]=500.0,
+                max_number_of_candidates: Positive[int]=15,
         """
         # if self.verbose >= 1:
         #     print("\n"+"*"*10+"  entering function obtain_pitches  "+"*"*10+"\n")
@@ -360,11 +393,12 @@ class Voice(object):
         else:
             st_idx, ed_idx = int(time_range[0] * self.freq), int(time_range[1] * self.freq)
         if backend == 'praat':
-            snd = pm.Sound(
+            assert kwargs.get("method", None) in [None, 'AC', 'CC', 'SHS', 'SPINET']
+            snd = PMSound(
                 values=self.values[st_idx:ed_idx],
                 sampling_frequency=self.freq,
             )
-            pitches = snd.to_pitch()
+            pitches = snd.to_pitch(**kwargs)
             self._pitches = {}
             self._pitches['xs'] = pitches.xs()
             self._pitches['frequency'] = pitches.selected_array['frequency']
@@ -396,7 +430,7 @@ class Voice(object):
         else:
             st_idx, ed_idx = int(time_range[0] * self.freq), int(time_range[1] * self.freq)
         if backend == 'praat':
-            snd = pm.Sound(
+            snd = PMSound(
                 values=self.values[st_idx:ed_idx],
                 sampling_frequency=self.freq,
             )
@@ -434,7 +468,7 @@ class Voice(object):
         else:
             st_idx, ed_idx = int(time_range[0] * self.freq), int(time_range[1] * self.freq)
         if backend == 'praat':
-            snd = pm.Sound(
+            snd = PMSound(
                 values=self.values[st_idx:ed_idx],
                 sampling_frequency=self.freq,
             )
@@ -481,15 +515,17 @@ class Voice(object):
         else:
             st_idx, ed_idx = int(time_range[0] * self.freq), int(time_range[1] * self.freq)
         if backend == 'praat':
-            snd = pm.Sound(
+            snd = PMSound(
                 values=self.values[st_idx:ed_idx],
                 sampling_frequency=self.freq,
             )
+            assert kwargs.get("method", None) in [None, 'AC', 'CC', 'GNE']
+            self._harmonicity = snd.to_harmonicity(**kwargs)
             # to harmonicity: time step (s), minimum pitch (Hz), silence threshold, periods per window
-            harmonicity = call(snd, "To Harmonicity (cc)", 0.01, 75, 0.1, 1.0)
-            hnr = call(harmonicity, "Get mean", 0, 0)
-            self._harmonicity = {}
-            self._harmonicity['hnr'] = hnr
+            # harmonicity = call(snd, "To Harmonicity (cc)", 0.01, 75, 0.1, 1.0)
+            # hnr = call(harmonicity, "Get mean", 0, 0)
+            # self._harmonicity = {}
+            # self._harmonicity['hnr'] = hnr
         else:
             raise NotImplementedError
     
@@ -518,7 +554,7 @@ class Voice(object):
         else:
             st_idx, ed_idx = int(time_range[0] * self.freq), int(time_range[1] * self.freq)
         if backend == 'praat':
-            snd = pm.Sound(
+            snd = PMSound(
                 values=self.values[st_idx:ed_idx],
                 sampling_frequency=self.freq,
             )
@@ -530,6 +566,12 @@ class Voice(object):
     def obtain_melspectrogram(self, backend:str='librosa', time_range:Optional[ArrayLike]=None, **kwargs):
         """ not finished,
 
+        kwargs for 'praat':
+            window_length: real number, default 0.015, units in (s),
+            time_step: real number, default 0.005, units in (s),
+            position_of_first_filter: real number, default 100, units in (mel),
+            distance_between_filters: real number, default 100, units in (mel),
+            maximum_frequency: real number, default 0, units in (mel),
         kwargs for 'librosa':
             'S=None', 'n_fft=2048', 'hop_length=512', 'win_length=None', "window='hann'", 'center=True', "pad_mode='reflect'", 'power=2.0'
         """
@@ -537,19 +579,18 @@ class Voice(object):
             st_idx, ed_idx = 0, len(self.values)
         else:
             st_idx, ed_idx = int(time_range[0] * self.freq), int(time_range[1] * self.freq)
-        if backend == 'librosa':
+        if backend == 'praat':
+            snd = PMSound(
+                values=self.values[st_idx:ed_idx],
+                sampling_frequency=self.freq,
+            )
+            self._melspectrogram = snd.to_melspectrogram(**kwargs)
+        elif backend == 'librosa':
             self._melspectrogram = librosa.feature.melspectrogram(
                 y=self.values[st_idx:ed_idx],
                 sr=self.freq,
                 **kwargs
             )
-        elif backend == 'praat':
-            snd = pm.Sound(
-                values=self.values[st_idx:ed_idx],
-                sampling_frequency=self.freq,
-            )
-            # to melspectrogram: window length (s), time step (s), position of first filter (mel), distance between filters (mel), maximum frequency (mel)
-            ms = call(snd, "To MelSpectrogram", 0.015, 0.005, 100, 100, 0)
         else:
             raise NotImplementedError
 
@@ -574,7 +615,7 @@ class Voice(object):
         else:
             st_idx, ed_idx = int(time_range[0] * self.freq), int(time_range[1] * self.freq)
         if backend == 'praat':
-            snd = pm.Sound(
+            snd = PMSound(
                 values=self.values[st_idx:ed_idx],
                 sampling_frequency=self.freq,
             )
@@ -610,7 +651,7 @@ class Voice(object):
         else:
             st_idx, ed_idx = int(time_range[0] * self.freq), int(time_range[1] * self.freq)
         if backend == 'praat':
-            snd = pm.Sound(
+            snd = PMSound(
                 values=self.values[st_idx:ed_idx],
                 sampling_frequency=self.freq,
             )
@@ -640,7 +681,7 @@ class Voice(object):
         else:
             st_idx, ed_idx = int(time_range[0] * self.freq), int(time_range[1] * self.freq)
         if backend == 'praat':
-            snd = pm.Sound(values=self.values[st_idx:ed_idx], sampling_frequency=self.freq)
+            snd = PMSound(values=self.values[st_idx:ed_idx], sampling_frequency=self.freq)
             f0min, f0max = kwargs.get("f0min", 75), kwargs.get("f0max", 500)
             # PointProcess (periodic, cc): minimum pitch (Hz), maximum pitch (Hz)
             pointProcess = call(snd, "To PointProcess (periodic, cc)", f0min, f0max)
@@ -688,7 +729,7 @@ class Voice(object):
             return Voice(values=se, freq=self.freq, start_time=self.start_time, l_file_path=self.l_file_path, **self.kwargs)
 
 
-    def energy_proportion_curve(self, lowcut:Real, highcut:Real, time_range:Optional[ArrayLike]=None, smoothing:float=0.6, **kwargs) -> np.ndarray:
+    def energy_proportion_curve(self, lowcut:Union[Real, List[Real]], highcut:Union[Real, List[Real]], time_range:Optional[ArrayLike]=None, smoothing:float=0.6, **kwargs) -> np.ndarray:
         """
 
         Parameters:
@@ -704,9 +745,14 @@ class Voice(object):
         --------
         epc: ndarray, of shape (n,2),
         """
-        assert lowcut < highcut, "Invalid frequency range"
         df = np.diff(self.spectrogram.y_grid())[0]
-        assert df < highcut - lowcut, "frequency range should be larger than the resolution of frequencies in the spectrogram"
+        if isinstance(lowcut, Real) and isinstance(highcut, Real):
+            lowcut = [lowcut]
+            highcut = [highcut]
+        assert len(lowcut) == len(highcut)
+        for l, h in zip(lowcut, highcut):
+            assert l < h, "Invalid frequency range"
+            assert df < h - l, "frequency range should be larger than the resolution of frequencies in the spectrogram"
         ts = self.spectrogram.x_grid()[:-1]
         spectrogram = self.spectrogram.values
         if time_range is not None:
@@ -715,7 +761,9 @@ class Voice(object):
             spectrogram = spectrogram[:, t_indices]
         frequencies = self.spectrogram.y_grid()[1:]
         tot_energy = np.nansum(spectrogram, axis=0)
-        f_indices = np.where((frequencies>=lowcut)&(frequencies<=highcut))[0]
+        f_indices = np.array([],dtype=int)
+        for l, h in zip(lowcut, highcut):
+            f_indices = np.append(f_indices, np.where((frequencies>=l)&(frequencies<=h))[0])
         band_spectrogram = spectrogram[f_indices, :]
         band_energy = np.nansum(band_spectrogram, axis=0)
         epc = band_energy / (tot_energy + np.finfo(float).eps)
@@ -725,7 +773,7 @@ class Voice(object):
         return epc
 
 
-    def energy_proportion(self, lowcut:Real, highcut:Real, time_range:Optional[ArrayLike]=None, **kwargs) -> float:
+    def energy_proportion(self, lowcut:Union[Real, List[Real]], highcut:Union[Real, List[Real]], time_range:Optional[ArrayLike]=None, **kwargs) -> float:
         """
 
         Parameters:
@@ -770,7 +818,7 @@ class Voice(object):
             else:
                 st_idx, ed_idx = int(time_range[0] * self.freq), int(time_range[1] * self.freq)
             analysis_start_time = time_range[0] if time_range is not None else self.be_praat.start_time
-            snd = pm.Sound(
+            snd = PMSound(
                 values=self.values[st_idx:ed_idx],
                 sampling_frequency=self.freq,
                 start_time=analysis_start_time,
@@ -835,7 +883,7 @@ class Voice(object):
                 if self.verbose >= 1:
                     print("st_idx () is greater than or equal to ed_idx, empty value")
                 return
-            snd = pm.Sound(values=self.values[st_idx:ed_idx], sampling_frequency=self.freq)
+            snd = PMSound(values=self.values[st_idx:ed_idx], sampling_frequency=self.freq)
             pitches = snd.to_pitch()
             t_arr = pitches.xs()
             pitch_values = pitches.selected_array['frequency']
@@ -967,7 +1015,7 @@ class Voice(object):
             if self._intensity is None:
                 self.obtain_intensity(backend='praat')
             fig, ax = plt.subplots(figsize=(20,4))
-            ax.plot(self._intensity['ts'], self._intensity['values'], '-')
+            ax.plot(self._intensity['xs'], self._intensity['values'], '-')
             ax.grid()
             ax.set_title('intensity')
             ax.set_xlabel("time [s]")
@@ -987,9 +1035,10 @@ class Voice(object):
             plt.show()
         if 'spectrogram' in items:
             fig, ax = plt.subplots(figsize=(20,4))
+            cmap = plt.get_cmap(kwargs.get("cmap", "afmhot"))
             self._plot_spectrogram(
                 ax=ax,
-                cmap=kwargs.get("cmap", plt.get_cmap("afmhot")),
+                cmap=cmap,
                 dynamic_range=70
             )
             if self._formants is None:
@@ -1003,6 +1052,28 @@ class Voice(object):
             ax.legend()
             ax.set_title('spectrogram')
             plt.show()
+        if 'melspectrogram' in items:
+            fig, ax = plt.subplots(figsize=(20,4))
+            cmap = plt.get_cmap(kwargs.get("cmap", "afmhot"))
+            self.obtain_melspectrogram(backend='praat')
+            X, Y = self.melspectrogram.x_grid(), self.melspectrogram.y_grid()
+            sg_db = 10 * np.log10(self.spectrogram.values)
+            ax.pcolormesh(X, Y, sg_db, vmin=sg_db.max() - dynamic_range, cmap=cmap)
+            ax.set_ylim([self.spectrogram.ymin, self.spectrogram.ymax])
+            ax.set_xlabel("time [s]")
+            ax.set_ylabel("frequency [Hz]")
+
+
+    def _plot_spectrogram(self, ax, cmap, dynamic_range=70, **kwargs):
+        """
+        """
+        font_prop = kwargs.get("font_prop", None)
+        X, Y = self.spectrogram.x_grid(), self.spectrogram.y_grid()
+        sg_db = 10 * np.log10(self.spectrogram.values)
+        ax.pcolormesh(X, Y, sg_db, vmin=sg_db.max() - dynamic_range, cmap=cmap)
+        ax.set_ylim([self.spectrogram.ymin, self.spectrogram.ymax])
+        ax.set_xlabel("time [s]")
+        ax.set_ylabel("frequency [Hz]")
 
     
     def _plot_praat(self, **kwargs):
@@ -1015,7 +1086,7 @@ class Voice(object):
             import matplotlib.pyplot as plt
         silence_threshold = kwargs.get('silence_threshold', 0.003)
         
-        snd = pm.Sound(
+        snd = PMSound(
                 values=self.values,
                 sampling_frequency=self.freq,
             )
@@ -1081,23 +1152,7 @@ class Voice(object):
         plt.show()
 
 
-    def _plot_spectrogram(self, ax, cmap, dynamic_range=70, **kwargs):
-        """
-
-        Parameters:
-        -----------
-
-        """
-        font_prop = kwargs.get("font_prop", None)
-        X, Y = self.spectrogram.x_grid(), self.spectrogram.y_grid()
-        sg_db = 10 * np.log10(self.spectrogram.values)
-        ax.pcolormesh(X, Y, sg_db, vmin=sg_db.max() - dynamic_range, cmap=cmap)
-        ax.set_ylim([self.spectrogram.ymin, self.spectrogram.ymax])
-        ax.set_xlabel("time [s]")
-        ax.set_ylabel("frequency [Hz]")
-
-
-    def _plot_energy_proportion(self, lowcut:Real, highcut:Real, **kwargs):
+    def _plot_energy_proportion(self, lowcut:Union[Real, List[Real]], highcut:Union[Real, List[Real]], **kwargs):
         """
 
         Parameters:
@@ -1202,7 +1257,7 @@ class VoiceVowel(object):
     def duration(self):
         """
         """
-        return self.start_time - self.end_time
+        return self.end_time - self.start_time
     
 
 class SyllableSegment(Voice):
@@ -1217,31 +1272,19 @@ class SyllableSegment(Voice):
         self.vowel = vowel
 
 
-class PMSound(pm.Sound):
+def hertz_to_mel(hertz:Real) -> Real:
     """
     """
-    def __init__(self, values:Optional[np.ndarray]=None, sampling_frequency:Optional[Real]=None, start_time:Optional[Real]=None, file_path:Optional[List[str]]=None):
-        """
-        """
-        assert values is not None or file_path is not None
-        if values is not None:
-            return super().__init__(
-                values=values, sampling_frequency=sampling_frequency, start_time=(start_time or 0)
-            )
-        else:
-            return super().__init__(file_path=file_path)
-    
-    def to_melspectrogram(self, window_length:float=0.015, time_step:float=0.005, position_of_first_filter:Real=100, distance_between_filters:Real=100, maximum_frequency:Real=0) -> pm.Data:
-        """
+    mel = 2595 * np.log10(1+hertz/700)
+    return mel
 
-        Parameters:
-        -----------
-        window length (s), time step (s), position of first filter (mel), distance between filters (mel), maximum frequency (mel)
-        """
-        return call(self, "To MelSpectrogram", window_length, time_step, position_of_first_filter, distance_between_filters, maximum_frequency)
+def mel_to_hertz(mel:Real) -> Real:
+    """
+    """
+    hertz = 700 * (np.power(10, mel/2595)-1)
+    return hertz
 
-    def to_point_process(self, ) -> pm.Data:
-        """
-        """
-        raise NotImplementedError
-        # return call(self, )
+def pre_emphasis():
+    """
+    """
+    raise NotImplementedError
