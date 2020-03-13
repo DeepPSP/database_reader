@@ -2,7 +2,7 @@
 from setuptools import setup
 # from importlib.machinery import SourceFileLoader
 
-from version import version as __version__
+from database_reader.version import version as __version__
 
 setup(name='database_reader',
       version=__version__,

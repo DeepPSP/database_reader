@@ -2,6 +2,7 @@
 """
 utilities for visualization
 """
+import numpy as np
 from numbers import Real
 from typing import Union, Optional, List, Tuple, NoReturn
 import matplotlib.pyplot as plt

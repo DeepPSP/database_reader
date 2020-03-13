@@ -145,4 +145,4 @@ def angle_d2r(angle:Union[Real,np.ndarray]) -> Union[Real,np.ndarray]:
     """
 
     """
-    return PI*angle/180.0
+    return np.pi*angle/180.0
