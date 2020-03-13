@@ -190,3 +190,70 @@ class PMSound(pm.Sound):
             tolerance2 = kwargs.get('tolerance2', 1.0e-6)
             lpc = call(self, cmd, prediction_order, window_length, time_step, pre_emphasis_frequency, tolerance1, tolerance2)
         return lpc
+
+
+    def draw(self, items:Optional[List[str]]=None, **kwargs):
+        """
+        """
+        import matplotlib.pyplot as plt
+        fig, (ax_t, ax_f) = plt.subplots(2,1,figsize=(int(25*self.xmax),10),sharex=True)
+        plt.subplots_adjust(hspace=0)
+        ax_t.plot(self.xs(), self.values.T)
+        ax_t.axhline(self.silence_threshold,linestyle='dashed',linewidth=0.5,color='red')
+        ax_t.axhline(-self.silence_threshold,linestyle='dashed',linewidth=0.5,color='red')
+        ax_t2 = ax_t.twinx()
+        self._plot_intensity(ax_t2)
+        ax_t2.set_xlim([self.xmin, self.xmax])
+        self._plot_spectrogram(ax_f)
+        ax_f2 = ax_f.twinx()
+        self._plot_pitch(ax_f2)
+        self._plot_vowels(ax_t)
+        self._plot_formant(ax_f, 5)
+        ax_f2.set_xlim([self.xmin, self.xmax])
+        plt.show()
+        
+    def _plot_spectrogram(self, ax, dynamic_range=70, **kwargs):
+        """
+        """
+        sp = self.to_spectrogram()
+        X, Y = sp.x_grid(), sp.y_grid()
+        sg_db = 10 * np.log10(sp.values)
+        cm = kwargs.get("cmap", plt.get_cmap("afmhot"))
+        ax.pcolormesh(X, Y, sg_db, vmin=sg_db.max() - dynamic_range, cmap=cm)
+        ax.set_ylim([sp.ymin, sp.ymax])
+        ax.set_xlabel("time [s]")
+        ax.set_ylabel("frequency [Hz]")
+
+    def _plot_intensity(self, ax):
+        """
+        """
+        intensity = self.to_intensity()
+        ax.plot(intensity.xs(), intensity.values.T, 'o-', markersize=4, linewidth=0.6, color='yellow')
+        ax.grid(False)
+        ax.set_ylim(0)
+        ax.set_ylabel("intensity [dB]")
+
+    def _plot_pitch(self, ax):
+        """
+        Extract selected pitch contour, and
+        replace unvoiced samples by NaN to not plot
+        """
+        pitches = self.to_pitch()
+        pitch_values = pitches.selected_array['frequency']
+        pitch_values[pitch_values==0] = np.nan
+        ax.plot(pitches.xs(), pitch_values, 'o-', markersize=9, color='w')
+        ax.plot(pitches.xs(), pitch_values, 'o-', markersize=5, color='b')
+        ax.grid(False)
+        ax.set_ylim(0, pitches.ceiling)
+        ax.set_ylabel("fundamental frequency [Hz]")
+
+    def _plot_formant(self, ax, maximum_formant=5):
+        """
+        """
+        formants = self.to_formant_burg()
+        x = .formants.xs()
+        nb_x = .formants.nx
+        for fn in range(1,maximum_formant+1):
+            y = np.array([formants.get_value_at_time(fn, x[idx]) for idx in range(nb_x)])
+            ax.plot(x, y, 'o', markersize=5, color='w')
+            ax.plot(x, y, 'o', markersize=2, color='r')

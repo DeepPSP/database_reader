@@ -296,7 +296,7 @@ class CPSC2018(OtherDataBase):
             f.write(recording_string + '\n' + class_string + '\n' + label_string + '\n' + score_string + '\n')
 
 
-    def plot(self, leads:Optional[Union[str, List[str]]]=None, **kwargs) -> NoReturn:
+    def plot(self, leads:Optional[Union[str, List[str]]]=None, **kwargs):
         """
 
         Parameters:
@@ -306,5 +306,10 @@ class CPSC2018(OtherDataBase):
         """
         if leads is None or leads == 'all':
             leads = self.all_leads
+        assert all([l in self.all_leads for l in leads])
+
+        nb_leads = len(leads)
+
+        fig, axes = plt.subplots(nb_leads, 1, figsize=(20, nb_leads*5))
         
         raise NotImplementedError
