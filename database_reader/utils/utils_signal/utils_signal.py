@@ -12,6 +12,10 @@ from scipy.signal import butter, lfilter
 from collections import namedtuple
 from numbers import Number, Real
 from typing import Union, List, NamedTuple, Optional, Tuple
+try:
+    from numba import jit
+except:
+    from ..utils_misc import trivial_jit as jit
 
 from ..common import ArrayLike, ArrayLike_Int
 
@@ -1262,6 +1266,27 @@ def butter_bandpass_filter(data:ArrayLike, lowcut:Real, highcut:Real, fs:Real, o
     b, a = butter_bandpass(lowcut, highcut, fs, order=order)
     y = lfilter(b, a, data)
     return y
+
+
+@jit(nopython=True)
+def hampel(input_series:ArrayLike, window_size:int, n_sigmas:int=3, return_outlier:bool=True) -> Union[np.ndarray, Tuple[np.ndarray, List[int]]]:
+    """
+    """
+    n = len(input_series)
+    new_series = np.array(input_series).copy()
+    k = 1.4826 # scale factor for Gaussian distribution
+    outlier_indices = []
+    
+    for i in range((window_size),(n - window_size)):
+        x0 = np.nanmedian(input_series[(i - window_size):(i + window_size)])
+        S0 = k * np.nanmedian(np.abs(input_series[(i - window_size):(i + window_size)] - x0))
+        if (np.abs(input_series[i] - x0) > n_sigmas * S0):
+            new_series[i] = x0
+            outlier_indices.append(i)
+    if return_outlier:
+        return new_series, outlier_indices
+    else:
+        return new_series
 
 
 class MovingAverage(object):

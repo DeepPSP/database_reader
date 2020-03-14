@@ -8,6 +8,7 @@ from functools import wraps
 
 __all__ = [
     "indicator_enter_leave_func",
+    "trivial_jit",
 ]
 
 
@@ -27,3 +28,11 @@ def indicator_enter_leave_func(verbose:int=0):
             return response
         return dec_inner
     return dec_outer
+
+
+def trivial_jit(signature_or_function=None, locals={}, target='cpu', cache=False, pipeline_class=None, **options):
+    """
+    """
+    def dec(fn:callable):
+        return fn
+    return dec
