@@ -6,6 +6,8 @@ Author: wenhao
 remarks: utilities for image and annotation checking
 """
 import os
+import numpy as np
+import pandas as pd
 from random import shuffle
 import cv2
 import matplotlib.pyplot as plt
@@ -109,7 +111,10 @@ class ObjectDetectionCheck(object):
             img = cv2.imread(self.current_image)[...,::-1]
             linewidth = max(1, int(round(max(img.shape[:2])/200)))
             df_img = self.df_check_images[self.df_check_images['filename']==self.current_image]
-            display(df_img)
+            try:
+                display(df_img)
+            except:
+                print(df_img)
             img_with_boxes = img.copy()
             for _, row in df_img.iterrows():
                 cv2.rectangle(img_with_boxes, (row['xmin'], row['ymin']), (row['xmax'], row['ymax']), (0, 255, 0), linewidth)

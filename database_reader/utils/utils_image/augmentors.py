@@ -17,6 +17,7 @@ existing packages for image augmentation:
 """
 
 import cv2
+import pandas as pd
 import numpy as np
 from numpy.random import randint, choice, uniform
 from copy import deepcopy

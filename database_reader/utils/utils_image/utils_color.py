@@ -11,7 +11,7 @@ TODO:
 
     consistency of different backends!
 
-experiment result: backend 'cv2' is 10-100 times faster than backend 'toy'
+experiment result: backend 'cv2' is 10-100 times faster than backend 'naive'
 """
 
 import cv2
@@ -37,7 +37,7 @@ __all__ = [
 
 _CVT_COLOR_BACKEND = 'cv2'
 _AVAILABLE_CVT_COLOR_BACKENDS = [
-    'cv2', 'pil', 'colour-science', 'toy',
+    'cv2', 'pil', 'colour-science', 'naive',
 ]
 
 
@@ -284,7 +284,7 @@ def _rgb_to_grey(img:np.ndarray, backend:Optional[str]=None, **kwargs) -> np.nda
         pass
     elif backend.lower() == 'pil':
         pass
-    elif backend.lower() == 'toy':
+    elif backend.lower() == 'naive':
         pass
     else:
         raise ValueError("no backend named {} for converting color space from {} to {}".format(backend, 'RGB', 'GREY'))
@@ -325,7 +325,7 @@ def _rgb_to_ciexyz(img:np.ndarray, backend:Optional[str]=None, **kwargs) -> np.n
         cie_xyz = colour.RGB_to_XYZ(img, colourspace.whitepoint, colourspace.whitepoint, colourspace.RGB_to_XYZ_matrix)
     elif backend.lower() == 'pil':
         pass
-    elif backend.lower() == 'toy':
+    elif backend.lower() == 'naive':
         gamma_correction = lambda e: np.power((e+0.055)/1.055, 2.4) if e>0.04045 else e/12.92
         var_rgb = 100 * np.vectorize(gamma_correction)(_rescale_rgb(img))
         M = common.MAT_RGB_TO_CIEXYZ
@@ -364,7 +364,7 @@ def _rgb_to_ciexyy(img:np.ndarray, backend:Optional[str]=None, **kwargs) -> np.n
         cie_xyy = colour.XYZ_to_xyY(_rgb_to_ciexyz(img,backend='colour-science',**kwargs))
     elif backend.lower() == 'pil':
         pass
-    elif backend.lower() == 'toy':
+    elif backend.lower() == 'naive':
         # default_white_point = np.array([0.3127, 0.3290, 0.0])
         # img_xyz = _rgb_to_ciexyz(img=img, backend=backend, **kwargs)
         pass
@@ -399,7 +399,7 @@ def _rgb_to_ciexy(img:np.ndarray, backend:Optional[str]=None, **kwargs) -> np.nd
         cie_xy = colour.XYZ_to_xy(_rgb_to_ciexyz(img,backend='colour-science',**kwargs))
     elif backend.lower() == 'pil':
         pass
-    elif backend.lower() == 'toy':
+    elif backend.lower() == 'naive':
         # default_white_point = np.array([0.3127, 0.3290, 0.0])
         # img_xyz = _rgb_to_ciexyz(img=img, backend=backend, **kwargs)
         pass
@@ -434,14 +434,14 @@ def _ciexyz_to_cielab(img:np.ndarray, illuminant:str='D65', observer:int=2, back
     """
     if backend is None:
         # backend = _CVT_COLOR_BACKEND  # no such method in cv2
-        backend = 'toy'
+        backend = 'naive'
     if backend.lower() == 'cv2':
         pass
     elif backend.lower() == 'colour-science':
         pass
     elif backend.lower() == 'pil':
         pass
-    elif backend.lower() == 'toy':
+    elif backend.lower() == 'naive':
         delta = 6/29
         delta_cubic = delta**3
         a = 1/3/delta**2
@@ -486,7 +486,7 @@ def _rgb_to_cielab(img:np.ndarray, illuminant:str='D65', observer:int=2, backend
         pass
     elif backend.lower() == 'pil':
         pass
-    elif backend.lower() == 'toy':
+    elif backend.lower() == 'naive':
         img = _validate_img_fmt(img, fmt='RGB')
         cie_xyz = _rgb_to_ciexyz(img)
         cie_lab = _ciexyz_to_cielab(cie_xyz, illuminant=illuminant, observer=observer, backend=backend)
@@ -524,7 +524,7 @@ def _rgb_to_cieluv(img:np.ndarray, illuminant:str='D65', observer:int=2, backend
         pass
     elif backend.lower() == 'pil':
         pass
-    elif backend.lower() == 'toy':
+    elif backend.lower() == 'naive':
         pass
     else:
         raise ValueError("no backend named {} for converting color space from {} to {}".format(backend, 'RGB', 'CIELUV'))
@@ -556,7 +556,7 @@ def _rgb_to_ycbcr(img:np.ndarray, backend:Optional[str]=None, **kwargs) -> np.nd
         pass
     elif backend.lower() == 'pil':
         pass
-    elif backend.lower() == 'toy':
+    elif backend.lower() == 'naive':
         pass
     else:
         raise ValueError("no backend named {} for converting color space from {} to {}".format(backend, 'RGB', 'YCbCr'))
@@ -586,14 +586,14 @@ def _rgb_to_yiq(img:np.ndarray, backend:Optional[str]=None, **kwargs) -> np.ndar
     """
     if backend is None:
         # backend = _CVT_COLOR_BACKEND  # no such method in cv2
-        backend = 'toy'
+        backend = 'naive'
     if backend.lower() == 'cv2':
         pass
     elif backend.lower() == 'colour-science':
         pass
     elif backend.lower() == 'pil':
         pass
-    elif backend.lower() == 'toy':
+    elif backend.lower() == 'naive':
         M = common.MAT_RGB_TO_YIQ
         yiq = np.apply_along_axis(lambda v:np.dot(M,v), -1, _rescale_rgb(img))
     else:
@@ -634,7 +634,7 @@ def _rgb_to_hsv(img:np.ndarray, scale:Real=1, backend:Optional[str]=None, **kwar
         pass
     elif backend.lower() == 'pil':
         pass
-    elif backend.lower() == 'toy':
+    elif backend.lower() == 'naive':
         pass
     if scale in [1.0, 1]:
         hsv[:,:,0] =  hsv[:,:,0]/360.0
@@ -666,7 +666,7 @@ def _rgb_to_cmyk(img:np.ndarray, scale:Real=1, backend:Optional[str]=None, **kwa
     """
     if backend is None:
         # backend = _CVT_COLOR_BACKEND  # no such method in cv2
-        backend = 'toy'
+        backend = 'naive'
     if scale not in [100, 1, 100.0, 1.0]:
         raise ValueError("Invalid scale")
     if backend.lower() == 'cv2':
@@ -675,7 +675,7 @@ def _rgb_to_cmyk(img:np.ndarray, scale:Real=1, backend:Optional[str]=None, **kwa
         pass
     elif backend.lower() == 'pil':
         pass
-    elif backend.lower() == 'toy':
+    elif backend.lower() == 'naive':
         nrows,ncols,_ = img.shape
         cmyk = np.zeros(shape=(nrows,ncols,4),dtype=np.float32)
         cmyk[:,:,:3] = 1.0 - _rescale_rgb(img)
@@ -744,7 +744,7 @@ def _ciexyz_to_rgb(img:np.ndarray, backend:Optional[str]=None, **kwargs) -> np.n
         # srgb to 8bit RGB
     elif backend.lower() == 'pil':
         pass
-    elif backend.lower() == 'toy':
+    elif backend.lower() == 'naive':
         # default_white_point = np.array([0.3127, 0.3290, 0.0])
         # img_xyz = _rgb_to_ciexyz(img=img, backend=backend, **kwargs)
         pass

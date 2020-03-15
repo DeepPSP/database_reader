@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from typing import Union, Optional, Any, List, NoReturn
 
-from base import AudioDataBases
+from database_reader.base import AudioDataBases
 
 
 __all__ = [

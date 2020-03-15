@@ -2,12 +2,13 @@
 """
 improved wrapped praat Sound
 """
+import numpy as np
 import parselmouth as pm
 from parselmouth.praat import call
 from numbers import Real
 from typing import Union, Optional, List, NoReturn
 
-from utils import ArrayLike
+from database_reader.utils import ArrayLike
 
 
 class PMSound(pm.Sound):
@@ -155,7 +156,7 @@ class PMSound(pm.Sound):
         distance_between_filters: real number, default 1,
         maximum_frequency: real number, default 0,
         """
-        return call(self, "To BarkSpectrogram", window_length, time_step, position_of_first_filter, distance_between_filter, maximum_frequency)
+        return call(self, "To BarkSpectrogram", window_length, time_step, position_of_first_filter, distance_between_filters, maximum_frequency)
 
     def to_cochleagram(self, time_step:Real=0.01, frequency_resolution:Real=0.1, window_length:Real=0.003, forward_masking_time:Real=0.03) -> pm.Data:
         """
@@ -215,10 +216,13 @@ class PMSound(pm.Sound):
     def _plot_spectrogram(self, ax, dynamic_range=70, **kwargs):
         """
         """
+        if 'plt' not in dir():
+            import matplotlib.pyplot as plt
         sp = self.to_spectrogram()
         X, Y = sp.x_grid(), sp.y_grid()
         sg_db = 10 * np.log10(sp.values)
-        cm = kwargs.get("cmap", plt.get_cmap("afmhot"))
+        cm = kwargs.get("cmap", "afmhot")
+        cm = plt.get_cmap(cm)
         ax.pcolormesh(X, Y, sg_db, vmin=sg_db.max() - dynamic_range, cmap=cm)
         ax.set_ylim([sp.ymin, sp.ymax])
         ax.set_xlabel("time [s]")
@@ -251,8 +255,8 @@ class PMSound(pm.Sound):
         """
         """
         formants = self.to_formant_burg()
-        x = .formants.xs()
-        nb_x = .formants.nx
+        x = formants.xs()
+        nb_x = formants.nx
         for fn in range(1,maximum_formant+1):
             y = np.array([formants.get_value_at_time(fn, x[idx]) for idx in range(nb_x)])
             ax.plot(x, y, 'o', markersize=5, color='w')

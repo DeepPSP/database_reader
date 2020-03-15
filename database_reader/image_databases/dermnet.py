@@ -5,8 +5,8 @@ import pandas as pd
 from typing import Union, Optional, Any, List, NoReturn
 from numbers import Real
 
-from utils import ArrayLike
-from base import ImageDataBases
+from database_reader.utils import ArrayLike
+from database_reader.base import ImageDataBases
 
 
 __all__ = [

@@ -10,8 +10,8 @@ from datetime import datetime
 from typing import Union, Optional, Any, List, Dict, Iterable, Sequence, NoReturn
 from numbers import Real
 
-from utils import ArrayLike
-from base import NSRRDataBase
+from database_reader.utils import ArrayLike
+from database_reader.base import NSRRDataBase
 
 
 __all__ = [

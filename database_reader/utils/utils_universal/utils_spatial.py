@@ -25,6 +25,7 @@ from typing import Union, Optional, List, NoReturn
 import warnings
 
 from ..common import ArrayLike, modulo
+from ..utils_universal import intervals_intersection
 
 
 __all__ = [
@@ -738,10 +739,10 @@ class BoundingBox(ss.Rectangle):
         ylen = self.ymax-self.ymin
         x_re = max(1, int(abs(ratio)*xlen/2)) * np.sign(ratio)
         y_re = max(1, int(abs(ratio)*ylen/2)) * np.sign(ratio)
-        new_xmax = min(max(x_thre), self.xmax+x_en)
-        new_xmin = max(min(x_thre), self.xmin-x_en)
-        new_ymax = min(max(y_thre), self.ymax+y_en)
-        new_ymin = max(min(x_thre), self.ymin-y_en)
+        new_xmax = min(max(x_thre), self.xmax+x_re)
+        new_xmin = max(min(x_thre), self.xmin-x_re)
+        new_ymax = min(max(y_thre), self.ymax+y_re)
+        new_ymin = max(min(x_thre), self.ymin-y_re)
         if not inplace:
             return BoundingBox(xmin=new_xmin, xmax=new_xmax, ymin=new_ymin, ymax=new_ymax)
         self.xmin, self.xmax, self.ymin, self.ymax = new_xmin, new_xmax, new_ymin, new_ymax
