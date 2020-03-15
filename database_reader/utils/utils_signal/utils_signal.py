@@ -41,6 +41,8 @@ __all__ = [
     "resample_discontinuous_irregular_timeseries",
     "butter_bandpass",
     "butter_bandpass_filter",
+    "hampel",
+    "detect_flat_lines",
     "MovingAverage",
 ]
 
@@ -1271,6 +1273,28 @@ def butter_bandpass_filter(data:ArrayLike, lowcut:Real, highcut:Real, fs:Real, o
 @jit(nopython=True)
 def hampel(input_series:ArrayLike, window_size:int, n_sigmas:int=3, return_outlier:bool=True) -> Union[np.ndarray, Tuple[np.ndarray, List[int]]]:
     """
+
+    Parameters:
+    -----------
+    input_series: array_like,
+        the signal to be filtered
+    window_size: int,
+        radius of the filter window
+    n_sigmas: int, default 3,
+        deviation threshold of outlier from the window median value devided by the window median of absolute differences with the window median value
+    return_outlier: bool, default True
+
+    Returns:
+    --------
+    new_series: ndarray,
+        the filtered signal
+    outlier_indices: list of int, if `return_outlier` is True,
+        indices of the outliers
+
+    References:
+    -----------
+    [1] https://towardsdatascience.com/outlier-detection-with-hampel-filter-85ddf523c73d
+    [2] https://www.mathworks.com/help/signal/ref/hampel.html
     """
     n = len(input_series)
     new_series = np.array(input_series).copy()
@@ -1287,6 +1311,52 @@ def hampel(input_series:ArrayLike, window_size:int, n_sigmas:int=3, return_outli
         return new_series, outlier_indices
     else:
         return new_series
+
+
+def detect_flat_lines(s:np.ndarray, window:int, tolerance:Real=0, verbose:int=0, **kwargs) -> Tuple[np.ndarray, float]:
+    """ finished,
+
+    detect flat (with tolerance) lines of length >= `window`
+
+    Parameters:
+    -----------
+    s: ndarray,
+        the signal
+    window: int,
+        size (length) of the detection window
+    tolerance: real, default 0,
+        difference within `tolerance` will be considered 'flat'
+    verbose: int, default 0,
+
+    Returns:
+    --------
+    flat_locs: ndarray,
+        indices of samples in `s` of the flat lines
+    flat_prop: float,
+        proportion of flat parts in `s`
+    
+    References:
+    -----------
+    https://github.com/gslapnicar/bp-estimation-mimic3/blob/master/cleaning_scripts/flat_lines.m
+    """
+    n = len(s)
+    flat_locs = np.ones(n-window+1,dtype=int)
+    for i in range(1, window):
+        tmp = (np.abs(s[:n-window+1] - s[i:n-window+i+1]) <= abs(tolerance)).astype(int)
+        flat_locs = np.bitwise_and(flat_locs, tmp)
+    flat_locs = np.append(flat_locs, np.zeros(window-1,dtype=int))
+    tmp = flat_locs.copy()
+    for i in range(1, window):
+        flat_locs[i:] = np.bitwise_or(flat_locs[i:], tmp[:-i])
+    if verbose >= 2:
+        if 'plt' not in dir():
+            import matplotlib.pyplot as plt
+        fig, ax = plt.subplots(figsize=(n/125*4,6))
+        x = np.arange(n)
+        ax.plot(x, s)
+        ax.scatter(x[flat_locs==1], s[flat_locs==1], color='red')
+    flat_prop = np.sum(flat_locs)/n
+    return flat_locs, flat_prop
 
 
 class MovingAverage(object):
