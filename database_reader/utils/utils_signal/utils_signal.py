@@ -1270,9 +1270,10 @@ def butter_bandpass_filter(data:ArrayLike, lowcut:Real, highcut:Real, fs:Real, o
     return y
 
 
-@jit(nopython=True)
-def hampel(input_series:ArrayLike, window_size:int, n_sigmas:int=3, return_outlier:bool=True) -> Union[np.ndarray, Tuple[np.ndarray, List[int]]]:
+def hampel(input_series:ArrayLike, window_size:int, n_sigmas:int=3, return_outlier:bool=True, use_jit:bool=False) -> Union[np.ndarray, Tuple[np.ndarray, List[int]]]:
     """
+
+    Hampel filter
 
     Parameters:
     -----------
@@ -1282,7 +1283,10 @@ def hampel(input_series:ArrayLike, window_size:int, n_sigmas:int=3, return_outli
         radius of the filter window
     n_sigmas: int, default 3,
         deviation threshold of outlier from the window median value devided by the window median of absolute differences with the window median value
-    return_outlier: bool, default True
+    return_outlier: bool, default True,
+        whether or not return the indices of outliers
+    use_jit: bool, default False,
+        whether or not use `@numba.jit(nopython=True)`
 
     Returns:
     --------
@@ -1295,6 +1299,37 @@ def hampel(input_series:ArrayLike, window_size:int, n_sigmas:int=3, return_outli
     -----------
     [1] https://towardsdatascience.com/outlier-detection-with-hampel-filter-85ddf523c73d
     [2] https://www.mathworks.com/help/signal/ref/hampel.html
+    [3] Hampel, F. R. (1974). The influence curve and its role in robust estimation. Journal of the american statistical association, 69(346), 383-393.
+    """
+    if use_jit:
+        return _hampel_jit(input_series, window_size, n_sigmas, return_outlier)
+    else:
+        return _hampel(input_series, window_size, n_sigmas, return_outlier)
+
+@jit(nopython=True)
+def _hampel_jit(input_series:ArrayLike, window_size:int, n_sigmas:int=3, return_outlier:bool=True) -> Union[np.ndarray, Tuple[np.ndarray, List[int]]]:
+    """
+    ref. hampel
+    """
+    n = len(input_series)
+    new_series = np.array(input_series).copy()
+    k = 1.4826 # scale factor for Gaussian distribution
+    outlier_indices = []
+    
+    for i in range((window_size),(n - window_size)):
+        x0 = np.nanmedian(input_series[(i - window_size):(i + window_size)])
+        S0 = k * np.nanmedian(np.abs(input_series[(i - window_size):(i + window_size)] - x0))
+        if (np.abs(input_series[i] - x0) > n_sigmas * S0):
+            new_series[i] = x0
+            outlier_indices.append(i)
+    if return_outlier:
+        return new_series, outlier_indices
+    else:
+        return new_series
+
+def _hampel(input_series:ArrayLike, window_size:int, n_sigmas:int=3, return_outlier:bool=True) -> Union[np.ndarray, Tuple[np.ndarray, List[int]]]:
+    """
+    ref. hampel
     """
     n = len(input_series)
     new_series = np.array(input_series).copy()
