@@ -216,7 +216,7 @@ class Voice(object):
             self.load(backend='librosa', sr=new_freq)
             return
         
-        # praat override_sampling_frequency
+        # can also use praat override_sampling_frequency
         self.values = librosa.resample(
             self.values,
             orig_sr=self.freq, target_sr=new_freq,
@@ -314,8 +314,6 @@ class Voice(object):
         -----------
         [1] https://en.wikipedia.org/wiki/Sound_intensity
         """
-        # if self.verbose >= 1:
-        #     print("\n"+"*"*10+"  entering function obtain_intensity  "+"*"*10+"\n")
         if time_range is None:
             st_idx, ed_idx = 0, len(self.values)
         else:
@@ -386,8 +384,6 @@ class Voice(object):
                 ceiling: Positive[float]=500.0,
                 max_number_of_candidates: Positive[int]=15,
         """
-        # if self.verbose >= 1:
-        #     print("\n"+"*"*10+"  entering function obtain_pitches  "+"*"*10+"\n")
         if time_range is None:
             st_idx, ed_idx = 0, len(self.values)
         else:
@@ -423,8 +419,6 @@ class Voice(object):
             window_length: Positive[float]=0.025,
             pre_emphasis_from: Positive[float]=50.0
         """
-        # if self.verbose >= 1:
-        #     print("\n"+"*"*10+"  entering function obtain_formants  "+"*"*10+"\n")
         if time_range is None:
             st_idx, ed_idx = 0, len(self.values)
         else:
@@ -459,8 +453,6 @@ class Voice(object):
         kw_formants: ref. self.obtain_formants
         kw_power: ref. self.obtain_spectrogram
         """
-        # if self.verbose >= 1:
-        #     print("\n"+"*"*10+"  entering function obtain_formants  "+"*"*10+"\n")
         kw_formants = kw_formants or {}
         kw_power = kw_power or {}
         if time_range is None:
@@ -508,8 +500,6 @@ class Voice(object):
         time_range: array_like, optional,
             of the form [start_sec, end_sec], time range for computation
         """
-        # if self.verbose >= 1:
-        #     print("\n"+"*"*10+"  entering function obtain_harmonicity  "+"*"*10+"\n")
         if time_range is None:
             st_idx, ed_idx = 0, len(self.values)
         else:
@@ -547,8 +537,6 @@ class Voice(object):
             frequency_step: Positive[float]=20.0,
             window_shape: parselmouth.SpectralAnalysisWindowShape=SpectralAnalysisWindowShape.GAUSSIAN
         """
-        # if self.verbose >= 1:
-        #     print("\n"+"*"*10+"  entering function obtain_spectrogram  "+"*"*10+"\n")
         if time_range is None:
             st_idx, ed_idx = 0, len(self.values)
         else:
@@ -608,8 +596,6 @@ class Voice(object):
         kwargs for 'praat':
             fast: bool=True
         """
-        # if self.verbose >= 1:
-        #     print("\n"+"*"*10+"  entering function obtain_spectrum  "+"*"*10+"\n")
         if time_range is None:
             st_idx, ed_idx = 0, len(self.values)
         else:
@@ -644,8 +630,6 @@ class Voice(object):
         kwargs for 'librosa':
             S=None, n_mfcc=20, dct_type=2, norm='ortho', lifter=0
         """
-        # if self.verbose >= 1:
-        #     print("\n"+"*"*10+"  entering function obtain_mfcc  "+"*"*10+"\n")
         if time_range is None:
             st_idx, ed_idx = 0, len(self.values)
         else:
@@ -666,6 +650,8 @@ class Voice(object):
     @indicator_enter_leave_func(verbose=_VERBOSE_LEVEL)
     def obtain_jitter(self, backend:str='praat', time_range:Optional[ArrayLike]=None, **kwargs) -> NoReturn:
         """ partly finished,
+
+        Jitter is time distortions of recording/playback of a digital audio signal, a deviation of time between the digital and analog samples (deviation of sampling rate)
         
         Parameters:
         -----------
@@ -673,9 +659,11 @@ class Voice(object):
             backend for computation of voice intensity
         time_range: array_like, optional,
             of the form [start_sec, end_sec], time range for computation
+
+        References:
+        -----------
+        [1] https://headfonics.com/2017/12/what-is-jitter-in-audio/
         """
-        # if self.verbose >= 1:
-        #     print("\n"+"*"*10+"  entering function obtain_jitter  "+"*"*10+"\n")
         if time_range is None:
             st_idx, ed_idx = 0, len(self.values)
         else:
@@ -810,8 +798,6 @@ class Voice(object):
         intensity_threshold: real, default 40,
         t_threshold: real, default 0.06,
         """
-        # if self.verbose >= 1:
-        #     print("\n"+"*"*10+"  entering function obtain_syllable_segments  "+"*"*10+"\n")
         if backend.lower() == 'praat':
             if time_range is None:
                 st_idx, ed_idx = 0, len(self.values)
@@ -867,8 +853,6 @@ class Voice(object):
             of the form [start_sec, end_sec], time range for computation
         trim_by_syllable: bool, default True,
         """
-        # if self.verbose >= 1:
-        #     print("\n"+"*"*15+"  entering function obtain_vowels  "+"*"*15+"\n")
         if trim_by_syllable and len(self.syllable_segments) == 0:
             self.obtain_syllable_segments(
                 backend=backend,

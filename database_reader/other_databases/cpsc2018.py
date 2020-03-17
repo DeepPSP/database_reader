@@ -172,7 +172,7 @@ class CPSC2018(OtherDataBase):
         """
         assert rec_no in range(1, self.nb_records+1), "rec_no should be in range(1,{})".format(self.nb_records+1)
         ann_fp = os.path.join(self.db_path, "A{0:04d}".format(rec_no) + self.ann_ext)
-        with open(input_header_file,'r') as f:
+        with open(ann_fp, 'r') as f:
             header_data = f.readlines()
         header_data = [l.replace("\n", "") for l in header_data]
 
@@ -304,6 +304,8 @@ class CPSC2018(OtherDataBase):
         leads: str or list of str, optional,
             the leads to plot
         """
+        if 'plt' not in dir():
+            import matplotlib.pyplot as plt
         if leads is None or leads == 'all':
             leads = self.all_leads
         assert all([l in self.all_leads for l in leads])
@@ -312,4 +314,17 @@ class CPSC2018(OtherDataBase):
 
         fig, axes = plt.subplots(nb_leads, 1, figsize=(20, nb_leads*5))
         
+        raise NotImplementedError
+
+    
+    @classmethod
+    def get_disease_knowledge(cls, disease:Union[str,List[str]], **kwargs) -> Union[str, Dict[str, list]]:
+        """
+        """
+        if isinstance(disease, str):
+            d = [disease]
+        else:
+            d = disease
+        assert all([item in cls.diagnosis_abbr_to_full.keys() for item in d])
+
         raise NotImplementedError

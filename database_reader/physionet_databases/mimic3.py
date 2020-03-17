@@ -57,7 +57,10 @@ class MIMIC3(PhysioNetDataBase):
         self.freq = 125
 
 
-    def load_data()
+    def load_data(self, ):
+        """
+        """
+        raise NotImplementedError
 
 
     def get_subject_id(self, rec) -> int:

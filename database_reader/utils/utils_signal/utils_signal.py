@@ -1410,45 +1410,69 @@ class MovingAverage(object):
 
         self.verbose = kwargs.get("verbose", 0)
 
-    def cal(self, kind:str, **kwargs) -> np.ndarray:
+    def cal(self, method:str, **kwargs) -> np.ndarray:
         """
         """
-        k = kind.lower().replace('_', ' ')
-        if k in ['ema', 'ewma', 'exponential moving average', 'exponential weighted moving average']:
+        m = method.lower().replace('_', ' ')
+        if m in ['sma', 'simple moving average']:
+            func = self._sma
+        if m in ['ema', 'ewma', 'exponential moving average', 'exponential weighted moving average']:
             func = self._ema
-        elif k in ['cma', 'cumulative moving average']:
+        elif m in ['cma', 'cumulative moving average']:
             func = self._cma
-        elif k in ['wma', 'weighted moving average']:
+        elif m in ['wma', 'weighted moving average']:
             func = self._wma
         else:
             raise NotImplementedError
         return func(**kwargs)
 
-    def _naive(self, **kwargs) -> np.ndarray:
+    def _sma(self, window:int=5, **kwargs) -> np.ndarray:
         """
+        simple moving average
         """
-        smoothed = []
-        raise NotImplementedError
+        smoothed = self.data[:window].tolist()
+        prev = smoothed[-1]
+        for n, d in enumerate(self.data[window:]):
+            s = prev + (d - self.data[n]) / window
+            prev = s
+            smoothed.append(s)
+        smoothed = np.array(smoothed)
+        return smoothed
 
     def _ema(self, weight:float=0.6, **kwargs) -> np.ndarray:
         """
+        exponential moving average
         """
         smoothed = []
-        last = self.data[0]
+        prev = self.data[0]
         for d in self.data:
-            s = last * weight + (1 - weight) * d
-            last = s
+            s = prev * weight + (1 - weight) * d
+            prev = s
             smoothed.append(s)
+        smoothed = np.array(smoothed)
         return smoothed
 
     def _cma(self, **kwargs) -> np.ndarray:
         """
+        cumulative moving average
         """
         smoothed = []
-        raise NotImplementedError
+        prev = 0
+        for n, d in enumerate(self.data):
+            s = prev + (d - prev) / (n+1)
+            prev = s
+            smoothed.append(s)
+        smoothed = np.array(smoothed)
+        return smoothed
 
-    def _wma(self, **kwargs) -> np.ndarray:
+    def _wma(self, window:int=5, **kwargs) -> np.ndarray:
         """
+        weighted moving average
         """
-        smoothed = []
-        raise NotImplementedError
+        # smoothed = []
+        # total = []
+        # numerator = []
+        conv = np.arange(1, window+1)[::-1]
+        deno = np.sum(conv)
+        smoothed = np.convolve(conv, self.data, mode='same') / deno
+        return smoothed
