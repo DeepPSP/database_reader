@@ -54,12 +54,11 @@ WaveletDenoiseResult = namedtuple(
 
 
 def detect_peaks(x:ArrayLike,
-                 mph:Union[int,float,type(None)]=None, mpd:int=1,
-                 threshold:int=0, left_threshold:int=0, right_threshold:int=0,
+                 mph:Optional[Real]=None, mpd:int=1,
+                 threshold:Real=0, left_threshold:Real=0, right_threshold:Real=0,
                  edge:str='rising', kpsh:bool=False, valley:bool=False,
                  show:bool=False, ax=None,
                  verbose:int=0) -> np.ndarray:
-
     """Detect peaks in data based on their amplitude and other features.
 
     Parameters
@@ -1407,41 +1406,52 @@ class MovingAverage(object):
         """
         """
         self.data = np.array(data)
-
         self.verbose = kwargs.get("verbose", 0)
 
     def cal(self, method:str, **kwargs) -> np.ndarray:
         """
         """
         m = method.lower().replace('_', ' ')
-        if m in ['sma', 'simple moving average']:
+        if m in ['sma', 'simple', 'simple moving average']:
             func = self._sma
-        if m in ['ema', 'ewma', 'exponential moving average', 'exponential weighted moving average']:
+        elif m in ['ema', 'ewma', 'exponential', 'exponential weighted', 'exponential moving average', 'exponential weighted moving average']:
             func = self._ema
-        elif m in ['cma', 'cumulative moving average']:
+        elif m in ['cma', 'cumulative', 'cumulative moving average']:
             func = self._cma
-        elif m in ['wma', 'weighted moving average']:
+        elif m in ['wma', 'weighted', 'weighted moving average']:
             func = self._wma
         else:
             raise NotImplementedError
         return func(**kwargs)
 
-    def _sma(self, window:int=5, **kwargs) -> np.ndarray:
+    def _sma(self, window:int=5, center:bool=False, **kwargs) -> np.ndarray:
         """
         simple moving average
         """
-        smoothed = self.data[:window].tolist()
+        smoothed = []
+        if center:
+            hw = window//2
+            window = hw*2+1
+        for n in range(window):
+            smoothed.append(np.mean(self.data[:n+1]))
         prev = smoothed[-1]
         for n, d in enumerate(self.data[window:]):
             s = prev + (d - self.data[n]) / window
             prev = s
             smoothed.append(s)
         smoothed = np.array(smoothed)
+        if center:
+            smoothed[hw:-hw] = smoothed[window-1:]
+            for n in range(hw):
+                smoothed[n] = np.mean(self.data[:n+hw+1])
+                smoothed[-n-1] = np.mean(self.data[-n-hw-1:])
         return smoothed
 
     def _ema(self, weight:float=0.6, **kwargs) -> np.ndarray:
         """
-        exponential moving average
+        exponential moving average,
+        which is also the function used in Tensorboard Scalar panel,
+        whose parameter `smoothing` is the `weight` here
         """
         smoothed = []
         prev = self.data[0]
