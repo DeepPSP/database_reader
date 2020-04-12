@@ -1272,3 +1272,8 @@ def pre_emphasis():
     """
     """
     raise NotImplementedError
+
+def de_emphasis():
+    """
+    """
+    raise NotImplementedError

@@ -36,7 +36,6 @@ __all__ = [
     "WaveletDenoiseResult",
     "wavelet_denoise",
     "wavelet_rec_iswt",
-    "rr_interval_to_2d_timeseries",
     "resample_irregular_timeseries",
     "resample_discontinuous_irregular_timeseries",
     "butter_bandpass",
@@ -59,7 +58,8 @@ def detect_peaks(x:ArrayLike,
                  edge:str='rising', kpsh:bool=False, valley:bool=False,
                  show:bool=False, ax=None,
                  verbose:int=0) -> np.ndarray:
-    """Detect peaks in data based on their amplitude and other features.
+    """
+    Detect peaks in data based on their amplitude and other features.
 
     Parameters
     ----------
@@ -208,11 +208,13 @@ def detect_peaks(x:ArrayLike,
         dx = np.max(np.vstack([data[ind]-data[ind+idx] for idx in range(-mpd, 0)]), axis=0)
         ind = np.delete(ind, np.where(dx < _left_threshold)[0])
         if verbose >= 2:
-            print('from left, dx =', dx.tolist())
+            print('from left, dx = {}'.format(dx.tolist()))
+            print('after deleting those dx < _left_threshold = {}, ind = {}'.format(_left_threshold, ind.tolist()))
         dx = np.max(np.vstack([data[ind]-data[ind+idx] for idx in range(1, mpd+1)]), axis=0)
         ind = np.delete(ind, np.where(dx < _right_threshold)[0])
         if verbose >= 2:
-            print('from right, dx =', dx.tolist())
+            print('from right, dx = {}'.format(dx.tolist()))
+            print('after deleting those dx < _right_threshold = {}, ind = {}'.format(_right_threshold, ind.tolist()))
     if verbose >= 1:
         print('after filtering by threshold, ind =', ind.tolist())
     # detect small peaks closer than minimum peak distance
@@ -231,7 +233,7 @@ def detect_peaks(x:ArrayLike,
     ind = np.array([item for item in ind if data[item]==np.max(data[item-mpd:item+mpd+1])])
 
     if verbose >= 1:
-        print('after filtering by mpd, ind =', ind.tolist())
+        print('after filtering by mpd, ind = {}'.format(ind.tolist()))
 
     if show:
         if indnan.size:
@@ -1025,23 +1027,6 @@ def wavelet_rec_iswt(coeffs:List[List[np.ndarray]], levels:ArrayLike_Int, wavele
         plt.show()
     
     return sig_rec
-
-
-def rr_interval_to_2d_timeseries(rr_intervals:ArrayLike_Int) -> np.ndarray:
-    """ finished, checked,
-
-    transform the 1d array of rr intervals to a 2d irregular timeseries
-
-    Parameters:
-    rr_intervals: array_like,
-        the rr intervals, with units in ms
-    
-    Returns:
-    --------
-    2d array, each element in the form of [time, value]
-    """
-    ts = np.append(0,np.cumsum(np.array(rr_intervals))[:-1])
-    return np.column_stack((ts,rr_intervals))
 
 
 def resample_irregular_timeseries(s:ArrayLike, output_fs:Real=2, method:str="spline", return_with_time:bool=False, tnew:Optional[ArrayLike]=None, options:dict={}, verbose:int=0) -> np.ndarray:

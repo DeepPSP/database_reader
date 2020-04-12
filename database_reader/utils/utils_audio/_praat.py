@@ -11,12 +11,17 @@ from typing import Union, Optional, List, NoReturn
 from database_reader.utils import ArrayLike
 
 
+__all__ = [
+    "PMSound",
+]
+
+
 class PMSound(pm.Sound):
     """
 
     TODO: add more methods
     """
-    def __init__(self, values:Optional[np.ndarray]=None, sampling_frequency:Optional[Real]=None, start_time:Optional[Real]=None, file_path:Optional[List[str]]=None):
+    def __init__(self, values:Optional[np.ndarray]=None, sampling_frequency:Optional[Real]=None, start_time:Optional[Real]=None, file_path:Optional[str]=None):
         """
         """
         self.pm_true_false = {True: 'yes', False: 'no'}
