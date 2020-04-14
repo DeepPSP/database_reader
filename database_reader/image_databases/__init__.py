@@ -5,7 +5,7 @@
 from .acne04 import *
 from .celeba import *
 from .dermnet import *
-from .11khands import *
+from .hands_11k import *
 from .imagenet import *
 
 

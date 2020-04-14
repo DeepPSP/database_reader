@@ -3,3 +3,4 @@ pandas
 scipy
 colour-science
 pyEDFlib
+xmltodict

@@ -33,7 +33,7 @@ class PMSound(pm.Sound):
         else:
             return super().__init__(file_path=file_path)
 
-    def to_formant(self, method:str='burg', time_step:Optional[real]=None, max_number_of_formants:Real=5.0, maximum_formant:Real=5500.0, window_length:Real=0.025, pre_emphasis_from:Real=50.0, number_of_std_dev:Real=1.5, maximum_number_of_iterations:Real=5, tolerance:Real=1.0e-6) -> pm.Formant:
+    def to_formant(self, method:str='burg', time_step:Optional[Real]=None, max_number_of_formants:Real=5.0, maximum_formant:Real=5500.0, window_length:Real=0.025, pre_emphasis_from:Real=50.0, number_of_std_dev:Real=1.5, maximum_number_of_iterations:Real=5, tolerance:Real=1.0e-6) -> pm.Formant:
         """
         
         Parameters:

@@ -939,7 +939,7 @@ class Voice(object):
 # ------------------------------------------------------------
 # plot
 
-    def plot(self, items:Optional[str, List[str]]=None, **kwargs) -> NoReturn:
+    def plot(self, items:Optional[Union[str, List[str]]]=None, **kwargs) -> NoReturn:
         """
 
         Parameters:
