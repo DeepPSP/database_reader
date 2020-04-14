@@ -7,6 +7,8 @@ from numbers import Real
 from typing import Union, Optional, List, Tuple, NoReturn
 import matplotlib.pyplot as plt
 
+from ..common import ArrayLike
+
 
 __all__ = [
     "plot_single_lead_ecg",

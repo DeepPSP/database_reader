@@ -25,9 +25,9 @@ from .utils.common import *
 __all__ = [
     "PhysioNetDataBase",
     "NSRRDataBase",
-    "ImageDataBases",
-    "AudioDataBases",
-    "OtherDataBases",
+    "ImageDataBase",
+    "AudioDataBase",
+    "OtherDataBase",
 ]
 
 
@@ -516,7 +516,7 @@ class NSRRDataBase(object):
             print(self.__doc__)
 
 
-class ImageDataBases(object):
+class ImageDataBase(object):
     """
 
     """
@@ -528,7 +528,7 @@ class ImageDataBases(object):
         self.verbose = verbose
 
 
-class AudioDataBases(object):
+class AudioDataBase(object):
     """
 
     """

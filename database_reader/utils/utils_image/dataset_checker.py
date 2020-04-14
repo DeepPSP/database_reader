@@ -11,7 +11,7 @@ import pandas as pd
 from random import shuffle
 import cv2
 import matplotlib.pyplot as plt
-from typing import Union, List
+from typing import Union, Optional, List
 
 
 class ObjectDetectionCheck(object):

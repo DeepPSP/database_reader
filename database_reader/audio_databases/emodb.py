@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from typing import Union, Optional, Any, List, NoReturn
 
-from database_reader.base import AudioDataBases
+from database_reader.base import AudioDataBase
 
 
 __all__ = [
@@ -12,7 +12,7 @@ __all__ = [
 ]
 
 
-class EmoDB(AudioDataBases):
+class EmoDB(AudioDataBase):
     """
     Berlin Database of Emotional Speech
 

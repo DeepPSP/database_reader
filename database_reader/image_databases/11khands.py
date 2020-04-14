@@ -6,7 +6,7 @@ from typing import Union, Optional, Any, List, NoReturn
 from numbers import Real
 
 from database_reader.utils import ArrayLike
-from database_reader.base import ImageDataBases
+from database_reader.base import ImageDataBase
 
 
 __all__ = [
@@ -14,7 +14,7 @@ __all__ = [
 ]
 
 
-class Hands11K(ImageDataBases):
+class Hands11K(ImageDataBase):
     """
     """
     def __init__(self, db_path:str, verbose:int=2, **kwargs):
