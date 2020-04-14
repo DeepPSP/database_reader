@@ -4,3 +4,4 @@ venv/
 .idea/workspace.xml
 *.xml
 .idea/workspace.xml
+__pycache__
