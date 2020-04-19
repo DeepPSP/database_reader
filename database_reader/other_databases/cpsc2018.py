@@ -338,12 +338,23 @@ class CPSC2018(OtherDataBase):
 
         t = np.arange(data.shape[1]) / self.freq
         duration = len(t) / self.freq
-        fig_sz = int(round(4.8 * duration)
-        plt.subplots_adjust(hspace=0.1)
+        fig_sz = int(round(4.8 * duration))
+        plt.subplots_adjust(hspace=0.0)
         fig, axes = plt.subplots(nb_leads, 1, sharex=True, figsize=(fig_sz, nb_leads*6))
         for idx in range(nb_leads):
-            axes[idx].plot(t, data[idx], label=leads[idx]+'\n'+diag)
+            axes[idx].plot(t, data[idx], label=leads[idx]+'\n'+'labels-'+",".join(diag))
+            axes[idx].axhline(y=0, linestyle='-', linewidth='1.0', color='red')
+            axes[idx].xaxis.set_major_locator(plt.MultipleLocator(0.2))
+            axes[idx].xaxis.set_minor_locator(plt.MultipleLocator(0.04))
+            axes[idx].yaxis.set_major_locator(plt.MultipleLocator(500))
+            axes[idx].yaxis.set_minor_locator(plt.MultipleLocator(100))
+            axes[idx].grid(which='major', linestyle='-', linewidth='0.5', color='red')
+            axes[idx].grid(which='minor', linestyle=':', linewidth='0.5', color='black')
             axes[idx].legend(loc='best')
+            axes[idx].set_xlim(t[0], t[-1])
+            axes[idx].set_ylim(-1500, 1500)
+            axes[idx].set_xlabel('Time [s]')
+            axes[idx].set_ylabel('Voltage [μV]')
         plt.show()
 
     
