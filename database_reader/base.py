@@ -33,7 +33,7 @@ __all__ = [
 
 class PhysioNetDataBase(object):
     """
-
+    https://www.physionet.org/
     """
     def __init__(self, db_name:str, db_path:Optional[str]=None, verbose:int=2, **kwargs):
         """
@@ -285,6 +285,9 @@ class PhysioNetDataBase(object):
             the items to print,
             if not specified, then a comprehensive printing of meanings of all symbols will be performed
         """
+        attrs = vars(self)
+        methods = [func for func in dir(self) if callable(getattr(self, func)) and not (func.startswith('__') and func.endswith('__'))]
+
         beat_annotations = {
             'N': 'Normal beat',
             'L': 'Left bundle branch block beat',
@@ -363,7 +366,7 @@ class PhysioNetDataBase(object):
         ]
 
         if items is None:
-            _items = ['beat', 'non-beat', 'rhythm']
+            _items = ['attributes', 'methods', 'beat', 'non-beat', 'rhythm']
         elif isinstance(items, str):
             _items = [items]
         else:
@@ -371,11 +374,20 @@ class PhysioNetDataBase(object):
 
         pp = pprint.PrettyPrinter(indent=4)
 
+        if 'attributes' in _items:
+            print("--- helpler - attributes ---")
+            pp.pprint(attrs)
+        if 'methods' in _items:
+            print("--- helpler - methods ---")
+            pp.pprint(methods)
         if 'beat' in _items:
+            print("--- helpler - beat ---")
             pp.pprint(beat_annotations)
         if 'non-beat' in _items:
+            print("--- helpler - non-beat ---")
             pp.pprint(non_beat_annotations)
         if 'rhythm' in _items:
+            print("--- helpler - rhythm ---")
             pp.pprint(rhythm_annotations)
 
         for k in _items:
@@ -391,7 +403,7 @@ class PhysioNetDataBase(object):
 
 class NSRRDataBase(object):
     """
-
+    https://sleepdata.org/
     """
     def __init__(self, db_name:str, db_path:str, verbose:int=2, **kwargs):
         """
@@ -516,6 +528,31 @@ class NSRRDataBase(object):
             print(self.__doc__)
 
 
+    def helper(self, items:Union[List[str],str,type(None)]=None, **kwargs) -> NoReturn:
+        """
+        """
+        pp = pprint.PrettyPrinter(indent=4)
+
+        attrs = vars(self)
+        methods = [func for func in dir(self) if callable(getattr(self, func)) and not (func.startswith('__') and func.endswith('__'))]
+
+        if items is None:
+            _items = ['attributes', 'methods', ]
+        elif isinstance(items, str):
+            _items = [items]
+        else:
+            _items = items
+
+        pp = pprint.PrettyPrinter(indent=4)
+
+        if 'attributes' in _items:
+            print("--- helpler - attributes ---")
+            pp.pprint(attrs)
+        if 'methods' in _items:
+            print("--- helpler - methods ---")
+            pp.pprint(methods)
+
+
 class ImageDataBase(object):
     """
 
@@ -528,6 +565,31 @@ class ImageDataBase(object):
         self.verbose = verbose
 
 
+    def helper(self, items:Union[List[str],str,type(None)]=None, **kwargs) -> NoReturn:
+        """
+        """
+        pp = pprint.PrettyPrinter(indent=4)
+
+        attrs = vars(self)
+        methods = [func for func in dir(self) if callable(getattr(self, func)) and not (func.startswith('__') and func.endswith('__'))]
+
+        if items is None:
+            _items = ['attributes', 'methods', ]
+        elif isinstance(items, str):
+            _items = [items]
+        else:
+            _items = items
+
+        pp = pprint.PrettyPrinter(indent=4)
+
+        if 'attributes' in _items:
+            print("--- helpler - attributes ---")
+            pp.pprint(attrs)
+        if 'methods' in _items:
+            print("--- helpler - methods ---")
+            pp.pprint(methods)
+
+
 class AudioDataBase(object):
     """
 
@@ -538,6 +600,31 @@ class AudioDataBase(object):
         self.db_name = db_name
         self.db_path = db_path
         self.verbose = verbose
+
+
+    def helper(self, items:Union[List[str],str,type(None)]=None, **kwargs) -> NoReturn:
+        """
+        """
+        pp = pprint.PrettyPrinter(indent=4)
+
+        attrs = vars(self)
+        methods = [func for func in dir(self) if callable(getattr(self, func)) and not (func.startswith('__') and func.endswith('__'))]
+
+        if items is None:
+            _items = ['attributes', 'methods', ]
+        elif isinstance(items, str):
+            _items = [items]
+        else:
+            _items = items
+
+        pp = pprint.PrettyPrinter(indent=4)
+
+        if 'attributes' in _items:
+            print("--- helpler - attributes ---")
+            pp.pprint(attrs)
+        if 'methods' in _items:
+            print("--- helpler - methods ---")
+            pp.pprint(methods)
 
 
 class OtherDataBase(object):
@@ -606,3 +693,28 @@ class OtherDataBase(object):
         
         if detailed:
             print(self.__doc__)
+
+
+    def helper(self, items:Union[List[str],str,type(None)]=None, **kwargs) -> NoReturn:
+        """
+        """
+        pp = pprint.PrettyPrinter(indent=4)
+        
+        attrs = vars(self)
+        methods = [func for func in dir(self) if callable(getattr(self, func)) and not (func.startswith('__') and func.endswith('__'))]
+
+        if items is None:
+            _items = ['attributes', 'methods', ]
+        elif isinstance(items, str):
+            _items = [items]
+        else:
+            _items = items
+
+        pp = pprint.PrettyPrinter(indent=4)
+
+        if 'attributes' in _items:
+            print("--- helpler - attributes ---")
+            pp.pprint(attrs)
+        if 'methods' in _items:
+            print("--- helpler - methods ---")
+            pp.pprint(methods)

@@ -32,10 +32,16 @@ https://gist.github.com/wenh06/de3f1a35b242df8059ce7c24e4c1784c
 '''
 import wave
 import librosa
-import pydub
 import parselmouth as pm
 import soundfile as sf
-import pyAudioAnalysis as paa
+try:
+    import pydub
+except:
+    pydub = None
+try:
+    import pyAudioAnalysis as paa
+except:
+    paa = None
 import os
 import numpy as np
 from collections import namedtuple

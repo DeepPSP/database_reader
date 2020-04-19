@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 from scipy.io import loadmat
 from datetime import datetime
-from typing import Union, Optional, Any, List, NoReturn
+from typing import Union, Optional, Any, List, Dict, NoReturn
 from numbers import Real
 
 from database_reader.utils import ArrayLike
@@ -114,8 +114,11 @@ class CPSC2018(OtherDataBase):
             number of the record, or 'subject_ID'
 
         Returns:
-        int, the `patient_id` corr. to `rec_no`
+        --------
+        pid: int,
+            the `patient_id` corr. to `rec_no`
         """
+        pid = 0
         raise NotImplementedError
     
 
@@ -124,6 +127,8 @@ class CPSC2018(OtherDataBase):
 
         print the information about the database
 
+        Parameters:
+        -----------
         detailed: bool, default False,
             if False, an short introduction of the database will be printed,
             if True, then docstring of the class will be printed additionally
@@ -146,7 +151,8 @@ class CPSC2018(OtherDataBase):
         
         Returns:
         --------
-        ndarray, the ecg data
+        data: ndarray,
+            the ecg data
         """
         rec_fp = os.path.join(self.db_path, "A{0:04d}".format(rec_no) + self.rec_ext)
         data = loadmat(rec_fp)
@@ -167,8 +173,7 @@ class CPSC2018(OtherDataBase):
         Returns:
         --------
         ann_dict, dict,
-            the annotations with items:
-            
+            the annotations with items: ref. self.ann_items
         """
         assert rec_no in range(1, self.nb_records+1), "rec_no should be in range(1,{})".format(self.nb_records+1)
         ann_fp = os.path.join(self.db_path, "A{0:04d}".format(rec_no) + self.ann_ext)
@@ -236,7 +241,7 @@ class CPSC2018(OtherDataBase):
             the list of (full) diagnosis
         """
         diagonosis = self.get_labels(rec_no)
-        diagonosis = [self.diagnosis_abbr_to_full(item) for item in diagonosis]
+        diagonosis = [self.diagnosis_abbr_to_full[item] for item in diagonosis]
         return diagonosis
 
 
@@ -293,10 +298,11 @@ class CPSC2018(OtherDataBase):
         score_string = ','.join(str(i) for i in scores)
 
         with open(output_file, 'w') as f:
-            f.write(recording_string + '\n' + class_string + '\n' + label_string + '\n' + score_string + '\n')
+            # f.write(recording_string + '\n' + class_string + '\n' + label_string + '\n' + score_string + '\n')
+            f.write("\n".join([recording_string, class_string, label_string, score_string, ""]))
 
 
-    def plot(self, leads:Optional[Union[str, List[str]]]=None, **kwargs):
+    def plot(self, rec_no:int, leads:Optional[Union[str, List[str]]]=None, **kwargs):
         """
 
         Parameters:
@@ -310,9 +316,18 @@ class CPSC2018(OtherDataBase):
             leads = self.all_leads
         assert all([l in self.all_leads for l in leads])
 
+        lead_list = self.load_ann(rec_no)['df_leads']['lead_name'].tolist()
+        lead_indices = [lead_list.index(l) for l in leads]
+        data = self.load_data(rec_no)[lead_indices]
+
         nb_leads = len(leads)
 
-        fig, axes = plt.subplots(nb_leads, 1, figsize=(20, nb_leads*5))
+        t = np.arange(data.shape[1]) / self.freq
+
+        fig, axes = plt.subplots(nb_leads, 1, figsize=(50, nb_leads*5))
+        for idx in range(nb_leads):
+            axes[idx].plot(t, data[idx], label=leads[idx])
+        plt.show()
         
         raise NotImplementedError
 
