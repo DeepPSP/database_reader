@@ -43,10 +43,18 @@ class CPSC2018(OtherDataBase):
         (7) ST-segment depression                   STD         825
         (8) ST-segment elevated                     STE         202
     5. meanings in the .hea files: to write
+    6. knowledge about the abnormal rhythms:
+        6.1 AF:
+        6.2 I-AVB:
+        6.3 LBBB:
+        6.4 RBBB:
+        6.5 PAC:
+        6.6 PVC:
+        6.7 STD:
+        6.8 STE:
 
     NOTE:
-    -----
-    
+    -----    
 
     ISSUES:
     -------
@@ -57,7 +65,8 @@ class CPSC2018(OtherDataBase):
     References:
     -----------
     [1] http://2018.icbeb.org/#
-    [1] https://physionetchallenges.github.io/2020/
+    [2] https://physionetchallenges.github.io/2020/
+    [3] 
     """
     def __init__(self, db_path:str, verbose:int=2, **kwargs):
         """ finished, to be improved,
@@ -227,13 +236,15 @@ class CPSC2018(OtherDataBase):
         return labels
 
 
-    def get_diagnosis(self, rec_no:int) -> List[str]:
+    def get_diagnosis(self, rec_no:int, full_name:bool=True) -> List[str]:
         """ finished, not checked,
         
         Parameters:
         -----------
         rec_no: int,
             number of the record
+        full_name: bool, default True,
+            full name of the diagnosis or short name of it (ref. self.diagnosis_abbr_to_full)
         
         Returns:
         --------
@@ -241,7 +252,8 @@ class CPSC2018(OtherDataBase):
             the list of (full) diagnosis
         """
         diagonosis = self.get_labels(rec_no)
-        diagonosis = [self.diagnosis_abbr_to_full[item] for item in diagonosis]
+        if full_name:
+            diagonosis = [self.diagnosis_abbr_to_full[item] for item in diagonosis]
         return diagonosis
 
 
@@ -320,16 +332,19 @@ class CPSC2018(OtherDataBase):
         lead_indices = [lead_list.index(l) for l in leads]
         data = self.load_data(rec_no)[lead_indices]
 
+        diag = self.get_diagnosis(rec_no, full_name=False)
+
         nb_leads = len(leads)
 
         t = np.arange(data.shape[1]) / self.freq
-
-        fig, axes = plt.subplots(nb_leads, 1, figsize=(50, nb_leads*5))
+        duration = len(t) / self.freq
+        fig_sz = int(round(4.8 * duration)
+        plt.subplots_adjust(hspace=0.1)
+        fig, axes = plt.subplots(nb_leads, 1, sharex=True, figsize=(fig_sz, nb_leads*6))
         for idx in range(nb_leads):
-            axes[idx].plot(t, data[idx], label=leads[idx])
+            axes[idx].plot(t, data[idx], label=leads[idx]+'\n'+diag)
+            axes[idx].legend(loc='best')
         plt.show()
-        
-        raise NotImplementedError
 
     
     @classmethod

@@ -45,7 +45,7 @@ def plot_single_lead_ecg(s:ArrayLike, freq:Real, use_idx:bool=False, **kwargs) -
             secs = secs / freq
         mvs = np.array(c) * 0.001
         fig_sz = int(round(default_fig_sz * (idx_end-idx_start)/line_len))
-        fig, ax = plt.subplots(figsize=(fig_sz,6))
+        fig, ax = plt.subplots(figsize=(fig_sz, 6))
         ax.plot(secs, mvs, c='black')
 
         ax.axhline(y=0, linestyle='-', linewidth='1.0', color='red')
