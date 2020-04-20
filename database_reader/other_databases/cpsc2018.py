@@ -331,6 +331,7 @@ class CPSC2018(OtherDataBase):
         lead_list = self.load_ann(rec_no)['df_leads']['lead_name'].tolist()
         lead_indices = [lead_list.index(l) for l in leads]
         data = self.load_data(rec_no)[lead_indices]
+        y_ranges = np.max(np.abs(data), axis=1) + 100
 
         diag = self.get_diagnosis(rec_no, full_name=False)
 
@@ -338,11 +339,11 @@ class CPSC2018(OtherDataBase):
 
         t = np.arange(data.shape[1]) / self.freq
         duration = len(t) / self.freq
-        fig_sz = int(round(4.8 * duration))
-        plt.subplots_adjust(hspace=0.0)
-        fig, axes = plt.subplots(nb_leads, 1, sharex=True, figsize=(fig_sz, nb_leads*6))
+        fig_sz_w = int(round(4.8 * duration))
+        fig_sz_h = 6 * y_ranges / 1500
+        fig, axes = plt.subplots(nb_leads, 1, sharex=True, figsize=(fig_sz_w, np.sum(fig_sz_h)))
         for idx in range(nb_leads):
-            axes[idx].plot(t, data[idx], label=leads[idx]+'\n'+'labels-'+",".join(diag))
+            axes[idx].plot(t, data[idx], label='lead - ' + leads[idx] + '\n' + 'labels - ' + ",".join(diag))
             axes[idx].axhline(y=0, linestyle='-', linewidth='1.0', color='red')
             axes[idx].xaxis.set_major_locator(plt.MultipleLocator(0.2))
             axes[idx].xaxis.set_minor_locator(plt.MultipleLocator(0.04))
@@ -352,9 +353,10 @@ class CPSC2018(OtherDataBase):
             axes[idx].grid(which='minor', linestyle=':', linewidth='0.5', color='black')
             axes[idx].legend(loc='best')
             axes[idx].set_xlim(t[0], t[-1])
-            axes[idx].set_ylim(-1500, 1500)
+            axes[idx].set_ylim(-y_ranges[idx], y_ranges[idx])
             axes[idx].set_xlabel('Time [s]')
             axes[idx].set_ylabel('Voltage [μV]')
+        plt.subplots_adjust(hspace=0.2)
         plt.show()
 
     
@@ -368,4 +370,4 @@ class CPSC2018(OtherDataBase):
             d = disease
         assert all([item in cls.diagnosis_abbr_to_full.keys() for item in d])
 
-        raise NotImplementedError
+        # AF
