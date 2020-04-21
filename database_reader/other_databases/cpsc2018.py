@@ -45,18 +45,10 @@ class CPSC2018(OtherDataBase):
         (7) ST-segment depression                   STD         825
         (8) ST-segment elevated                     STE         202
     5. meanings in the .hea files: to write
-    6. knowledge about the abnormal rhythms:
-        6.1 AF:
-        6.2 I-AVB:
-        6.3 LBBB:
-        6.4 RBBB:
-        6.5 PAC:
-        6.6 PVC:
-        6.7 STD:
-        6.8 STE:
+    6. knowledge about the abnormal rhythms: ref. cls.get_disease_knowledge
 
     NOTE:
-    -----    
+    -----
 
     ISSUES:
     -------
@@ -82,6 +74,7 @@ class CPSC2018(OtherDataBase):
         super().__init__(db_name="CPSC2018", db_path=db_path, verbose=verbose, **kwargs)
 
         self.freq = 500
+        self.spacing = 1000 / self.freq
         self.rec_ext = '.mat'
         self.ann_ext = '.hea'
         self.all_records = [os.path.splitext(os.path.basename(item))[0] for item in glob.glob(os.path.join(db_path, '*'+self.rec_ext))]
@@ -165,6 +158,7 @@ class CPSC2018(OtherDataBase):
         data: ndarray,
             the ecg data
         """
+        assert rec_no in range(1, self.nb_records+1), "rec_no should be in range(1,{})".format(self.nb_records+1)
         rec_fp = os.path.join(self.db_path, "A{0:04d}".format(rec_no) + self.rec_ext)
         data = loadmat(rec_fp)
         data = np.asarray(data['val'], dtype=np.float64)
@@ -301,6 +295,7 @@ class CPSC2018(OtherDataBase):
         classes: list of str,
             ...
         """
+        assert rec_no in range(1, self.nb_records+1), "rec_no should be in range(1,{})".format(self.nb_records+1)
         recording = self.all_records[rec_no]
         new_file = recording + '.csv'
         output_file = os.path.join(output_dir, new_file)
@@ -324,6 +319,7 @@ class CPSC2018(OtherDataBase):
         leads: str or list of str, optional,
             the leads to plot
         """
+        assert rec_no in range(1, self.nb_records+1), "rec_no should be in range(1,{})".format(self.nb_records+1)
         if 'plt' not in dir():
             import matplotlib.pyplot as plt
         if leads is None or leads == 'all':
