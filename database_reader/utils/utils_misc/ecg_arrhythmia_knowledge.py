@@ -4,9 +4,16 @@ knowledge about ECG arrhythmia
 """
 
 
+__all__ = [
+    "AF", "I_AVB", "LBBB", "RBBB", "PAC", "PVC",
+    "STD", "STE",
+]
+
+
 AF = {
     "url": [
         "https://litfl.com/atrial-fibrillation-ecg-library/",
+        "https://en.wikipedia.org/wiki/Atrial_fibrillation#Screening",
     ],
     "knowledge": [
         "Irregularly irregular rhythm",
@@ -21,10 +28,14 @@ AF = {
 
 I_AVB = {
     "url": [
-        "",
+        "https://litfl.com/first-degree-heart-block-ecg-library/",
+        "https://en.wikipedia.org/wiki/Atrioventricular_block#First-degree_Atrioventricular_Block"
     ],
     "knowledge": [
-        ""
+        "PR interval > 200ms",
+        "Marked’ first degree block if PR interval > 300ms",
+        "P waves might be buried in the preceding T wave",
+        "There are no dropped, or skipped, beats"
     ],
 }
 
@@ -64,7 +75,16 @@ PVC = {
     ],
 }
 
-ST = {
+STD = {
+    "url": [
+        "",
+    ],
+    "knowledge": [
+        ""
+    ],
+}
+
+STE = {
     "url": [
         "",
     ],

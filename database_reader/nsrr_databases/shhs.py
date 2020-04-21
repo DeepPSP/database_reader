@@ -133,8 +133,10 @@ class SHHS(NSRRDataBase):
         epoch       --- Epoch (30 second) number
         rpointadj   --- R Point adjusted sample number (RPoint * (samplingrate/256))
     CAUTION: all the above sampling numbers except for rpointadj assume 256 Hz, while the rpointadj column has been added to provide an adjusted sample number based on the actual sampling rate.
-    3. event annotations: (in xml files) TODO
-    4. event_profusion annotations: (in xml files) TODO
+    3. event annotations: (in xml files)
+        TODO
+    4. event_profusion annotations: (in xml files)
+        TODO
 
     ***DEFINITION of concepts in sleep study:
     1. Arousal: (ref. [3],[4])
