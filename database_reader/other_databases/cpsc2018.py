@@ -44,11 +44,14 @@ class CPSC2018(OtherDataBase):
         (6) Premature ventricular contraction       PVC         672
         (7) ST-segment depression                   STD         825
         (8) ST-segment elevated                     STE         202
-    5. meanings in the .hea files: to write
-    6. knowledge about the abnormal rhythms: ref. cls.get_disease_knowledge
+    5. ordering of the leads in the data of all the records are
+        ['I', 'II', 'III', 'aVR', 'aVL', 'aVF', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6']
+    6. meanings in the .hea files: to write
+    7. knowledge about the abnormal rhythms: ref. cls.get_disease_knowledge
 
     NOTE:
     -----
+    1. Age of records A0608, A1549, A1876, A2299, A5990 are 'NaN'
 
     ISSUES:
     -------
@@ -192,7 +195,10 @@ class CPSC2018(OtherDataBase):
         ann_dict['freq'] = int(ann_dict['freq'])
         ann_dict['nb_samples'] = int(ann_dict['nb_samples'])
         ann_dict['datetime'] = datetime.strptime(' '.join([ann_dict['datetime'], daytime]), '%d-%b-%Y %H:%M:%S')
-        ann_dict['age'] = int([l for l in header_data if l.startswith('#Age')][0].split(": ")[-1])
+        try: # see NOTE. 1.
+            ann_dict['age'] = int([l for l in header_data if l.startswith('#Age')][0].split(": ")[-1])
+        except:
+            ann_dict['age'] = np.nan
         ann_dict['sex'] = [l for l in header_data if l.startswith('#Sex')][0].split(": ")[-1]
         ann_dict['diagnosis'] = [l for l in header_data if l.startswith('#Dx')][0].split(": ")[-1].split(",")
         for idx, d in enumerate(ann_dict['diagnosis']):
