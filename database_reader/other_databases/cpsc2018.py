@@ -152,13 +152,15 @@ class CPSC2018(OtherDataBase):
             print(self.__doc__)
         
 
-    def load_data(self, rec_no:int) -> np.ndarray:
+    def load_data(self, rec_no:int, data_format='channels_last') -> np.ndarray:
         """ finished, not checked,
 
         Parameters:
         -----------
         rec_no: int,
             number of the record, NOTE that rec_no starts from 1
+        data_format: str, default 'channels_last',
+            format of the ecg data, 'channels_last' or 'channels_first' (original)
         
         Returns:
         --------
@@ -169,6 +171,8 @@ class CPSC2018(OtherDataBase):
         rec_fp = os.path.join(self.db_path, "A{0:04d}".format(rec_no) + self.rec_ext)
         data = loadmat(rec_fp)
         data = np.asarray(data['val'], dtype=np.float64)
+        if data_format == 'channels_last':
+            data = data.T
         
         return data
 
