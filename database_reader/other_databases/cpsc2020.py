@@ -125,13 +125,15 @@ class CPSC2020(OtherDataBase):
             print(self.__doc__)
 
 
-    def load_data(self, rec_no:int) -> np.ndarray:
+    def load_data(self, rec_no:int, keep_dim:bool=True) -> np.ndarray:
         """ finished, not checked,
 
         Parameters:
         -----------
         rec_no: int,
             number of the record, NOTE that rec_no starts from 1
+        keep_dim: bool, default True,
+            whether or not to flatten the data of shape (n,1)
         
         Returns:
         --------
@@ -140,7 +142,9 @@ class CPSC2020(OtherDataBase):
         """
         assert rec_no in range(1, self.nb_records+1), "rec_no should be in range(1,{})".format(self.nb_records+1)
         rec_fp = os.path.join(self.rec_folder, self.all_records[rec_no-1] + self.rec_ext)
-        data = (1000 * loadmat(rec_fp).flatten()).astype(int)
+        data = (1000 * loadmat(rec_fp)).astype(int)
+        if not keep_dim:
+            data = data.flatten()
         return data
 
 

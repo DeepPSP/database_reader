@@ -62,6 +62,8 @@ class CPSC2019(OtherDataBase):
         self.freq = 500
         self.spacing = 1000 / self.freq
 
+        self.all_records = []
+
 
     def get_patient_id(self, rec_no:int) -> int:
         """ not finished,
@@ -97,3 +99,14 @@ class CPSC2019(OtherDataBase):
         
         if detailed:
             print(self.__doc__)
+
+
+    def plot(self, rec_no:int, **kwargs) -> NoReturn:
+        """ not finished, not checked,
+
+        Parameters:
+        -----------
+        rec_no: int,
+            number of the record, NOTE that rec_no starts from 1
+        """
+        raise NotImplementedError

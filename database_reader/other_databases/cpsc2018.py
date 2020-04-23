@@ -13,7 +13,10 @@ from datetime import datetime
 from typing import Union, Optional, Any, List, Dict, NoReturn
 from numbers import Real
 
-from database_reader.utils import ArrayLike
+from database_reader.utils import (
+    ArrayLike,
+    AF, I_AVB, LBBB, RBBB, PAC, PVC, STD, STE,
+)
 from database_reader.base import OtherDataBase
 
 
@@ -51,13 +54,14 @@ class CPSC2018(OtherDataBase):
 
     NOTE:
     -----
-    1. Age of records A0608, A1549, A1876, A2299, A5990 are 'NaN'
+    1. Ages of records A0608, A1549, A1876, A2299, A5990 are 'NaN'
 
     ISSUES:
     -------
 
     Usage:
     ------
+    1. ecg arrythmia detection
 
     References:
     -----------
