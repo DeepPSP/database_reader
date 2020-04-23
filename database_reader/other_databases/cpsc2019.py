@@ -100,6 +100,40 @@ class CPSC2019(OtherDataBase):
         if detailed:
             print(self.__doc__)
 
+    
+    def load_data(self, rec_no:int, keep_dim:bool=True) -> np.ndarray:
+        """ not finished, not checked,
+
+        Parameters:
+        -----------
+        rec_no: int,
+            number of the record, NOTE that rec_no starts from 1
+        keep_dim: bool, default True,
+            whether or not to flatten the data of shape (n,1)
+        
+        Returns:
+        --------
+        data: ndarray,
+            the ecg data
+        """
+        raise NotImplementedError
+
+
+    def load_ann(self, rec_no:int) -> Dict[str, np.ndarray]:
+        """ not finished, not checked,
+
+        Parameters:
+        -----------
+        rec_no: int,
+            number of the record, NOTE that rec_no starts from 1
+        
+        Returns:
+        --------
+        ann: dict,
+            with items "SPB_indices" and "PVC_indices", which record the indices of SPBs and PVCs
+        """
+        raise NotImplementedError
+
 
     def plot(self, rec_no:int, **kwargs) -> NoReturn:
         """ not finished, not checked,

@@ -211,7 +211,7 @@ class CPSC2018(OtherDataBase):
         ann_dict['diagnosis'] = [l for l in header_data if l.startswith('#Dx')][0].split(": ")[-1].split(",")
         for idx, d in enumerate(ann_dict['diagnosis']):
             if d == 'Normal':
-                ann_dict['diagnosis'] = 'N'
+                ann_dict['diagnosis'] = ['N']
         ann_dict['medical_prescription'] = [l for l in header_data if l.startswith('#Rx')][0].split(": ")[-1]
         ann_dict['history'] = [l for l in header_data if l.startswith('#Hx')][0].split(": ")[-1]
         ann_dict['symptom_or_surgery'] = [l for l in header_data if l.startswith('#Sx')][0].split(": ")[-1]
