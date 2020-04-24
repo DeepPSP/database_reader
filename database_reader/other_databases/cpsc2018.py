@@ -88,6 +88,7 @@ class CPSC2018(OtherDataBase):
         self.nb_records = 6877
         self.all_leads = ['I', 'II', 'III', 'aVR', 'aVL', 'aVF', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6',]
         self.all_diagnosis = ['N', 'AF', 'I-AVB', 'LBBB', 'RBBB', 'PAC', 'PVC', 'STD', 'STE',]
+        self.all_diagnosis_original = sorted(['Normal', 'AF', 'I-AVB', 'LBBB', 'RBBB', 'PAC', 'PVC', 'STD', 'STE',])
         self.diagnosis_abbr_to_full = {
             'N': 'Normal',
             'AF': 'Atrial fibrillation',
@@ -177,7 +178,7 @@ class CPSC2018(OtherDataBase):
         return data
 
 
-    def load_ann(self, rec_no:int) -> dict:
+    def load_ann(self, rec_no:int, keep_original:bool=False) -> dict:
         """ finished, not checked,
         
         Parameters:
@@ -185,6 +186,9 @@ class CPSC2018(OtherDataBase):
         rec_no: int, optional,
             number of the record, or 'subject_ID',
             if not specified, then all annotations will be returned
+        keep_original: bool, default False,
+            keep the original annotations or not,
+            mainly concerning 'N' and 'Normal'
         
         Returns:
         --------
@@ -209,9 +213,10 @@ class CPSC2018(OtherDataBase):
             ann_dict['age'] = np.nan
         ann_dict['sex'] = [l for l in header_data if l.startswith('#Sex')][0].split(": ")[-1]
         ann_dict['diagnosis'] = [l for l in header_data if l.startswith('#Dx')][0].split(": ")[-1].split(",")
-        for idx, d in enumerate(ann_dict['diagnosis']):
-            if d == 'Normal':
-                ann_dict['diagnosis'] = ['N']
+        if not keep_original:
+            for idx, d in enumerate(ann_dict['diagnosis']):
+                if d == 'Normal':
+                    ann_dict['diagnosis'] = ['N']
         ann_dict['medical_prescription'] = [l for l in header_data if l.startswith('#Rx')][0].split(": ")[-1]
         ann_dict['history'] = [l for l in header_data if l.startswith('#Hx')][0].split(": ")[-1]
         ann_dict['symptom_or_surgery'] = [l for l in header_data if l.startswith('#Sx')][0].split(": ")[-1]
@@ -228,20 +233,23 @@ class CPSC2018(OtherDataBase):
         return ann_dict
 
 
-    def get_labels(self, rec_no:int) -> List[str]:
+    def get_labels(self, rec_no:int, keep_original:bool=False) -> List[str]:
         """ finished, not checked,
         
         Parameters:
         -----------
         rec_no: int,
             number of the record
+        keep_original: bool, default False,
+            keep the original annotations or not,
+            mainly concerning 'N' and 'Normal'
         
         Returns:
         --------
         labels, list,
             the list of labels (abbr. diagnosis)
         """
-        ann_dict = self.load_ann(rec_no)
+        ann_dict = self.load_ann(rec_no, keep_original=keep_original)
         labels = ann_dict['diagnosis']
         return labels
 
