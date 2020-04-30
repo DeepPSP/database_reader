@@ -180,7 +180,7 @@ class SHHS(NSRRDataBase):
     ISSUES:
     -------
     1. `Start__sec_` might not be the start time, but rather the end time, of the 5 minute windows in some records
-    2. 
+    2. the current version "0.15.0" removed EEG spectral summary variables
 
     Usage:
     ------
@@ -426,8 +426,8 @@ class SHHS(NSRRDataBase):
         """
         self.psg_data_path = os.path.join(self.db_path, "polysomnography", "edfs")
         self.ann_path = os.path.join(self.db_path, "datasets")
-        self.hrv_ann_path = os.path.join(self.db_path, "hrv-analysis")
-        self.eeg_ann_path = os.path.join(self.db_path, "eeg-spectral-analysis")
+        self.hrv_ann_path = os.path.join(self.ann_path, "hrv-analysis")
+        self.eeg_ann_path = os.path.join(self.ann_path, "eeg-spectral-analysis")
         self.wave_deli_path = os.path.join(self.db_path, "polysomnography", "annotations-rpoints")
         self.event_ann_path = os.path.join(self.db_path, "polysomnography", "annotations-events-nsrr")
         self.event_profusion_ann_path = os.path.join(self.db_path, "polysomnography", "annotations-events-profusion")
@@ -594,10 +594,10 @@ class SHHS(NSRRDataBase):
         }
         folder_or_file = {
             "psg": self.psg_data_path,
-            "hrv_summary": self.hrv_ann_path + 'shhs{}-hrv-summary-{}.csv'.format(self.get_visit_number(rec), self.current_version),
-            "hrv_5min": self.hrv_ann_path + 'shhs{}-hrv-5min-{}.csv'.format(self.get_visit_number(rec), self.current_version),
-            "eeg_band_summary": self.eeg_ann_path + 'shhs{}-eeg-band-summary-dataset-{}.csv'.format(self.get_visit_number(rec), self.current_version),
-            "eeg_spectral_summary": self.eeg_ann_path + 'shhs{}-eeg-spectral-summary-dataset-{}.csv'.format(self.get_visit_number(rec), self.current_version),
+            "hrv_summary": os.path.join(self.hrv_ann_path, 'shhs{}-hrv-summary-{}.csv'.format(self.get_visit_number(rec), self.current_version)),
+            "hrv_5min": os.path.join(self.hrv_ann_path, 'shhs{}-hrv-5min-{}.csv'.format(self.get_visit_number(rec), self.current_version)),
+            "eeg_band_summary": os.path.join(self.eeg_ann_path, 'shhs{}-eeg-band-summary-dataset-{}.csv'.format(self.get_visit_number(rec), self.current_version)),
+            "eeg_spectral_summary": os.path.join(self.eeg_ann_path, 'shhs{}-eeg-spectral-summary-dataset-{}.csv'.format(self.get_visit_number(rec), self.current_version)),
             "wave_delineation": self.wave_deli_path,
             "event": self.event_ann_path,
             "event_profusion": self.event_profusion_ann_path
@@ -617,7 +617,7 @@ class SHHS(NSRRDataBase):
         """
 
         """
-        pass
+        raise NotImplementedError
 
 
     def database_info(self, detailed:bool=False) -> NoReturn:
@@ -1307,7 +1307,10 @@ class SHHS(NSRRDataBase):
         --------
 
         """
-        pass
+        if self.current_version >= "0.15.0":
+            print("EEG spectral summary variables are removed in this version")
+        else:
+            raise NotImplementedError
 
 
     def load_eeg_spectral_ann(self, rec:str, eeg_spectral_ann_path:Optional[str]=None) -> pd.DataFrame:
@@ -1325,7 +1328,10 @@ class SHHS(NSRRDataBase):
         --------
 
         """
-        pass
+        if self.current_version >= "0.15.0":
+            print("EEG spectral summary variables are removed in this version")
+        else:
+            raise NotImplementedError
 
 
     # TODO: add more functions for annotation reading

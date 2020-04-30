@@ -10,9 +10,11 @@ Remarks:
 1. for whole-dataset visualizing: http://zzz.bwh.harvard.edu/luna/vignettes/dataplots/
 2. visualizing using UMAP: http://zzz.bwh.harvard.edu/luna/vignettes/nsrr-umap/
 """
-
+import os
+import sys
 import pprint
 import wfdb
+import logging
 import numpy as np
 import pandas as pd
 from pyedflib import EdfReader
@@ -35,7 +37,7 @@ class PhysioNetDataBase(object):
     """
     https://www.physionet.org/
     """
-    def __init__(self, db_name:str, db_path:Optional[str]=None, verbose:int=2, **kwargs):
+    def __init__(self, db_name:str, db_path:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
         Parameters:
         -----------
@@ -44,7 +46,10 @@ class PhysioNetDataBase(object):
         db_path: str, optional,
             storage path of the database,
             if not specified, `wfdb` will fetch data from the website of PhysioNet
+        working_dir: str, optional,
+            working directory, to store intermediate files and log file
         verbose: int, default 2,
+        kwargs: dict,
 
         NOTE:
         -----
@@ -60,6 +65,7 @@ class PhysioNetDataBase(object):
         `self.freq` for those with single signal source, e.g. ECG,
         for those with multiple signal sources like PSG, self.freq is default to the frequency of ECG if ECG applicable
         """
+        self.working_dir = working_dir or os.getcwd()
         self.freq = None
         self.all_records = None
 
@@ -67,6 +73,37 @@ class PhysioNetDataBase(object):
         self.wfdb_ann = None
         self.device_id = None  # maybe data are imported into impala db, to facilitate analyzing
         self.verbose = verbose
+
+        self.logger = logging.getLogger('PhysioNet-{}-logger'.format(self.db_name))
+        log_filepath = os.path.join(self.working_dir, "PhysioNet-{}.log".format(self.db_name))
+        print("log file path is set {}".format(log_filepath))
+
+        c_handler = logging.StreamHandler(sys.stdout)
+        f_handler = logging.FileHandler(log_filepath)
+        if self.verbose >= 2:
+            print("levels of c_handler and f_handler are set DEBUG")
+            c_handler.setLevel(logging.DEBUG)
+            f_handler.setLevel(logging.DEBUG)
+            self.logger.setLevel(logging.DEBUG)
+        elif self.verbose >= 1:
+            print("level of c_handler is set INFO, level of f_handler is set DEBUG")
+            c_handler.setLevel(logging.INFO)
+            f_handler.setLevel(logging.DEBUG)
+            self.logger.setLevel(logging.DEBUG)
+        else:
+            print("levels of c_handler and f_handler are set WARNING")
+            c_handler.setLevel(logging.WARNING)
+            f_handler.setLevel(logging.WARNING)
+            self.logger.setLevel(logging.WARNING)
+
+        # Create formatters and add it to handlers
+        c_format = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
+        f_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        c_handler.setFormatter(c_format)
+        f_handler.setFormatter(f_format)
+
+        self.logger.addHandler(c_handler)
+        self.logger.addHandler(f_handler)
         
         try:
             all_dbs = wfdb.io.get_dbs()
@@ -405,7 +442,7 @@ class NSRRDataBase(object):
     """
     https://sleepdata.org/
     """
-    def __init__(self, db_name:str, db_path:str, verbose:int=2, **kwargs):
+    def __init__(self, db_name:str, db_path:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
         Parameters:
         -----------
@@ -413,7 +450,10 @@ class NSRRDataBase(object):
             name of the database
         db_path: str,
             storage path of the database
+        working_dir: str, optional,
+            working directory, to store intermediate files and log file
         verbose: int, default 2,
+        kwargs: dict,
 
         typical `db_path`:
         ------------------
@@ -422,11 +462,43 @@ class NSRRDataBase(object):
         """
         self.db_name = db_name
         self.db_path = db_path
+        self.working_dir = working_dir or os.getcwd()
         self.freq = None
         self.all_records = None
         self.device_id = None  # maybe data are imported into impala db, to facilitate analyzing
         self.file_opened = None
         self.verbose = verbose
+
+        self.logger = logging.getLogger('NSRR-{}-logger'.format(self.db_name))
+        log_filepath = os.path.join(self.working_dir, "NSRR-{}.log".format(self.db_name))
+        print("log file path is set {}".format(log_filepath))
+
+        c_handler = logging.StreamHandler(sys.stdout)
+        f_handler = logging.FileHandler(log_filepath)
+        if self.verbose >= 2:
+            print("levels of c_handler and f_handler are set DEBUG")
+            c_handler.setLevel(logging.DEBUG)
+            f_handler.setLevel(logging.DEBUG)
+            self.logger.setLevel(logging.DEBUG)
+        elif self.verbose >= 1:
+            print("level of c_handler is set INFO, level of f_handler is set DEBUG")
+            c_handler.setLevel(logging.INFO)
+            f_handler.setLevel(logging.DEBUG)
+            self.logger.setLevel(logging.DEBUG)
+        else:
+            print("levels of c_handler and f_handler are set WARNING")
+            c_handler.setLevel(logging.WARNING)
+            f_handler.setLevel(logging.WARNING)
+            self.logger.setLevel(logging.WARNING)
+
+        # Create formatters and add it to handlers
+        c_format = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
+        f_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        c_handler.setFormatter(c_format)
+        f_handler.setFormatter(f_format)
+
+        self.logger.addHandler(c_handler)
+        self.logger.addHandler(f_handler)
         
         all_dbs = [
             ["shhs", "Multi-cohort study focused on sleep-disordered breathing and cardiovascular outcomes"],
@@ -557,12 +629,54 @@ class ImageDataBase(object):
     """
 
     """
-    def __init__(self, db_name:str, db_path:str, verbose:int=2, **kwargs):
+    def __init__(self, db_name:str, db_path:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
+        Parameters:
+        -----------
+        db_name: str,
+            name of the database
+        db_path: str,
+            storage path of the database
+        working_dir: str, optional,
+            working directory, to store intermediate files and log file
+        verbose: int, default 2,
+        kwargs: dict,
         """
         self.db_name = db_name
         self.db_path = db_path
+        self.working_dir = working_dir or os.getcwd()
         self.verbose = verbose
+
+        self.logger = logging.getLogger('{}-logger'.format(self.db_name))
+        log_filepath = os.path.join(self.working_dir, "{}.log".format(self.db_name))
+        print("log file path is set {}".format(log_filepath))
+
+        c_handler = logging.StreamHandler(sys.stdout)
+        f_handler = logging.FileHandler(log_filepath)
+        if self.verbose >= 2:
+            print("levels of c_handler and f_handler are set DEBUG")
+            c_handler.setLevel(logging.DEBUG)
+            f_handler.setLevel(logging.DEBUG)
+            self.logger.setLevel(logging.DEBUG)
+        elif self.verbose >= 1:
+            print("level of c_handler is set INFO, level of f_handler is set DEBUG")
+            c_handler.setLevel(logging.INFO)
+            f_handler.setLevel(logging.DEBUG)
+            self.logger.setLevel(logging.DEBUG)
+        else:
+            print("levels of c_handler and f_handler are set WARNING")
+            c_handler.setLevel(logging.WARNING)
+            f_handler.setLevel(logging.WARNING)
+            self.logger.setLevel(logging.WARNING)
+
+        # Create formatters and add it to handlers
+        c_format = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
+        f_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        c_handler.setFormatter(c_format)
+        f_handler.setFormatter(f_format)
+
+        self.logger.addHandler(c_handler)
+        self.logger.addHandler(f_handler)
 
 
     def helper(self, items:Union[List[str],str,type(None)]=None, **kwargs) -> NoReturn:
@@ -594,12 +708,54 @@ class AudioDataBase(object):
     """
 
     """
-    def __init__(self, db_name:str, db_path:str, verbose:int=2, **kwargs):
+    def __init__(self, db_name:str, db_path:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
+        Parameters:
+        -----------
+        db_name: str,
+            name of the database
+        db_path: str,
+            storage path of the database
+        working_dir: str, optional,
+            working directory, to store intermediate files and log file
+        verbose: int, default 2,
+        kwargs: dict,
         """
         self.db_name = db_name
         self.db_path = db_path
+        self.working_dir = working_dir or os.getcwd()
         self.verbose = verbose
+
+        self.logger = logging.getLogger('{}-logger'.format(self.db_name))
+        log_filepath = os.path.join(self.working_dir, "{}.log".format(self.db_name))
+        print("log file path is set {}".format(log_filepath))
+
+        c_handler = logging.StreamHandler(sys.stdout)
+        f_handler = logging.FileHandler(log_filepath)
+        if self.verbose >= 2:
+            print("levels of c_handler and f_handler are set DEBUG")
+            c_handler.setLevel(logging.DEBUG)
+            f_handler.setLevel(logging.DEBUG)
+            self.logger.setLevel(logging.DEBUG)
+        elif self.verbose >= 1:
+            print("level of c_handler is set INFO, level of f_handler is set DEBUG")
+            c_handler.setLevel(logging.INFO)
+            f_handler.setLevel(logging.DEBUG)
+            self.logger.setLevel(logging.DEBUG)
+        else:
+            print("levels of c_handler and f_handler are set WARNING")
+            c_handler.setLevel(logging.WARNING)
+            f_handler.setLevel(logging.WARNING)
+            self.logger.setLevel(logging.WARNING)
+
+        # Create formatters and add it to handlers
+        c_format = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
+        f_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        c_handler.setFormatter(c_format)
+        f_handler.setFormatter(f_format)
+
+        self.logger.addHandler(c_handler)
+        self.logger.addHandler(f_handler)
 
 
     def helper(self, items:Union[List[str],str,type(None)]=None, **kwargs) -> NoReturn:
@@ -631,7 +787,7 @@ class OtherDataBase(object):
     """
 
     """
-    def __init__(self, db_name:str, db_path:str, verbose:int=2, **kwargs):
+    def __init__(self, db_name:str, db_path:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         r"""
         Parameters:
         -----------
@@ -639,7 +795,10 @@ class OtherDataBase(object):
             name of the database
         db_path: str,
             storage path of the database
+        working_dir: str, optional,
+            working directory, to store intermediate files and log file
         verbose: int, default 2,
+        kwargs: dict,
 
         typical 'db_path':
         ------------------
@@ -648,12 +807,44 @@ class OtherDataBase(object):
         """
         self.db_name = db_name
         self.db_path = db_path
+        self.working_dir = working_dir or os.getcwd()
         self.freq = None
         self.all_records = None
         self.device_id = None  # maybe data are imported into impala db, to facilitate analyzing
         self.verbose = verbose
         
         self.kwargs = kwargs
+
+        self.logger = logging.getLogger('{}-logger'.format(self.db_name))
+        log_filepath = os.path.join(self.working_dir, "{}.log".format(self.db_name))
+        print("log file path is set {}".format(log_filepath))
+
+        c_handler = logging.StreamHandler(sys.stdout)
+        f_handler = logging.FileHandler(log_filepath)
+        if self.verbose >= 2:
+            print("levels of c_handler and f_handler are set DEBUG")
+            c_handler.setLevel(logging.DEBUG)
+            f_handler.setLevel(logging.DEBUG)
+            self.logger.setLevel(logging.DEBUG)
+        elif self.verbose >= 1:
+            print("level of c_handler is set INFO, level of f_handler is set DEBUG")
+            c_handler.setLevel(logging.INFO)
+            f_handler.setLevel(logging.DEBUG)
+            self.logger.setLevel(logging.DEBUG)
+        else:
+            print("levels of c_handler and f_handler are set WARNING")
+            c_handler.setLevel(logging.WARNING)
+            f_handler.setLevel(logging.WARNING)
+            self.logger.setLevel(logging.WARNING)
+
+        # Create formatters and add it to handlers
+        c_format = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
+        f_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        c_handler.setFormatter(c_format)
+        f_handler.setFormatter(f_format)
+
+        self.logger.addHandler(c_handler)
+        self.logger.addHandler(f_handler)
         
 
     def get_subject_id(self, rec:str) -> int:
