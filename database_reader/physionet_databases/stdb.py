@@ -42,8 +42,10 @@ class STDB(PhysioNetDataBase):
     -----------
     [1] https://physionet.org/content/stdb/1.0.0/
     """
-    def __init__(self, db_path:Optional[str]=None, **kwargs):
-        super().__init__(db_name='stdb', db_path=db_path, **kwargs)
+    def __init__(self, db_path:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
+        """
+        """
+        super().__init__(db_name='stdb', db_path=db_path, working_dir=working_dir, verbose=verbose, **kwargs)
         try:
             self.all_records = wfdb.get_record_list('stdb')
         except:

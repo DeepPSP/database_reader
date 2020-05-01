@@ -17,7 +17,7 @@ __all__ = [
 class ACNE04(ImageDataBase):
     """
     """
-    def __init__(self, db_path:str, verbose:int=2, **kwargs):
+    def __init__(self, db_path:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
         """
-        super().__init__(db_name="ACNE04", db_path=db_path, verbose=verbose, **kwargs)
+        super().__init__(db_name="ACNE04", db_path=db_path, working_dir=working_dir, verbose=verbose, **kwargs)

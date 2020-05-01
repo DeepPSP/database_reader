@@ -45,10 +45,10 @@ class OYA(NSRRDataBase):
     -----------
     [1] 
     """
-    def __init__(self, db_path:str, verbose:int=2, **kwargs):
+    def __init__(self, db_path:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
         """
-        super().__init__(db_name='OYA', db_path=db_path, verbose=verbose, **kwargs)
+        super().__init__(db_name='OYA', db_path=db_path, working_dir=working_dir, verbose=verbose, **kwargs)
 
 
     def get_subject_id(self, rec:str) -> int:

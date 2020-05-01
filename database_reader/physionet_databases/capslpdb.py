@@ -45,8 +45,10 @@ class CAPSLPDB(PhysioNetDataBase):
     -----------
     [1] https://physionet.org/content/capslpdb/1.0.0/
     """
-    def __init__(self, db_path:Optional[str]=None, **kwargs):
-        super().__init__(db_name='capslpdb', db_path=db_path, **kwargs)
+    def __init__(self, db_path:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
+        """
+        """
+        super().__init__(db_name='capslpdb', db_path=db_path, working_dir=working_dir, verbose=verbose, **kwargs)
         self.freq = None  # psg data with different frequencies for each signal
         try:
             self.all_records = [os.path.splitext(item)[0] for item in wfdb.get_record_list('capslpdb')]

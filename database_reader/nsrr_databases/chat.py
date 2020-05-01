@@ -41,9 +41,9 @@ class CHAT(NSRRDataBase):
     -----------
     [1] 
     """
-    def __init__(self, db_path:Optional[str]=None, **kwargs):
+    def __init__(self, db_path:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
 
         """
-        super().__init__(db_name='CHAT', db_path=db_path, **kwargs)
+        super().__init__(db_name='CHAT', db_path=db_path, working_dir=working_dir, verbose=verbose, **kwargs)
         

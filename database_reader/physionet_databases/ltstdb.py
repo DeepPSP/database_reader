@@ -46,11 +46,11 @@ class LTSTDB(PhysioNetDataBase):
     -----------
     [1] https://physionet.org/content/ltstdb/1.0.0/
     """
-    def __init__(self, db_path:Optional[str]=None, **kwargs):
+    def __init__(self, db_path:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
         
         """
-        super().__init__(db_name='ltstdb', db_path=db_path, **kwargs)
+        super().__init__(db_name='ltstdb', db_path=db_path, working_dir=working_dir, verbose=verbose, **kwargs)
         self.freq = 250
         try:
             self.all_records = wfdb.get_record_list('ltstdb')

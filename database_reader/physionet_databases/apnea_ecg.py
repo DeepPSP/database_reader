@@ -53,8 +53,10 @@ class ApneaECG(PhysioNetDataBase):
     [1] https://physionet.org/content/apnea-ecg/1.0.0/
     [2] T Penzel, GB Moody, RG Mark, AL Goldberger, JH Peter. The Apnea-ECG Database. Computers in Cardiology 2000;27:255-258
     """
-    def __init__(self, db_path:Optional[str]=None, **kwargs):
-        super().__init__(db_name='apnea-ecg', db_path=db_path, **kwargs)
+    def __init__(self, db_path:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
+        """
+        """
+        super().__init__(db_name='apnea-ecg', db_path=db_path, working_dir=working_dir, verbose=verbose, **kwargs)
         self.freq = 100
         try:
             self.all_records = wfdb.get_record_list('apnea-ecg')

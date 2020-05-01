@@ -200,13 +200,13 @@ class SHHS(NSRRDataBase):
     [9] http://healthysleep.med.harvard.edu/sleep-apnea/diagnosing-osa/understanding-results
     [10] https://sleepdata.org/datasets/shhs/pages/full-description.md
     """
-    def __init__(self, db_path:str, verbose:int=2, **kwargs):
+    def __init__(self, db_path:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
 
         default db_path:
             "/export/algo/wenh06/ecg_data/shhs/"
         """
-        super().__init__(db_name='SHHS', db_path=db_path, verbose=verbose, **kwargs)
+        super().__init__(db_name='SHHS', db_path=db_path, working_dir=working_dir, verbose=verbose, **kwargs)
 
         self.current_version = kwargs.get("current_version" , "0.15.0")
 

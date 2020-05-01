@@ -51,7 +51,7 @@ class SleepAccel(OtherDataBase):
     [3] https://alpha.physionet.org/content/sleep-accel/1.0.0/
     [4] to add acc_to_count references
     """
-    def __init__(self, db_path:str, verbose:int=2, **kwargs):
+    def __init__(self, db_path:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """ not finished,
 
         Parameters:
@@ -62,7 +62,7 @@ class SleepAccel(OtherDataBase):
 
         typical 'db_path':  "/export/servers/data/sleep_accel/"
         """
-        super().__init__(db_name="SleepAccel", db_path=db_path, verbose=verbose, **kwargs)
+        super().__init__(db_name="SleepAccel", db_path=db_path, working_dir=working_dir, verbose=verbose, **kwargs)
 
         self.hr_path = os.path.join(db_path, "heart_rate")
         self.lb_path = os.path.join(db_path, "labels")

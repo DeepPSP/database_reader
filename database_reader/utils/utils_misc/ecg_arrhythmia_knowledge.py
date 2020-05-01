@@ -1,6 +1,16 @@
 # -*- coding: utf-8 -*-
 """
 knowledge about ECG arrhythmia
+
+Standard_12Leads_ECG:
+---------------------
+    Inferior leads: II, III, aVF
+    Lateral leads: I, aVL, V5-6
+    Septal leads: V1, aVR
+    Anterior leads: V2-4
+    -----------------------------------
+    Chest (precordial) leads: V1-6
+    Limb leads: I, II, III, aVF, aVR, aVL
 """
 
 
@@ -44,19 +54,29 @@ I_AVB = {
 
 LBBB = {
     "url": [
-        "",
+        "https://litfl.com/left-bundle-branch-block-lbbb-ecg-library/",
+        "https://en.wikipedia.org/wiki/Left_bundle_branch_block",
     ],
     "knowledge": [
-        ""
+        "Heart rhythm must be supraventricular",
+        "QRS duration of > 120 ms",
+        "Lead V1: Dominant S wave, with QS or rS complex",
+        "Lateral leads: M-shaped, or notched, or broad monophasic R wave or RS complex; absence of Q waves (small Q waves are still allowed in aVL)",
+        "Chest (precordial) leads: poor R wave progression",
+        "Left precordial leads (V5-6): prolonged R wave peak time > 60ms",
+        "ST segments and T waves always go in the opposite direction to the main vector of the QRS complex",
     ],
 }
 
 RBBB = {
     "url": [
-        "",
+        "https://litfl.com/right-bundle-branch-block-rbbb-ecg-library/",
+        "https://en.wikipedia.org/wiki/Right_bundle_branch_block",
     ],
     "knowledge": [
-        ""
+        "Broad QRS > 100 ms (incomplete block) or > 120 ms (complete block)",
+        "Leads V1-3: RSR’ pattern (‘M-shaped’ QRS complex); sometimes a broad monophasic R wave or a qR complex in V1",
+        "Lateral leads: wide, slurred S wave",
     ],
 }
 

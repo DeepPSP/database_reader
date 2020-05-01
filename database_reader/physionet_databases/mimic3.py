@@ -48,11 +48,11 @@ class MIMIC3(PhysioNetDataBase):
     [4] https://archive.physionet.org/physiobank/database/mimic3wdb/
     [5] https://archive.physionet.org/physiobank/database/mimic3wdb/matched/
     """
-    def __init__(self, db_path:Optional[str]=None, **kwargs):
+    def __init__(self, db_path:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
 
         """
-        super().__init__(db_name='mimic3', db_path=db_path, **kwargs)
+        super().__init__(db_name='mimic3', db_path=db_path, working_dir=working_dir, verbose=verbose, **kwargs)
         self.all_records = wfdb.get_record_list('mimic3wdb')
         self.freq = 125
 

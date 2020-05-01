@@ -47,7 +47,7 @@ class PPGBP(OtherDataBase):
     [3] Elgendi M. On the analysis of fingertip photoplethysmogram signals[J]. Current cardiology reviews, 2012, 8(1): 14-25.
     """
     
-    def __init__(self, db_path:str, verbose:int=2, **kwargs):
+    def __init__(self, db_path:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """ finished, to be improved,
 
         Parameters:
@@ -60,7 +60,7 @@ class PPGBP(OtherDataBase):
         ------------------
         to be written
         """
-        super().__init__(db_name="PPG_BP", db_path=db_path, verbose=verbose, **kwargs)
+        super().__init__(db_name="PPG_BP", db_path=db_path, working_dir=working_dir, verbose=verbose, **kwargs)
 
         self.ppg_data_path = None
         self.unkown_file = None

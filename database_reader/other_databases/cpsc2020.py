@@ -64,7 +64,7 @@ class CPSC2020(OtherDataBase):
     -----------
     [1] http://www.icbeb.org/CPSC2020.html
     """
-    def __init__(self, db_path:str, verbose:int=2, **kwargs):
+    def __init__(self, db_path:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """ finished, to be improved,
 
         Parameters:
@@ -73,7 +73,7 @@ class CPSC2020(OtherDataBase):
             storage path of the database
         verbose: int, default 2,
         """
-        super().__init__(db_name="CPSC2020", db_path=db_path, verbose=verbose, **kwargs)
+        super().__init__(db_name="CPSC2020", db_path=db_path, working_dir=working_dir, verbose=verbose, **kwargs)
 
         self.freq = 400
         self.spacing = 1000/self.freq
