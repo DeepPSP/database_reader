@@ -71,7 +71,7 @@ class CPSC2019(OtherDataBase):
         Parameters:
         -----------
         rec_no: int,
-            number of the record, or 'subject_ID'
+            number of the record, NOTE that rec_no starts from 1
 
         Returns:
         --------

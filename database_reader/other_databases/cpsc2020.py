@@ -49,6 +49,8 @@ class CPSC2020(OtherDataBase):
         A08   Yes	25.46	    115,518 	2,793	    0	        118,311
         A09   No	25.84	    88,229  	2	        1,462	    89,693
         A10   No	23.64	    72,821	    169	        9,071	    82,061
+    6. challenging factors for accurate detection of SPB and PVC:
+        amplitude variation; morphological variation; noise
 
     NOTE:
     -----
@@ -88,6 +90,8 @@ class CPSC2020(OtherDataBase):
         self.ann_folder = os.path.join(self.db_path, "ref")
         self.ref_folder = self.ann_folder
 
+        self.palette = {"spb": "black", "pvc": "red",}
+
 
     def get_patient_id(self, rec_no:int) -> int:
         """ not finished,
@@ -95,7 +99,7 @@ class CPSC2020(OtherDataBase):
         Parameters:
         -----------
         rec_no: int,
-            number of the record, or 'subject_ID'
+            number of the record, NOTE that rec_no starts from 1
 
         Returns:
         --------

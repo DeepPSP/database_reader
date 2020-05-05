@@ -211,11 +211,10 @@ class ApneaECG(PhysioNetDataBase):
         else:
             apnea_periods = []
         
-        if self.verbose >= 1:
-            if len(apnea_periods) > 0:
-                print('apnea period(s) (units in minutes) of record {} is(are): {}'.format(rec, apnea_periods))
-            else:
-                print('record {} has no apnea period'.format(rec))
+        if len(apnea_periods) > 0:
+            self.logger.info('apnea period(s) (units in minutes) of record {} is(are): {}'.format(rec, apnea_periods))
+        else:
+            self.logger.info('record {} has no apnea period'.format(rec))
 
         if len(apnea_periods) == 0:
             return pd.DataFrame(columns=self.sleep_event_keys)

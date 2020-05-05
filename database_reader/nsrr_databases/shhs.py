@@ -832,14 +832,12 @@ class SHHS(NSRRDataBase):
         if not os.path.isfile(file_path):
             raise FileNotFoundError("Record {} has no HRV annotation (including sleep annotaions). Or the annotation file has not been downloaded yet. Or the path {} is not correct. Please check!".format(rec, file_path))
 
-        if self.verbose >= 1:
-            print("HRV annotations of record {} will be loaded from the file\n{}".format(rec, file_path))
+        self.logger.info("HRV annotations of record {} will be loaded from the file\n{}".format(rec, file_path))
 
         df_hrv_ann = pd.read_csv(file_path, engine="python")
         df_hrv_ann = df_hrv_ann[df_hrv_ann['nsrrid']==self.get_nsrrid(rec)].reset_index(drop=True)
 
-        if self.verbose >= 1:
-            print("Record {} has {} HRV annotations, with {} column(s)".format(rec, len(df_hrv_ann), len(self.hrv_ann_detailed_keys)))
+        self.logger.info("Record {} has {} HRV annotations, with {} column(s)".format(rec, len(df_hrv_ann), len(self.hrv_ann_detailed_keys)))
 
         return df_hrv_ann
 
@@ -865,21 +863,18 @@ class SHHS(NSRRDataBase):
         if source.lower() == 'hrv':
             df_hrv_ann = self.load_hrv_detailed_ann(rec=rec, hrv_ann_path=sleep_ann_path)
             df_sleep_ann = df_hrv_ann[self.sleep_ann_keys_from_hrv].reset_index(drop=True)
-            if self.verbose >= 1:
-                print("record {} has {} sleep annotations from corresponding hrv annotation file, with {} column(s)".format(rec, len(df_sleep_ann), len(self.sleep_ann_keys_from_hrv)))
+            self.logger.info("record {} has {} sleep annotations from corresponding hrv annotation file, with {} column(s)".format(rec, len(df_sleep_ann), len(self.sleep_ann_keys_from_hrv)))
         elif source.lower() == 'event':
             df_event_ann = self.load_event_ann(rec,event_ann_path=sleep_ann_path,simplify=False)
             _cols = ['EventType','EventConcept','Start','Duration','SignalLocation']
             df_sleep_ann = df_event_ann[_cols]
-            if self.verbose >= 1:
-                print("record {} has {} sleep annotations from corresponding event-nsrr annotation file, with {} column(s)".format(rec, len(df_sleep_ann), len(_cols)))
+            self.logger.info("record {} has {} sleep annotations from corresponding event-nsrr annotation file, with {} column(s)".format(rec, len(df_sleep_ann), len(_cols)))
         elif source.lower() == 'event_profusion':
             df_event_ann = self.load_event_profusion_ann(rec)
             # temporarily finished
             # latter to make imporvements
             df_sleep_ann = df_event_ann
-            if self.verbose >= 1:
-                print("record {} has {} sleep event annotations from corresponding event-profusion annotation file, with {} column(s)".format(rec, len(df_sleep_ann['df_events']), len(df_sleep_ann['df_events'].columns)))
+            self.logger.info("record {} has {} sleep event annotations from corresponding event-profusion annotation file, with {} column(s)".format(rec, len(df_sleep_ann['df_events']), len(df_sleep_ann['df_events'].columns)))
         return df_sleep_ann
 
 
@@ -960,9 +955,9 @@ class SHHS(NSRRDataBase):
         if with_stage_names:
             df_sleep_stage_ann['sleep_stage_name'] = df_sleep_stage_ann['sleep_stage'].apply(lambda a: self.sleep_stage_names[a])
         
-        if self.verbose >= 1 and source.lower() != 'event_profusion':
-            print("record {} has {} raw (epoch_len = 5min) sleep stage annotations, with {} column(s)".format(rec, len(df_tmp), len(self.sleep_stage_ann_keys_from_hrv)))
-            print("after being transformed (epoch_len = 30sec), record {} has {} sleep stage annotations, with {} column(s)".format(rec, len(df_sleep_stage_ann), len(self.sleep_stage_keys)))
+        if source.lower() != 'event_profusion':
+            self.logger.info("record {} has {} raw (epoch_len = 5min) sleep stage annotations, with {} column(s)".format(rec, len(df_tmp), len(self.sleep_stage_ann_keys_from_hrv)))
+            self.logger.info("after being transformed (epoch_len = 30sec), record {} has {} sleep stage annotations, with {} column(s)".format(rec, len(df_sleep_stage_ann), len(self.sleep_stage_keys)))
 
         return df_sleep_stage_ann
 
@@ -1001,8 +996,7 @@ class SHHS(NSRRDataBase):
             else:
                 _et = [s.lower() for s in event_types]
 
-        if self.verbose >= 1:
-            print('_et (event_types) = {}'.format(_et))
+        self.logger.info('for record {}, _et (event_types) = {}'.format(rec, _et))
 
         if source.lower() == 'hrv':
             df_sleep_ann = df_sleep_ann[self.sleep_event_ann_keys_from_hrv].reset_index(drop=True)
@@ -1018,9 +1012,8 @@ class SHHS(NSRRDataBase):
             df_sleep_event_ann['event_duration'] = df_sleep_event_ann.apply(lambda row: row['event_end']-row['event_start'], axis=1)
             df_sleep_event_ann = df_sleep_event_ann[self.sleep_event_keys]
 
-            if self.verbose >= 1:
-                print("record {} has {} raw (epoch_len = 5min) sleep event annotations from hrv, with {} column(s)".format(rec, len(df_sleep_ann), len(self.sleep_event_ann_keys_from_hrv)))
-                print("after being transformed, record {} has {} sleep event(s)".format(rec, len(df_sleep_event_ann)))
+            self.logger.info("record {} has {} raw (epoch_len = 5min) sleep event annotations from hrv, with {} column(s)".format(rec, len(df_sleep_ann), len(self.sleep_event_ann_keys_from_hrv)))
+            self.logger.info("after being transformed, record {} has {} sleep event(s)".format(rec, len(df_sleep_event_ann)))
         elif source.lower() == 'event':
             _cols = set()
             if 'respiratory' in _et:
@@ -1041,8 +1034,7 @@ class SHHS(NSRRDataBase):
                 _cols = (_cols | set(self.long_event_names_from_event[3:4]))
             _cols = list(_cols)
 
-            if self.verbose >= 1:
-                print("_cols = {}".format(_cols))
+            print("for record {}, _cols = {}".format(rec, _cols))
 
             df_sleep_event_ann = df_sleep_ann[df_sleep_ann['EventConcept'].isin(_cols)].reset_index(drop=True)
             df_sleep_event_ann = df_sleep_event_ann.rename({'EventConcept':'event_name', 'Start':'event_start', 'Duration':'event_duration'}, axis=1)
@@ -1070,8 +1062,7 @@ class SHHS(NSRRDataBase):
                 _cols = (_cols | set(self.event_names_from_event_profusion[3:4]))
             _cols = list(_cols)
 
-            if self.verbose >= 1:
-                print("_cols = {}".format(_cols))
+            print("for record {}, _cols = {}".format(rec, _cols))
 
             df_sleep_event_ann = df_sleep_ann[df_sleep_ann['Name'].isin(_cols)].reset_index(drop=True)
             df_sleep_event_ann = df_sleep_event_ann.rename({'Name':'event_name', 'Start':'event_start', 'Duration':'event_duration'}, axis=1)

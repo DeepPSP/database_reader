@@ -190,7 +190,7 @@ class PPGBP(OtherDataBase):
         return diagonosis
 
 
-    def get_patient_info(self, rec_no:int, items:Optional[List[str]]=None,verbose:int=2) -> Union[Real,str,pd.DataFrame]:
+    def get_patient_info(self, rec_no:int, items:Optional[List[str]]=None) -> Union[Real,str,pd.DataFrame]:
         """ not finished,
 
         Parameters:

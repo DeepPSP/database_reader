@@ -39,7 +39,7 @@ class CHAT(NSRRDataBase):
 
     References:
     -----------
-    [1] 
+    [1] https://sleepdata.org/datasets/chat
     """
     def __init__(self, db_path:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """

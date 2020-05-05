@@ -123,7 +123,7 @@ class CPSC2018(OtherDataBase):
         Parameters:
         -----------
         rec_no: int,
-            number of the record, or 'subject_ID'
+            number of the record, NOTE that rec_no starts from 1
 
         Returns:
         --------
@@ -154,7 +154,7 @@ class CPSC2018(OtherDataBase):
         
 
     def load_data(self, rec_no:int, data_format='channels_last') -> np.ndarray:
-        """ finished, not checked,
+        """ finished, checked,
 
         Parameters:
         -----------
@@ -179,13 +179,12 @@ class CPSC2018(OtherDataBase):
 
 
     def load_ann(self, rec_no:int, keep_original:bool=False) -> dict:
-        """ finished, not checked,
+        """ finished, checked,
         
         Parameters:
         -----------
-        rec_no: int, optional,
-            number of the record, or 'subject_ID',
-            if not specified, then all annotations will be returned
+        rec_no: int,
+            number of the record, NOTE that rec_no starts from 1
         keep_original: bool, default False,
             keep the original annotations or not,
             mainly concerning 'N' and 'Normal'
@@ -234,12 +233,12 @@ class CPSC2018(OtherDataBase):
 
 
     def get_labels(self, rec_no:int, keep_original:bool=False) -> List[str]:
-        """ finished, not checked,
+        """ finished, checked,
         
         Parameters:
         -----------
         rec_no: int,
-            number of the record
+            number of the record, NOTE that rec_no starts from 1
         keep_original: bool, default False,
             keep the original annotations or not,
             mainly concerning 'N' and 'Normal'
@@ -255,12 +254,12 @@ class CPSC2018(OtherDataBase):
 
 
     def get_diagnosis(self, rec_no:int, full_name:bool=True) -> List[str]:
-        """ finished, not checked,
+        """ finished, checked,
         
         Parameters:
         -----------
         rec_no: int,
-            number of the record
+            number of the record, NOTE that rec_no starts from 1
         full_name: bool, default True,
             full name of the diagnosis or short name of it (ref. self.diagnosis_abbr_to_full)
         
@@ -275,13 +274,13 @@ class CPSC2018(OtherDataBase):
         return diagonosis
 
 
-    def get_patient_info(self, rec_no:int, items:Optional[List[str]]=None, verbose:int=2) -> dict:
-        """ finished, not checked,
+    def get_patient_info(self, rec_no:int, items:Optional[List[str]]=None) -> dict:
+        """ finished, checked,
 
         Parameters:
         -----------
         rec_no: int,
-            number of the record, or 'subject_ID'
+            number of the record, NOTE that rec_no starts from 1
         items: list of str, optional,
             items of the patient information (e.g. sex, age, etc.)
         
@@ -302,12 +301,12 @@ class CPSC2018(OtherDataBase):
 
 
     def save_challenge_predictions(self, rec_no:int, output_dir:str, scores:List[Real], labels:List[int], classes:List[str]) -> NoReturn:
-        """
+        """ finished, checked,
 
         Parameters:
         -----------
         rec_no: int,
-            number of the record, or 'subject_ID'
+            number of the record, NOTE that rec_no starts from 1
         output_dir: str,
             directory to save the predictions
         scores: list of real,
@@ -338,8 +337,11 @@ class CPSC2018(OtherDataBase):
 
         Parameters:
         -----------
+        rec_no: int,
+            number of the record, NOTE that rec_no starts from 1
         leads: str or list of str, optional,
-            the leads to plot
+            the leads to 
+        kwargs: dict,
         """
         assert rec_no in range(1, self.nb_records+1), "rec_no should be in range(1,{})".format(self.nb_records+1)
         if 'plt' not in dir():
