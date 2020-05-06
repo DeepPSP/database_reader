@@ -46,7 +46,7 @@ def fit_savgol_sure(data:ArrayLike, orders:Union[int,List[int],Tuple[int]], radi
 
     Reference:
     ----------
-        [1] Krishnan S R, Seelamantula C S. On the selection of optimum Savitzky-Golay filters[J]. IEEE transactions on signal processing, 2012, 61(2): 380-391.
+    [1] Krishnan S R, Seelamantula C S. On the selection of optimum Savitzky-Golay filters[J]. IEEE transactions on signal processing, 2012, 61(2): 380-391.
     """
     filtered = []
     cost_func = reg_sure_savgol_objective_func if sure_reg else sure_savgol_objective_func
@@ -195,7 +195,7 @@ def sure_savgol_objective_func(order:int, radius:int, data:ArrayLike, verbose:in
 
     Reference:
     ----------
-        [1] Krishnan S R, Seelamantula C S. On the selection of optimum Savitzky-Golay filters[J]. IEEE transactions on signal processing, 2012, 61(2): 380-391.
+    [1] Krishnan S R, Seelamantula C S. On the selection of optimum Savitzky-Golay filters[J]. IEEE transactions on signal processing, 2012, 61(2): 380-391.
     """
     halflen, remainder = divmod(len(data), 2)
     if remainder == 0:
@@ -245,7 +245,7 @@ def reg_sure_savgol_objective_func(order:int, radius:int, data:ArrayLike, verbos
 
     Reference:
     ----------
-        [1] Krishnan S R, Seelamantula C S. On the selection of optimum Savitzky-Golay filters[J]. IEEE transactions on signal processing, 2012, 61(2): 380-391.
+    [1] Krishnan S R, Seelamantula C S. On the selection of optimum Savitzky-Golay filters[J]. IEEE transactions on signal processing, 2012, 61(2): 380-391.
     """
     u = 1.2
     halflen, remainder = divmod(len(data), 2)

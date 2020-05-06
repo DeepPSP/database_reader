@@ -54,6 +54,14 @@ def overlaps(interval:Interval, another:Interval) -> int:
     If >0, the number of bp of overlap
     If 0,  they are book-ended
     If <0, the distance in bp between them
+
+    Parameters:
+    -----------
+    to write
+
+    Returns:
+    --------
+    to write
     """
     # in case a or b is not in ascending order
     interval.sort()
@@ -67,6 +75,14 @@ def validate_interval(interval:Union[Interval,GeneralizedInterval], join_book_en
     check whether `interval` is an `Interval` or a `GeneralizedInterval`,
     if true, return True, and validated (of the form [a,b] with a<=b) interval,
     return `False, []`, otherwise
+
+    Parameters:
+    -----------
+    to write
+
+    Returns:
+    --------
+    to write
     """
     if isinstance(interval[0], (list,tuple)):
         info = [validate_interval(itv,join_book_endeds) for itv in interval]
@@ -85,6 +101,14 @@ def in_interval(val:Real, interval:Interval) -> bool:
     """ finished, checked,
 
     check whether val is inside interval or not
+
+    Parameters:
+    -----------
+    to write
+
+    Returns:
+    --------
+    to write
     """
     interval.sort()
     return True if interval[0] <= val <= interval[-1] else False
@@ -94,6 +118,13 @@ def in_generalized_interval(val:Real, generalized_interval:GeneralizedInterval) 
     """ finished, checked,
 
     check whether val is inside generalized_interval or not
+
+    Parameters:
+    -----------
+    to write
+
+    Returns:
+    --------
     """
     for interval in generalized_interval:
         if in_interval(val, interval):
@@ -104,7 +135,13 @@ def in_generalized_interval(val:Real, generalized_interval:GeneralizedInterval) 
 def get_confidence_interval(data:Optional[ArrayLike]=None, val:Optional[Real]=None, rmse:Optional[float]=None, confidence:float=0.95, **kwargs) -> np.ndarray:
     """ finished, checked,
 
-    docstring, to write
+    Parameters:
+    -----------
+    to write
+
+    Returns:
+    --------
+    to write
     """
     from scipy.stats import norm
     assert data or (val and rmse)
@@ -124,8 +161,8 @@ def get_confidence_interval(data:Optional[ArrayLike]=None, val:Optional[Real]=No
 def intervals_union(interval_list:GeneralizedInterval, join_book_endeds:bool=True) -> GeneralizedInterval:
     """ finished, checked,
 
-    设interval_list为区间的列表（不必有序，区间为[a,b]的形式，a,b不必有序），
-    返回其中所有区间的（有序，不交）并
+    find the union (ordered and non-intersecting) of all the intervals in `interval_list`,
+    which is a list of intervals in the form [a,b], where a,b need not be ordered
 
     Parameters:
     -----------
@@ -273,9 +310,17 @@ def generalized_intervals_intersection(generalized_interval:GeneralizedInterval,
 
 
 def generalized_interval_complement(total_interval:Interval, generalized_interval:GeneralizedInterval) -> GeneralizedInterval:
-    """ finished, checked,
+    """ finished, checked, to be improved,
 
     暂时先处理total_interval是一个Interval的情况
+
+    Parameters:
+    -----------
+    to write
+
+    Returns:
+    --------
+    to write
     """
     rearranged_intervals = intervals_union(generalized_interval)
     total_interval.sort()
@@ -464,6 +509,14 @@ def get_optimal_covering(total_interval:Interval, to_cover:list, min_len:int, sp
 def find_max_cont_len(sub_list:Interval, tot_len:Real) -> dict:
     """ finished, checked,
 
+    Parameters:
+    -----------
+    to write
+
+    Returns:
+    --------
+    to write
+
     设sub_list为[0,1,2,...,tot_len-1]的一个子列，
     计算sub_list的最常的连续子列的长度，该子列在sub_list中起始位置，以及该最长连续子列
     例如，tot_len=10, sub_list=[0,2,3,4,7,9],
@@ -486,6 +539,14 @@ def interval_len(interval:Interval) -> Real:
     """ finished, checked,
 
     compute the length of an interval. -1 for the empty interval []
+
+    Parameters:
+    -----------
+    to write
+
+    Returns:
+    --------
+    to write
     """
     interval.sort()
     return interval[-1] - interval[0] if len(interval) > 0 else -1
@@ -503,6 +564,14 @@ def diff_with_step(a:ArrayLike, step:int=1, **kwargs) -> np.ndarray:
     """ finished, checked,
 
     compute a[n+step] - a[n] for all valid n
+
+    Parameters:
+    -----------
+    to write
+
+    Returns:
+    --------
+    to write
     """
     return np.array([a[n+step]-a[n] for n in range(len(a)-step)])
 
@@ -511,14 +580,15 @@ def find_extrema(signal:Optional[ArrayLike]=None, mode:str='both') -> np.ndarray
     """
     Locate local extrema points in a signal. Based on Fermat's Theorem
 
-    Parameters
-    ----------
+    Parameters:
+    -----------
     signal : array
         Input signal.
     mode : str, optional
         Whether to find maxima ('max'), minima ('min'), or both ('both').
-    Returns
-    -------
+    
+    Returns:
+    --------
     extrema : array
         Indices of the extrama points.
     values : array

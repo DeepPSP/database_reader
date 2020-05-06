@@ -16,6 +16,7 @@ from numbers import Real
 from database_reader.utils import (
     ArrayLike,
     PVC, SPB,
+    get_optimal_covering,
 )
 from database_reader.base import OtherDataBase
 
@@ -65,6 +66,7 @@ class CPSC2020(OtherDataBase):
     References:
     -----------
     [1] http://www.icbeb.org/CPSC2020.html
+    [2] 
     """
     def __init__(self, db_path:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """ finished, to be improved,
@@ -80,7 +82,7 @@ class CPSC2020(OtherDataBase):
         self.freq = 400
         self.spacing = 1000/self.freq
         self.rec_ext = '.mat'
-        self.ann_ext = '.hea'
+        self.ann_ext = '.mat'
 
         self.nb_records = 10
         self.all_records = ["A{0:02d}".format(i) for i in range(1,1+self.nb_records)]
@@ -129,13 +131,17 @@ class CPSC2020(OtherDataBase):
             print(self.__doc__)
 
 
-    def load_data(self, rec_no:int, keep_dim:bool=True) -> np.ndarray:
-        """ finished, not checked,
+    def load_data(self, rec_no:int, sampfrom:Optional[int]=None, sampto:Optional[int]=None, keep_dim:bool=True) -> np.ndarray:
+        """ finished, checked,
 
         Parameters:
         -----------
         rec_no: int,
             number of the record, NOTE that rec_no starts from 1
+        sampfrom: int, optional,
+            start index of the data to be loaded
+        sampto: int, optional,
+            end index of the data to be loaded
         keep_dim: bool, default True,
             whether or not to flatten the data of shape (n,1)
         
@@ -146,14 +152,15 @@ class CPSC2020(OtherDataBase):
         """
         assert rec_no in range(1, self.nb_records+1), "rec_no should be in range(1,{})".format(self.nb_records+1)
         rec_fp = os.path.join(self.rec_folder, self.all_records[rec_no-1] + self.rec_ext)
-        data = (1000 * loadmat(rec_fp)).astype(int)
+        data = (1000 * loadmat(rec_fp)['ecg']).astype(int)
+        data = data[(sampfrom or 0):(sampto or len(data))]
         if not keep_dim:
             data = data.flatten()
         return data
 
 
     def load_ann(self, rec_no:int) -> Dict[str, np.ndarray]:
-        """ finished, not checked,
+        """ finished, checked,
 
         Parameters:
         -----------
@@ -182,5 +189,24 @@ class CPSC2020(OtherDataBase):
         -----------
         rec_no: int,
             number of the record, NOTE that rec_no starts from 1
+        sampfrom: int, optional,
+            start index of the data to be loaded
+        sampto: int, optional,
+            end index of the data to be loaded
+        ectopic_beats_only: bool, default False,
+            whether or not onpy plot the neighborhoods of the ectopic beats
         """
-        raise NotImplementedError
+        data = self.load_data(rec_no, keep_dim=False)
+        ann = self.load_ann(rec_no)
+        if ectopic_beats_only:
+            ectopic_beat_indices = ann["SPB_indices"] + ann["PVC_indices"]
+            tot_interval = [(sampfrom or 0), (sampto or len(data))]
+            covering, tb = get_optimal_covering(
+                total_interval=tot_interval,
+                to_cover=ectopic_beat_indices,
+                min_len=3*self.freq,
+                split_threshold=3*self.freq,
+                traceback=True,
+                verbose=self.verbose,
+            )
+        # TODO: 

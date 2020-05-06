@@ -125,6 +125,10 @@ def filter_by_percentile(s:ArrayLike, q:Union[int,List[int]], return_mask:bool=F
     Parameters:
     -----------
     to write
+
+    Returns:
+    --------
+    to write
     """
     _s = np.array(s)
     original_shape = _s.shape
@@ -143,6 +147,13 @@ def filter_by_percentile(s:ArrayLike, q:Union[int,List[int]], return_mask:bool=F
 
 def angle_d2r(angle:Union[Real,np.ndarray]) -> Union[Real,np.ndarray]:
     """
+    
+    Parameters:
+    -----------
+    to write
 
+    Returns:
+    --------
+    to write
     """
     return np.pi*angle/180.0

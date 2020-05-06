@@ -61,8 +61,8 @@ def detect_peaks(x:ArrayLike,
     """
     Detect peaks in data based on their amplitude and other features.
 
-    Parameters
-    ----------
+    Parameters:
+    -----------
     x : 1D array_like
         data.
     mph : {None, number}, optional (default = None)
@@ -89,13 +89,13 @@ def detect_peaks(x:ArrayLike,
         if True (1), plot data in matplotlib figure.
     ax : a matplotlib.axes.Axes instance, optional (default = None).
 
-    Returns
-    -------
+    Returns:
+    --------
     ind : 1D array_like
         indeces of the peaks in `x`.
 
-    Notes
-    -----
+    Notes:
+    ------
     The detection of valleys instead of peaks is performed internally by simply
     negating the data: `ind_valleys = detect_peaks(-x)`
     
@@ -103,9 +103,9 @@ def detect_peaks(x:ArrayLike,
 
     See this IPython Notebook [1]_.
 
-    References
-    ----------
-    .. [1] http://nbviewer.ipython.org/github/demotu/BMC/blob/master/notebooks/DetectPeaks.ipynb
+    References:
+    -----------
+    [1] http://nbviewer.ipython.org/github/demotu/BMC/blob/master/notebooks/DetectPeaks.ipynb
 
     Examples
     --------
@@ -286,7 +286,7 @@ def phasor_transform(s:ArrayLike, rv:Real) -> np.ndarray:
 
     Reference:
     ----------
-        [1] Maršánová L, Němcová A, Smíšek R, et al. Automatic Detection of P Wave in ECG During Ventricular Extrasystoles[C]//World Congress on Medical Physics and Biomedical Engineering 2018. Springer, Singapore, 2019: 381-385.
+    [1] Maršánová L, Němcová A, Smíšek R, et al. Automatic Detection of P Wave in ECG During Ventricular Extrasystoles[C]//World Congress on Medical Physics and Biomedical Engineering 2018. Springer, Singapore, 2019: 381-385.
     """
     return np.vectorize(atan2)(s,rv)
 
@@ -310,6 +310,14 @@ def compute_snr_improvement(original:ArrayLike, noised:ArrayLike, denoised:Array
     """
     computation of the improvement of signal to noise ratio of the denoised signal,
     compared to the noised signal
+
+    Parameters:
+    -----------
+    to write
+
+    Returns:
+    --------
+    to write
     """
     return 10*np.log10(np.sum(np.power(np.array(original)-np.array(noised),2))/np.sum(np.power(np.array(original)-np.array(denoised),2)))
 
@@ -361,13 +369,15 @@ def uni_polyn_der(coeff:ArrayLike, order:int=1, coeff_asc:bool=True) -> np.ndarr
 def eval_uni_polyn(x:Union[int,float,list,tuple,np.ndarray], coeff:ArrayLike, coeff_asc:bool=True) -> Union[int,float,np.ndarray]:
     """ finished, checked,
 
+    evaluate x at the univariate polynomial defined by coeff
+
     Parameters:
     -----------
+    to write
 
     Returns:
     --------
-
-    evaluate x at the univariate polynomial defined by coeff
+    to write
     """
     polyn_order = len(coeff)-1
     if len(coeff) == 0:
@@ -389,13 +399,15 @@ def noise_std_estimator(data:ArrayLike) -> float:
 
     Parameters:
     -----------
+    to write
 
     Returns:
     --------
+    to write
 
     Reference:
     ----------
-        [1] Katkovnik V, Stankovic L. Instantaneous frequency estimation using the Wigner distribution with varying and data-driven window length[J]. IEEE Transactions on signal processing, 1998, 46(9): 2315-2325.
+    [1] Katkovnik V, Stankovic L. Instantaneous frequency estimation using the Wigner distribution with varying and data-driven window length[J]. IEEE Transactions on signal processing, 1998, 46(9): 2315-2325.
     """
     return np.median(np.abs(np.diff(data))) / 0.6745
 
@@ -403,13 +415,15 @@ def noise_std_estimator(data:ArrayLike) -> float:
 def der_operator(responce_len:int, input_len:int, order:int) -> np.ndarray:
     """ not finished,
 
+    derivation operator in matrix form
+
     Parameters:
     -----------
+    to write
 
     Returns:
     --------
-
-    derivation operator in matrix form
+    to write
     """
     if responce_len+order > input_len:
         raise ValueError("responce_len+order should be no greater than input_len")
@@ -422,13 +436,15 @@ def lstsq_with_smoothness_prior(data:ArrayLike) -> np.ndarray:
 
     Parameters:
     -----------
+    to write
 
     Returns:
     --------
+    to write
 
     Reference:
     ----------
-        [1]. Sameni, Reza. "Online Filtering Using Piecewise Smoothness Priors: Application to Normal and Abnormal Electrocardiogram Denoising." Signal Processing 133.C (2017): 52-63. Web.
+    [1]. Sameni, Reza. "Online Filtering Using Piecewise Smoothness Priors: Application to Normal and Abnormal Electrocardiogram Denoising." Signal Processing 133.C (2017): 52-63. Web.
     """
     raise NotImplementedError
 
@@ -438,9 +454,11 @@ def generate_rr_interval(nb_beats:int, bpm_mean:Real, bpm_std:Real, lf_hf:float,
 
     Parameters:
     -----------
+    to write
 
     Returns:
     --------
+    to write
     
     """
     expected_rr_mean = 60 / bpm_mean
@@ -478,7 +496,6 @@ def is_ecg_signal(s:ArrayLike, freq:int, wavelet_name:str='db6', verbose:int=0) 
     Returns:
     --------
     True if the signal `s` is valid ecg signal, else return False
-
     """
     sig_len = len(s)
     spacing = 1000/freq
@@ -686,7 +703,7 @@ def wavelet_denoise(s:ArrayLike, freq:int, wavelet_name:str='db6', amplify_mode:
 
     Returns:
     --------
-        WaveletDenoiseResult, with field_names: 'is_ecg', 'amplified_ratio', 'amplified_signal', 'raw_r_peaks'
+    WaveletDenoiseResult, with field_names: 'is_ecg', 'amplified_ratio', 'amplified_signal', 'raw_r_peaks'
     
     TODO:
 

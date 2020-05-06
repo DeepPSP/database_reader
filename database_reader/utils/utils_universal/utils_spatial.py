@@ -55,21 +55,6 @@ __all__ = [
 ]
 
 
-# __GEOMETRIC_OBJECTS__ = [
-#     LineSegment2D,
-#     Triangle2D,
-#     ConvexCone2D, Fan2D,
-#     Ellipse, Circle,
-# ]
-
-# __GEOMETRIC_OBJECTS_TYPES__ = Union[
-#     LineSegment2D,
-#     Triangle2D,
-#     ConvexCone2D, Fan2D,
-#     Ellipse, Circle,
-# ]
-
-
 #-------------------------------------------------------
 # classes
 

@@ -62,6 +62,14 @@ def autocorr(x:ArrayLike, normalize:bool=False) -> np.ndarray:
     """ finished, checked,
 
     autocorrelation of the time series x
+
+    Parameters:
+    -----------
+    to write
+
+    Returns:
+    --------
+    to write
     """
     if normalize:
         _x = np.array(x) - np.mean(x)
@@ -75,7 +83,13 @@ def autocorr(x:ArrayLike, normalize:bool=False) -> np.ndarray:
 def gamrnd(k, theta, shape):
     """ not finished,
 
-    docstring, to write
+    Parameters:
+    -----------
+    to write
+
+    Returns:
+    --------
+    to write
     """
     ret = np.full(shape, np.nan)
 
@@ -86,6 +100,14 @@ def kmeans2_is_correct(data:np.ndarray, centroids:np.ndarray, labels:np.ndarray,
     """ finished, checked,
 
     检查from scipy.cluster.vq.kmeans2的结果是否正确
+
+    Parameters:
+    -----------
+    to write
+
+    Returns:
+    --------
+    to write
     """
     nb_clusters = len(centroids)
     nb_clusters2 = len(set(labels))
@@ -117,6 +139,14 @@ def is_outlier(to_check_val:Real, normal_vals:Union[List[int],List[float],Tuple[
     """ finished, checked,
 
     check if to_check_val is an outlier in normal_vals
+
+    Parameters:
+    -----------
+    to write
+
+    Returns:
+    --------
+    to write
     """
     perc75, perc25 = np.percentile(normal_vals, [75,25])
     iqr = perc75 - perc25
@@ -128,9 +158,17 @@ def is_outlier(to_check_val:Real, normal_vals:Union[List[int],List[float],Tuple[
 
 
 def log_multivariate_normal_density(X:ArrayLike, means:ArrayLike, covars:ArrayLike, min_covar:float=1.e-7) -> np.ndarray:
-    """
+    """ finished, not checked,
     
     Log probability for full covariance matrices.
+
+    Parameters:
+    -----------
+    to write
+
+    Returns:
+    --------
+    to write
     """
     _X =  np.array(X)
     n_samples, n_dim = _X.shape
@@ -156,20 +194,23 @@ def mahalanobis(x:Union[list,tuple,np.ndarray,float], mean:Union[list,tuple,np.n
     Gaussian `mean` with covariance `cov`. This can be thought as the number
     of standard deviations x is from the mean, i.e. a return value of 3 means
     x is 3 std from mean.
-    Parameters
-    ----------
-    x : (N,) array_like, or float
+
+    Parameters:
+    -----------
+    x: (N,) array_like, or float,
         Input state vector
-    mean : (N,) array_like, or float
+    mean: (N,) array_like, or float,
         mean of multivariate Gaussian
-    cov : (N, N) array_like  or float
+    cov: (N, N) array_like  or float,
         covariance of the multivariate Gaussian
-    Returns
-    -------
-    mahalanobis : double
-        The Mahalanobis distance between vectors `x` and `mean`
-    Examples
+
+    Returns:
     --------
+    mahalanobis: float,
+        The Mahalanobis distance between vectors `x` and `mean`
+    
+    Examples:
+    ---------
     >>> mahalanobis(x=3., mean=3.5, cov=4.**2) # univariate case
     0.125
     >>> mahalanobis(x=3., mean=6, cov=1) # univariate, 3 std away
@@ -194,8 +235,15 @@ def mahalanobis(x:Union[list,tuple,np.ndarray,float], mean:Union[list,tuple,np.n
 def log_likelihood(z:Union[np.ndarray,float,int], x:np.ndarray, P:np.ndarray, H:np.ndarray, R:np.ndarray) -> Union[np.ndarray,float,int]:
     """
     Returns log-likelihood of the measurement z given the Gaussian
-    posterior (x, P) using measurement function H and measurement
-    covariance error R
+    posterior (x, P) using measurement function H and measurement covariance error R
+
+    Parameters:
+    -----------
+    to write
+
+    Returns:
+    --------
+    to write
     """
     S = np.dot(H, np.dot(P, H.T)) + R
     return ss.multivariate_normal.logpdf(z, np.dot(H, x), S)
@@ -204,23 +252,33 @@ def log_likelihood(z:Union[np.ndarray,float,int], x:np.ndarray, P:np.ndarray, H:
 def likelihood(z:Union[np.ndarray,float,int], x:np.ndarray, P:np.ndarray, H:np.ndarray, R:np.ndarray) -> Union[np.ndarray,float,int]:
     """
     Returns likelihood of the measurement z given the Gaussian
-    posterior (x, P) using measurement function H and measurement
-    covariance error R
+    posterior (x, P) using measurement function H and measurement covariance error R
+
+    Parameters:
+    -----------
+    to write
+
+    Returns:
+    --------
+    to write
     """
     return np.exp(log_likelihood(z, x, P, H, R))
 
 
 def covariance_ellipse(P, deviations=1):
     """
-    Returns a tuple defining the ellipse representing the 2 dimensional
-    covariance matrix P.
-    Parameters
-    ----------
-    P : nd.array shape (2,2)
+    Returns a tuple defining the ellipse representing the 2 dimensional covariance matrix P.
+
+    Parameters:
+    -----------
+    P: nd.array shape (2,2),
        covariance matrix
-    deviations : int (optional, default = 1)
+    deviations: int (optional, default = 1),
        # of standard deviations. Default is 1.
-    Returns (angle_radians, width_radius, height_radius)
+    
+    Returns:
+    --------
+    (angle_radians, width_radius, height_radius),
     """
 
     U, s, _ = linalg.svd(P)
@@ -236,20 +294,21 @@ def covariance_ellipse(P, deviations=1):
 
 def _eigsorted(cov, asc=True):
     """
-    Computes eigenvalues and eigenvectors of a covariance matrix and returns
-    them sorted by eigenvalue.
-    Parameters
-    ----------
-    cov : ndarray
+    Computes eigenvalues and eigenvectors of a covariance matrix and returns them sorted by eigenvalue.
+
+    Parameters:
+    -----------
+    cov: ndarray,
         covariance matrix
-    asc : bool, default=True
+    asc: bool, default=True,
         determines whether we are sorted smallest to largest (asc=True),
         or largest to smallest (asc=False)
-    Returns
-    -------
-    eigval : 1D ndarray
+
+    Returns:
+    --------
+    eigval: 1D ndarray,
         eigenvalues of covariance ordered largest to smallest
-    eigvec : 2D ndarray
+    eigvec: 2D ndarray,
         eigenvectors of covariance matrix ordered to match `eigval` ordering.
         I.e eigvec[:, 0] is the rotation vector for eigval[0]
     """
@@ -267,6 +326,14 @@ def rand_student_t(df:Real, mu:Real=0, std:Real=1) -> Real:
     """
     return random number distributed by student's t distribution with
     `df` degrees of freedom with the specified mean and standard deviation.
+
+    Parameters:
+    -----------
+    to write
+
+    Returns:
+    --------
+    to write
     """
 
     x = random.gauss(0, std)
@@ -318,11 +385,13 @@ def samp_ent(s:ArrayLike, m:int, r:Real) -> float:
 def shannon_entropy(s:ArrayLike) -> float:
     """Return the Shannon Entropy of the sample data.
 
-    Args:
-        s: Vector or string of the sample data
+    Parameters:
+    -----------
+    s: Vector or string of the sample data
 
     Returns:
-        The Shannon Entropy as float value
+    --------
+    The Shannon Entropy as float value
     """
     # Create a frequency data
     data_set = list(set(s))
@@ -422,7 +491,7 @@ def sample_entropy(s:ArrayLike, sample_length:int, tolerance:Optional[Real]=None
 
 
 def multiscale_entropy(s:ArrayLike, sample_length:int, tolerance:Optional[Real]=None, maxscale:Optional[int]=None) -> np.ndarray:
-    """
+    """ finished, not checked,
     
     calculate the multiscale entropy of the given time series considering
     different time-scales of the time series
@@ -444,7 +513,7 @@ def multiscale_entropy(s:ArrayLike, sample_length:int, tolerance:Optional[Real]=
 
     Reference:
     ----------
-        [1] http://en.pudn.com/downloads149/sourcecode/math/detail646216_en.html
+    [1] http://en.pudn.com/downloads149/sourcecode/math/detail646216_en.html
     """
     sig_len = len(s)
     if tolerance is None:
@@ -487,13 +556,11 @@ def permutation_entropy(s:ArrayLike, order:int=3, delay:int=1, normalize:bool=Fa
 
     References
     ----------
-    .. [1] Massimiliano Zanin et al. Permutation Entropy and Its Main
-        Biomedical and Econophysics Applications: A Review.
-        http://www.mdpi.com/1099-4300/14/8/1553/pdf
+    [1] Massimiliano Zanin et al. Permutation Entropy and Its MainBiomedical and Econophysics Applications: A Review.
+    http://www.mdpi.com/1099-4300/14/8/1553/pdf
 
-    .. [2] Christoph Bandt and Bernd Pompe. Permutation entropy — a natural
-        complexity measure for time series.
-        http://stubber.math-inf.uni-greifswald.de/pub/full/prep/2001/11.pdf
+    [2] Christoph Bandt and Bernd Pompe. Permutation entropy — a natural complexity measure for time series.
+    http://stubber.math-inf.uni-greifswald.de/pub/full/prep/2001/11.pdf
     """
     x = np.array(s)
     hashmult = np.power(order, np.arange(order))
@@ -536,9 +603,9 @@ def multiscale_permutation_entropy(s:ArrayLike, order:int, delay:int, scale:int)
 
     Reference:
     ----------
-        [1] Francesco Carlo Morabito et al. Multivariate Multi-Scale Permutation Entropy for
-            Complexity Analysis of Alzheimer’s Disease EEG. www.mdpi.com/1099-4300/14/7/1186
-        [2] http://www.mathworks.com/matlabcentral/fileexchange/37288-multiscale-permutation-entropy-mpe/content/MPerm.m
+    [1] Francesco Carlo Morabito et al. Multivariate Multi-Scale Permutation Entropy for
+        Complexity Analysis of Alzheimer’s Disease EEG. www.mdpi.com/1099-4300/14/7/1186
+    [2] http://www.mathworks.com/matlabcentral/fileexchange/37288-multiscale-permutation-entropy-mpe/content/MPerm.m
     """
     mspe = []
     sig_len = len(s)
@@ -557,6 +624,9 @@ def filter_by_percentile(s:ArrayLike, q:Union[int,List[int]], return_mask:bool=F
     Parameters:
     -----------
     to write
+
+    Returns:
+    --------
     """
     _s = np.array(s)
     original_shape = _s.shape
