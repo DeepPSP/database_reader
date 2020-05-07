@@ -2,9 +2,12 @@
 """
 commonly used utilities, that do not belong to a particular category
 """
-
+import os
+import subprocess
+import collections
 import numpy as np
 import time
+from logging import Logger
 from datetime import datetime, timedelta
 from typing import Union, Optional, Any, Iterable, List, Tuple, Dict, Callable, NoReturn
 from numbers import Real
@@ -18,6 +21,7 @@ __all__ = [
     "timestamp_to_local_datetime_string",
     "modulo",
     "angle_d2r",
+    "execute_cmd",
 ]
 
 
@@ -119,41 +123,83 @@ def modulo(val:Real, dividend:Real, val_range_start:Real=0) -> Real:
     # return (val-val_range_start)%_dividend + val_range_start
 
 
-def filter_by_percentile(s:ArrayLike, q:Union[int,List[int]], return_mask:bool=False) -> Union[np.ndarray,Tuple[np.ndarray,np.ndarray]]:
-    """
-
-    Parameters:
-    -----------
-    to write
-
-    Returns:
-    --------
-    to write
-    """
-    _s = np.array(s)
-    original_shape = _s.shape
-    _s = _s.reshape(-1, _s.shape[-1])  # flatten, but keep the last dim
-    l,d = _s.shape
-    _q = sorted(q) if isinstance(q,list) else [(100-q)//2, (100+q)//2]
-    iqrs = np.percentile(_s, _q, axis=0)
-    validity = np.full(shape=l, fill_value=True, dtype=bool)
-    for idx in range(d):
-        validity = (validity) & (_s[...,idx] >= iqrs[...,idx][0]) & (_s[...,idx] <= iqrs[...,idx][-1])
-    if return_mask:
-        return _s[validity], validity.reshape(original_shape[:-1])
-    else:
-        return _s[validity]
-
-
 def angle_d2r(angle:Union[Real,np.ndarray]) -> Union[Real,np.ndarray]:
     """
     
     Parameters:
     -----------
-    to write
+    angle: real number or ndarray,
+        the angle(s) in degrees
 
     Returns:
     --------
-    to write
+    to writereal number or ndarray, the angle(s) in radians
     """
     return np.pi*angle/180.0
+
+
+def execute_cmd(cmd:str, logger:Optional[Logger]=None, raise_error:bool=True) -> Tuple[int, List[str]]:
+    """
+    execute shell command using `Popen`
+
+    Parameters:
+    -----------
+    cmd: str,
+        the shell command to be executed
+    logger: Logger, optional,
+    raise_error: bool, default True,
+        if True, error will be raised when occured
+
+    Returns:
+    --------
+    exitcode, output_msg: int, list of str,
+        exitcode: exit code returned by `Popen`
+        output_msg: outputs from `stdout` of `Popen`
+    """
+    shell_arg, executable_arg = True, None
+    s = subprocess.Popen(
+        cmd,
+        shell=shell_arg,
+        executable=executable_arg,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        close_fds=True,
+    )
+    debug_stdout = collections.deque(maxlen=1000)
+    if logger:
+        logger.info("\n"+"*"*10+"  execute_cmd starts  "+"*"*10+"\n")
+    while 1:
+        line = s.stdout.readline().decode("utf-8", errors="replace")
+        if line.rstrip():
+            debug_stdout.append(line)
+            if logger:
+                logger.debug(line)
+        exitcode = s.poll()
+        if exitcode is not None:
+            for line in s.stdout:
+                debug_stdout.append(line.decode("utf-8", errors="replace"))
+            if exitcode is not None and exitcode != 0:
+                error_msg = " ".join(cmd) if not isinstance(cmd, str) else cmd
+                error_msg += "\n"
+                error_msg += "".join(debug_stdout)
+                s.communicate()
+                s.stdout.close()
+                if logger:
+                    logger.info("\n"+"*"*10+"  execute_cmd failed  "+"*"*10+"\n")
+                if raise_error:
+                    raise subprocess.CalledProcessError(exitcode, error_msg)
+                else:
+                    output_msg = list(debug_stdout)
+                    return exitcode, output_msg
+            else:
+                break
+    s.communicate()
+    s.stdout.close()
+    output_msg = list(debug_stdout)
+
+    if logger:
+        logger.info("\n"+"*"*10+"  execute_cmd succeeded  "+"*"*10+"\n")
+
+    exitcode = 0
+
+    return exitcode, output_msg
