@@ -202,6 +202,14 @@ class SHHS(NSRRDataBase):
     """
     def __init__(self, db_path:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
+        
+        Parameters:
+        -----------
+        db_path: str,
+            storage path of the database
+        working_dir: str, optional,
+            working directory, to store intermediate files and log file
+        verbose: int, default 2,
 
         default db_path:
             "/export/algo/wenh06/ecg_data/shhs/"

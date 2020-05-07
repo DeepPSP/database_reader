@@ -76,6 +76,8 @@ class CPSC2018(OtherDataBase):
         -----------
         db_path: str,
             storage path of the database
+        working_dir: str, optional,
+            working directory, to store intermediate files and log file
         verbose: int, default 2,
         """
         super().__init__(db_name="CPSC2018", db_path=db_path, working_dir=working_dir, verbose=verbose, **kwargs)

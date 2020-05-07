@@ -41,6 +41,14 @@ class CINC2020(PhysioNetDataBase):
     """
     def __init__(self, db_path:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
+        Parameters:
+        -----------
+        db_path: str, optional,
+            storage path of the database
+            if not specified, data will be fetched from Physionet
+        working_dir: str, optional,
+            working directory, to store intermediate files and log file
+        verbose: int, default 2,
         """
         super().__init__(db_name='CINC2020', db_path=db_path, working_dir=working_dir, verbose=verbose, **kwargs)
         self.freq = None

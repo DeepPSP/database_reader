@@ -66,7 +66,7 @@ class CPSC2020(OtherDataBase):
     References:
     -----------
     [1] http://www.icbeb.org/CPSC2020.html
-    [2] 
+    [2] https://github.com/mondejar/ecg-classification
     """
     def __init__(self, db_path:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """ finished, to be improved,
@@ -75,6 +75,8 @@ class CPSC2020(OtherDataBase):
         -----------
         db_path: str,
             storage path of the database
+        working_dir: str, optional,
+            working directory, to store intermediate files and log file
         verbose: int, default 2,
         """
         super().__init__(db_name="CPSC2020", db_path=db_path, working_dir=working_dir, verbose=verbose, **kwargs)
@@ -153,13 +155,14 @@ class CPSC2020(OtherDataBase):
         assert rec_no in range(1, self.nb_records+1), "rec_no should be in range(1,{})".format(self.nb_records+1)
         rec_fp = os.path.join(self.rec_folder, self.all_records[rec_no-1] + self.rec_ext)
         data = (1000 * loadmat(rec_fp)['ecg']).astype(int)
-        data = data[(sampfrom or 0):(sampto or len(data))]
+        sf, st = (sampfrom or 0), (sampto or len(data))
+        data = data[sf:st]
         if not keep_dim:
             data = data.flatten()
         return data
 
 
-    def load_ann(self, rec_no:int) -> Dict[str, np.ndarray]:
+    def load_ann(self, rec_no:int, sampfrom:Optional[int]=None, sampto:Optional[int]=None) -> Dict[str, np.ndarray]:
         """ finished, checked,
 
         Parameters:
@@ -175,9 +178,10 @@ class CPSC2020(OtherDataBase):
         assert rec_no in range(1, self.nb_records+1), "rec_no should be in range(1,{})".format(self.nb_records+1)
         ann_fp = os.path.join(self.ann_folder, self.all_annotations[rec_no-1] + self.ann_ext)
         ann = loadmat(ann_fp)['ref']
+        sf, st = (sampfrom or 0), (sampto or len(data))
         ann = {
-            "SPB_indices": ann['S_ref'][0,0],
-            "PVC_indices": ann['V_ref'][0,0],
+            "SPB_indices": [p for p in ann['S_ref'][0,0] if sf<=p<st],
+            "PVC_indices": [p for p in ann['V_ref'][0,0] if sf<=p<st],
         }
         return ann
 
@@ -196,11 +200,12 @@ class CPSC2020(OtherDataBase):
         ectopic_beats_only: bool, default False,
             whether or not onpy plot the neighborhoods of the ectopic beats
         """
-        data = self.load_data(rec_no, keep_dim=False)
-        ann = self.load_ann(rec_no)
+        data = self.load_data(rec_no, sampfrom=sampfrom, sampto=sampto, keep_dim=False)
+        ann = self.load_ann(rec_no, sampfrom=sampfrom, sampto=sampto)
+        sf, st = (sampfrom or 0), (sampto or len(data))
         if ectopic_beats_only:
-            ectopic_beat_indices = ann["SPB_indices"] + ann["PVC_indices"]
-            tot_interval = [(sampfrom or 0), (sampto or len(data))]
+            ectopic_beat_indices = sorted(ann["SPB_indices"] + ann["PVC_indices"])
+            tot_interval = [sf, st]
             covering, tb = get_optimal_covering(
                 total_interval=tot_interval,
                 to_cover=ectopic_beat_indices,

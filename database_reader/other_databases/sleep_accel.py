@@ -58,6 +58,8 @@ class SleepAccel(OtherDataBase):
         -----------
         db_path: str,
             storage path of the database
+        working_dir: str, optional,
+            working directory, to store intermediate files and log file
         verbose: int, default 2,
 
         typical 'db_path':  "/export/servers/data/sleep_accel/"
