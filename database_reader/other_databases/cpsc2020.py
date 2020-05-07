@@ -1,11 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 """
-import io
 import os
-import pprint
-import wfdb
-import glob
 import numpy as np
 import pandas as pd
 from scipy.io import loadmat
@@ -61,7 +57,7 @@ class CPSC2020(OtherDataBase):
 
     Usage:
     ------
-    1. ecg arrhythmia (PVC, SPP) detection
+    1. ecg arrhythmia (PVC, SPB) detection
 
     References:
     -----------

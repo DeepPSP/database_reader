@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
+"""
+"""
 import os
-import pprint
-import wfdb
 import numpy as np
 import pandas as pd
 from datetime import datetime
@@ -39,6 +39,7 @@ class PPGBP(OtherDataBase):
 
     Usage:
     ------
+    1. blood pressure prediction from PPG
 
     References:
     -----------

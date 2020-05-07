@@ -6,7 +6,6 @@ docstring, to write
 import os
 import numpy as np
 import pandas as pd
-import pprint
 import xmltodict as xtd
 from pyedflib import EdfReader
 from datetime import datetime

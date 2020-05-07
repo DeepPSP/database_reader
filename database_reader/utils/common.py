@@ -102,29 +102,43 @@ def time_string_to_timestamp(time_string:str, fmt:str="%Y-%m-%d %H:%M:%S", retur
 
     Returns:
     --------
-    int, timestamp, in second or millisecond, corr. to `time_string`
+    ts: int,
+        timestamp, in second or millisecond, corr. to `time_string`
     """
     if return_second:
-        return int(round(datetime.strptime(time_string, fmt).timestamp()))
+        ts = int(round(datetime.strptime(time_string, fmt).timestamp()))
     else:
-        return int(round(datetime.strptime(time_string, fmt).timestamp()*1000))
+        ts = int(round(datetime.strptime(time_string, fmt).timestamp()*1000))
+    return ts
 
 
 def modulo(val:Real, dividend:Real, val_range_start:Real=0) -> Real:
-    """
+    """ finished, checked,
+
+    find the value
+        val mod dividend, within interval [val_range_start, val_range_start+abs(dividend)]
+
+    Parameters:
+    -----------
+    val: real number,
+        the number to be moduloed
+    dividend: real number,
+        the dividend
     returns:
-        val mod dividend, positive,
-        and within interval [val_range_start, val_range_start+abs(dividend)]
+    --------
+    mod_val: real number,
+        equals val mod dividend, within interval [val_range_start, val_range_start+abs(dividend)]
     """
     _dividend = abs(dividend)
-    ret = val-val_range_start-_dividend*int((val-val_range_start)/_dividend)
-    return ret+val_range_start if ret >= 0 else _dividend+ret+val_range_start
+    mod_val = val - val_range_start - _dividend*int((val-val_range_start)/_dividend)
+    mod_val = mod_val + val_range_start if mod_val >= 0 else _dividend + mod_val + val_range_start
+    return mod_val
     # alternatively
     # return (val-val_range_start)%_dividend + val_range_start
 
 
 def angle_d2r(angle:Union[Real,np.ndarray]) -> Union[Real,np.ndarray]:
-    """
+    """ finished, checked,
     
     Parameters:
     -----------
@@ -139,7 +153,8 @@ def angle_d2r(angle:Union[Real,np.ndarray]) -> Union[Real,np.ndarray]:
 
 
 def execute_cmd(cmd:str, logger:Optional[Logger]=None, raise_error:bool=True) -> Tuple[int, List[str]]:
-    """
+    """ finished, checked,
+
     execute shell command using `Popen`
 
     Parameters:
