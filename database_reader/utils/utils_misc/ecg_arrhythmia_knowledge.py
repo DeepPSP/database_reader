@@ -22,7 +22,7 @@ __all__ = [
     "LBBB", "RBBB",
     "PAC", "PJC", "PVC", "SPB",
     "STD", "STE",
-    "Dx_map"
+    "Dx_map",
 ]
 
 
