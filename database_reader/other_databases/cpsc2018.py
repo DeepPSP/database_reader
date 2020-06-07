@@ -14,6 +14,7 @@ from numbers import Real
 from database_reader.utils import (
     ArrayLike,
     AF, I_AVB, LBBB, RBBB, PAC, PVC, STD, STE,
+    Dx_map,
 )
 from database_reader.base import OtherDataBase
 
@@ -34,7 +35,8 @@ class CPSC2018(OtherDataBase):
     1. training set contains 6,877 (female: 3178; male: 3699) 12 leads ECG recordings lasting from 6 s to just 60 s
     2. ECG recordings were sampled as 500 Hz
     3. the training data can be downloaded using links in Ref.[1], but the link in Ref.[2] is recommended. File structure will be assumed to follow Ref.[2]
-    4. types of abnormal rhythm/morphology + normal in the training set:
+    4. the training data are in the `channel first` format
+    5. types of abnormal rhythm/morphology + normal in the training set:
             name                                    abbr.       number of records
         (0) Normal                                  N           918
         (1) Atrial fibrillation                     AF          1098
@@ -45,10 +47,10 @@ class CPSC2018(OtherDataBase):
         (6) Premature ventricular contraction       PVC         672
         (7) ST-segment depression                   STD         825
         (8) ST-segment elevated                     STE         202
-    5. ordering of the leads in the data of all the records are
+    6. ordering of the leads in the data of all the records are
         ['I', 'II', 'III', 'aVR', 'aVL', 'aVF', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6']
-    6. meanings in the .hea files: to write
-    7. knowledge about the abnormal rhythms: ref. cls.get_disease_knowledge
+    7. meanings in the .hea files: to write
+    8. knowledge about the abnormal rhythms: ref. cls.get_disease_knowledge
 
     NOTE:
     -----
@@ -117,13 +119,13 @@ class CPSC2018(OtherDataBase):
         ]
 
 
-    def get_patient_id(self, rec_no:int) -> int:
+    def get_patient_id(self, rec_no:Union[int,str]) -> int:
         """ not finished,
 
         Parameters:
         -----------
-        rec_no: int,
-            number of the record, NOTE that rec_no starts from 1
+        rec_no: int or str,
+            number of the record, NOTE that rec_no starts from 1; or name of the record
 
         Returns:
         --------
@@ -153,13 +155,13 @@ class CPSC2018(OtherDataBase):
             print(self.__doc__)
         
 
-    def load_data(self, rec_no:int, data_format='channels_last') -> np.ndarray:
+    def load_data(self, rec_no:Union[int,str], data_format='channels_last') -> np.ndarray:
         """ finished, checked,
 
         Parameters:
         -----------
-        rec_no: int,
-            number of the record, NOTE that rec_no starts from 1
+        rec_no: int or str,
+            number of the record, NOTE that rec_no starts from 1; or name of the record
         data_format: str, default 'channels_last',
             format of the ecg data, 'channels_last' or 'channels_first' (original)
         
@@ -168,8 +170,10 @@ class CPSC2018(OtherDataBase):
         data: ndarray,
             the ecg data
         """
-        assert rec_no in range(1, self.nb_records+1), "rec_no should be in range(1,{})".format(self.nb_records+1)
-        rec_fp = os.path.join(self.db_path, "A{0:04d}".format(rec_no) + self.rec_ext)
+        if isinstance(rec_no, int)
+            assert rec_no in range(1, self.nb_records+1), "rec_no should be in range(1,{})".format(self.nb_records+1)
+            rec_no = "A{0:04d}".format(rec_no)
+        rec_fp = os.path.join(self.db_path, rec_no + self.rec_ext)
         data = loadmat(rec_fp)
         data = np.asarray(data['val'], dtype=np.float64)
         if data_format == 'channels_last':
@@ -178,13 +182,13 @@ class CPSC2018(OtherDataBase):
         return data
 
 
-    def load_ann(self, rec_no:int, keep_original:bool=False) -> dict:
+    def load_ann(self, rec_no:Union[int,str], keep_original:bool=False) -> dict:
         """ finished, checked,
         
         Parameters:
         -----------
-        rec_no: int,
-            number of the record, NOTE that rec_no starts from 1
+        rec_no: int or str,
+            number of the record, NOTE that rec_no starts from 1; or name of the record
         keep_original: bool, default False,
             keep the original annotations or not,
             mainly concerning 'N' and 'Normal'
@@ -194,11 +198,12 @@ class CPSC2018(OtherDataBase):
         ann_dict, dict,
             the annotations with items: ref. self.ann_items
         """
-        assert rec_no in range(1, self.nb_records+1), "rec_no should be in range(1,{})".format(self.nb_records+1)
-        ann_fp = os.path.join(self.db_path, "A{0:04d}".format(rec_no) + self.ann_ext)
+        if isinstance(rec_no, int)
+            assert rec_no in range(1, self.nb_records+1), "rec_no should be in range(1,{})".format(self.nb_records+1)
+            rec_no = "A{0:04d}".format(rec_no)
+        ann_fp = os.path.join(self.db_path, rec_no + self.ann_ext)
         with open(ann_fp, 'r') as f:
-            header_data = f.readlines()
-        header_data = [l.replace("\n", "") for l in header_data]
+            header_data = f.read().splitlines()
 
         ann_dict = {}
         ann_dict['rec_name'], ann_dict['nb_leads'], ann_dict['freq'], ann_dict['nb_samples'], ann_dict['datetime'], daytime = header_data[0].split(' ')
@@ -232,13 +237,13 @@ class CPSC2018(OtherDataBase):
         return ann_dict
 
 
-    def get_labels(self, rec_no:int, keep_original:bool=False) -> List[str]:
+    def get_labels(self, rec_no:Union[int,str], keep_original:bool=False) -> List[str]:
         """ finished, checked,
         
         Parameters:
         -----------
-        rec_no: int,
-            number of the record, NOTE that rec_no starts from 1
+        rec_no: int or str,
+            number of the record, NOTE that rec_no starts from 1; or name of the record
         keep_original: bool, default False,
             keep the original annotations or not,
             mainly concerning 'N' and 'Normal'
@@ -253,13 +258,13 @@ class CPSC2018(OtherDataBase):
         return labels
 
 
-    def get_diagnosis(self, rec_no:int, full_name:bool=True) -> List[str]:
+    def get_diagnosis(self, rec_no:Union[int,str], full_name:bool=True) -> List[str]:
         """ finished, checked,
         
         Parameters:
         -----------
-        rec_no: int,
-            number of the record, NOTE that rec_no starts from 1
+        rec_no: int or str,
+            number of the record, NOTE that rec_no starts from 1; or name of the record
         full_name: bool, default True,
             full name of the diagnosis or short name of it (ref. self.diagnosis_abbr_to_full)
         
@@ -274,13 +279,13 @@ class CPSC2018(OtherDataBase):
         return diagonosis
 
 
-    def get_patient_info(self, rec_no:int, items:Optional[List[str]]=None) -> dict:
+    def get_patient_info(self, rec_no:Union[int,str], items:Optional[List[str]]=None) -> dict:
         """ finished, checked,
 
         Parameters:
         -----------
-        rec_no: int,
-            number of the record, NOTE that rec_no starts from 1
+        rec_no: int or str,
+            number of the record, NOTE that rec_no starts from 1; or name of the record
         items: list of str, optional,
             items of the patient information (e.g. sex, age, etc.)
         
@@ -300,13 +305,13 @@ class CPSC2018(OtherDataBase):
         return patient_info
 
 
-    def save_challenge_predictions(self, rec_no:int, output_dir:str, scores:List[Real], labels:List[int], classes:List[str]) -> NoReturn:
+    def save_challenge_predictions(self, rec_no:Union[int,str], output_dir:str, scores:List[Real], labels:List[int], classes:List[str]) -> NoReturn:
         """ finished, checked,
 
         Parameters:
         -----------
-        rec_no: int,
-            number of the record, NOTE that rec_no starts from 1
+        rec_no: int or str,
+            number of the record, NOTE that rec_no starts from 1; or name of the record
         output_dir: str,
             directory to save the predictions
         scores: list of real,
@@ -316,6 +321,8 @@ class CPSC2018(OtherDataBase):
         classes: list of str,
             ...
         """
+        if isinstance(rec_no, str):
+            rec_no = int(rec_no[1:])
         assert rec_no in range(1, self.nb_records+1), "rec_no should be in range(1,{})".format(self.nb_records+1)
         recording = self.all_records[rec_no]
         new_file = recording + '.csv'
@@ -332,17 +339,19 @@ class CPSC2018(OtherDataBase):
             f.write("\n".join([recording_string, class_string, label_string, score_string, ""]))
 
 
-    def plot(self, rec_no:int, leads:Optional[Union[str, List[str]]]=None, **kwargs):
+    def plot(self, rec_no:Union[int,str], leads:Optional[Union[str, List[str]]]=None, **kwargs):
         """
 
         Parameters:
         -----------
-        rec_no: int,
-            number of the record, NOTE that rec_no starts from 1
+        rec_no: int or str,
+            number of the record, NOTE that rec_no starts from 1; or name of the record
         leads: str or list of str, optional,
             the leads to 
         kwargs: dict,
         """
+        if isinstance(rec_no, str):
+            rec_no = int(rec_no[1:])
         assert rec_no in range(1, self.nb_records+1), "rec_no should be in range(1,{})".format(self.nb_records+1)
         if 'plt' not in dir():
             import matplotlib.pyplot as plt
