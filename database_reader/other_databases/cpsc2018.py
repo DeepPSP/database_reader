@@ -182,16 +182,16 @@ class CPSC2018(OtherDataBase):
         return data
 
 
-    def load_ann(self, rec_no:Union[int,str], keep_original:bool=False) -> dict:
+    def load_ann(self, rec_no:Union[int,str], keep_original:bool=True) -> dict:
         """ finished, checked,
         
         Parameters:
         -----------
         rec_no: int or str,
             number of the record, NOTE that rec_no starts from 1; or name of the record
-        keep_original: bool, default False,
+        keep_original: bool, default True,
             keep the original annotations or not,
-            mainly concerning 'N' and 'Normal'
+            mainly concerning 'N' and 'Normal' ('SNR' for the newer version)
         
         Returns:
         --------
@@ -216,10 +216,15 @@ class CPSC2018(OtherDataBase):
         except:
             ann_dict['age'] = np.nan
         ann_dict['sex'] = [l for l in header_data if l.startswith('#Sex')][0].split(": ")[-1]
-        ann_dict['diagnosis'] = [l for l in header_data if l.startswith('#Dx')][0].split(": ")[-1].split(",")
+        ann_dict['diagnosis_Dx'] = [l for l in header_data if l.startswith('#Dx')][0].split(": ")[-1].split(",")
+        try:
+            ann_dict['diagnosis_Dx'] = [int(item) for item in ann_dict['diagnosis_Dx']]
+            ann_dict['diagnosis'] = Dx_map[Dx_map['SNOMED code'].isin(ann_dict['diagnosis_Dx'])]['Abbreviation'].tolist()
+        except:  # the old version, the Dx's are abbreviations
+            ann_dict['diagnosis'] = ann_dict['diagnosis_Dx']
         if not keep_original:
             for idx, d in enumerate(ann_dict['diagnosis']):
-                if d == 'Normal':
+                if d in ['Normal', 'SNR']:
                     ann_dict['diagnosis'] = ['N']
         ann_dict['medical_prescription'] = [l for l in header_data if l.startswith('#Rx')][0].split(": ")[-1]
         ann_dict['history'] = [l for l in header_data if l.startswith('#Hx')][0].split(": ")[-1]
