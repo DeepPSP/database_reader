@@ -31,6 +31,15 @@ class CINC2020(PhysioNetDataBase):
 
     ABOUT CINC2020:
     ---------------
+    0. There are 6 difference resources of training data, listed as follows:
+        A. 6,877 recordings from China Physiological Signal Challenge in 2018 (CPSC2018):  https://storage.cloud.google.com/physionet-challenge-2020-12-lead-ecg-public/PhysioNetChallenge2020_Training_CPSC.tar.gz 
+        B. 3,453 recordings from China 12-Lead ECG Challenge Database: https://storage.cloud.google.com/physionet-challenge-2020-12-lead-ecg-public/PhysioNetChallenge2020_Training_2.tar.gz
+        C. 74 recordings from the St Petersburg INCART 12-lead Arrhythmia Database: https://storage.cloud.google.com/physionet-challenge-2020-12-lead-ecg-public/PhysioNetChallenge2020_Training_StPetersburg.tar.gz 
+        D. 516 recordings from the PTB Diagnostic ECG Database: https://storage.cloud.google.com/physionet-challenge-2020-12-lead-ecg-public/PhysioNetChallenge2020_Training_PTB.tar.gz
+        E. 21,837 recordings from the PTB-XL electrocardiography Database: https://storage.cloud.google.com/physionet-challenge-2020-12-lead-ecg-public/PhysioNetChallenge2020_PTB-XL.tar.gz
+        F. 10,344 recordings from a Georgia 12-Lead ECG Challenge Database: https://storage.cloud.google.com/physionet-challenge-2020-12-lead-ecg-public/PhysioNetChallenge2020_Training_E.tar.gz
+    In total, 43,101 labeled recordings of 12-lead ECGs from four countries (China, Germany, Russia, and the USA) across 3 continents have been posted publicly for this Challenge, with approximately the same number hidden for testing, representing the largest public collection of 12-lead ECGs
+
     1. the first part training data comes from CPSC2018, whose folder name is `Training_WFDB`. For this part, ref. the docstring of `database_reader.other_databases.cpsc2018.CPSC2018`
 
     2. the second part training data have folder name `Training_2`
@@ -174,4 +183,3 @@ class CINC2020(PhysioNetDataBase):
         elif rec.startswith("Q"):
             ann_dict = self.second_part_reader.load_ann(rec_no, keep_original)
         return ann_dict
-        
