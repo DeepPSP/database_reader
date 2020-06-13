@@ -24,8 +24,8 @@ from copy import deepcopy
 from numbers import Real
 from typing import Union, Optional, Any, Callable, Tuple, Dict, List, NoReturn
 
-from ...utils import ArrayLike, ArrayLike_Int, ArrayLike_Float
-from ...utils import angle_d2r
+from database_reader.utils.common import ArrayLike, ArrayLike_Int, ArrayLike_Float
+from database_reader.utils.common import angle_d2r
 
 
 __all__ = [
