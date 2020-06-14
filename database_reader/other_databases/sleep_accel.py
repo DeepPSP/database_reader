@@ -7,9 +7,12 @@ from datetime import datetime
 from typing import Union, Optional, Any, List, Tuple, NoReturn
 from numbers import Real
 
-from ..utils.common import ArrayLike
-from ..utils.utils_signal import resample_irregular_timeseries
-from ..base import OtherDataBase
+from database_reader.utils.common import (
+    ArrayLike,
+    get_record_list_recursive,
+)
+from database_reader.utils.utils_signal import resample_irregular_timeseries
+from database_reader.base import OtherDataBase
 
 
 __all__ = [

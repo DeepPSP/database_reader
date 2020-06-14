@@ -9,7 +9,10 @@ from datetime import datetime
 from typing import Union, Optional, Any, List, NoReturn
 from numbers import Real
 
-from database_reader.utils.common import ArrayLike
+from database_reader.utils.common import (
+    ArrayLike,
+    get_record_list_recursive,
+)
 from database_reader.base import PhysioNetDataBase
 
 
@@ -54,14 +57,11 @@ class PTB_XL(PhysioNetDataBase):
         verbose: int, default 2,
         """
         super().__init__(db_name='ptb-xl', db_path=db_path, working_dir=working_dir, verbose=verbose, **kwargs)
+        # wfdb.get_record_list currently not available for this new dataset
         try:
-            # self.all_records = wfdb.get_record_list('ptb-xl')
+            self.all_records = get_record_list_recursive(self.db_path, "dat")
         except:
-            try:
-                self.all_records = os.listdir(self.db_path)
-                self.all_records = list(set([os.path.splitext(item)[0] for item in self.all_records]))
-            except:
-                self.all_records = []
+            self.all_records = []
         
 
     def get_subject_id(self, rec) -> int:

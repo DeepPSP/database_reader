@@ -9,7 +9,10 @@ from datetime import datetime
 from typing import Union, Optional, Any, List, NoReturn
 from numbers import Real
 
-from database_reader.utils.common import ArrayLike
+from database_reader.utils.common import (
+    ArrayLike,
+    get_record_list_recursive,
+)
 from database_reader.base import PhysioNetDataBase
 
 
@@ -59,8 +62,7 @@ class STDB(PhysioNetDataBase):
             self.all_records = wfdb.get_record_list('stdb')
         except:
             try:
-                self.all_records = os.listdir(self.db_path)
-                self.all_records = list(set([os.path.splitext(item)[0] for item in self.all_records]))
+                self.all_records = get_record_list_recursive(self.db_path, "dat")
             except:
                 self.all_records = ['300', '301', '302', '303', '304', '305', '306', '307', '308', '309', '310', '311', '312', '313', '314', '315', '316', '317', '318', '319', '320', '321', '322', '323', '324', '325', '326', '327']
         self.all_leads = ['ECG']

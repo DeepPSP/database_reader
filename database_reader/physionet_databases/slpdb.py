@@ -9,7 +9,10 @@ from datetime import datetime
 from typing import Union, Optional, Any, List, NoReturn
 from numbers import Real
 
-from database_reader.utils.common import ArrayLike
+from database_reader.utils.common import (
+    ArrayLike,
+    get_record_list_recursive,
+)
 from database_reader.base import PhysioNetDataBase
 
 
@@ -65,8 +68,7 @@ class SLPDB(PhysioNetDataBase):
             self.all_records = wfdb.get_record_list('slpdb')
         except:
             try:
-                self.all_records = os.listdir(self.db_path)
-                self.all_records = list(set([os.path.splitext(item)[0] for item in self.all_records]))
+                self.all_records = get_record_list_recursive(self.db_path, "dat")
             except:
                 self.all_records = ['slp01a', 'slp01b', 'slp02a', 'slp02b', 'slp03', 'slp04', 'slp14', 'slp16', 'slp32', 'slp37', 'slp41', 'slp45', 'slp48', 'slp59', 'slp60', 'slp61', 'slp66', 'slp67x']
         self.epoch_len_t = 30  # 30 seconds

@@ -4,6 +4,10 @@ import numpy as np
 import pandas as pd
 from typing import Union, Optional, Any, List, NoReturn
 
+from database_reader.utils.common import (
+    ArrayLike,
+    get_record_list_recursive,
+)
 from database_reader.base import AudioDataBase
 
 

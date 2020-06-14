@@ -5,7 +5,10 @@ import pandas as pd
 from typing import Union, Optional, Any, List, NoReturn
 from numbers import Real
 
-from database_reader.utils.common import ArrayLike
+from database_reader.utils.common import (
+    ArrayLike,
+    get_record_list_recursive,
+)
 from database_reader.base import ImageDataBase
 
 

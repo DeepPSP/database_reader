@@ -7,6 +7,7 @@ import subprocess
 import collections
 import numpy as np
 import time
+from copy import deepcopy
 from logging import Logger
 from datetime import datetime, timedelta
 from typing import Union, Optional, Any, Iterable, List, Tuple, Dict, Callable, NoReturn
@@ -22,6 +23,7 @@ __all__ = [
     "modulo",
     "angle_d2r",
     "execute_cmd",
+    "get_record_list_recursive",
 ]
 
 
@@ -218,3 +220,22 @@ def execute_cmd(cmd:str, logger:Optional[Logger]=None, raise_error:bool=True) ->
     exitcode = 0
 
     return exitcode, output_msg
+
+
+def get_record_list_recursive(db_path:str, rec_ext:str) -> List[str]:
+    """
+    """
+    res = []
+    db_path = os.path.join(db_path, "tmp").replace("tmp", "")
+    roots = [db_path]
+    while len(roots) > 0:
+        new_roots = []
+        for r in roots:
+            tmp = [os.path.join(r, item) for item in os.listdir(r)]
+            res += [item for item in tmp if os.path.isfile(item)]
+            new_roots += [item for item in tmp if os.path.isdir(item)]
+        roots = deepcopy(new_roots)
+    res = [os.path.splitext(item)[0].replace(db_path, "") for item in res if item.endswith(rec_ext)]
+    res = sorted(res)
+
+    return res
