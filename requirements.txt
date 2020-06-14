@@ -9,3 +9,4 @@ matplotlib
 librosa
 praat-parselmouth
 opencv-contrib-python
+easydict

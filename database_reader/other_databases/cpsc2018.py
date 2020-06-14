@@ -52,6 +52,10 @@ class CPSC2018(OtherDataBase):
     7. meanings in the .hea files: to write
     8. knowledge about the abnormal rhythms: ref. cls.get_disease_knowledge
 
+    Update:
+    -------
+    CINC2020 (ref. [2]) released totally 3453 unused training data of CPSC2018, whose filenames start with "Q". These file names are not "continuous". The last record is 'Q3581'
+
     NOTE:
     -----
     1. Ages of records A0608, A1549, A1876, A2299, A5990 are 'NaN'
@@ -132,7 +136,12 @@ class CPSC2018(OtherDataBase):
         pid: int,
             the `patient_id` corr. to `rec_no`
         """
-        pid = 0
+        if isinstance(rec_no, int):
+            pass
+        elif rec_no.startswith("A"):
+            pass
+        else:
+            pass
         raise NotImplementedError
     
 
@@ -161,7 +170,8 @@ class CPSC2018(OtherDataBase):
         Parameters:
         -----------
         rec_no: int or str,
-            number of the record, NOTE that rec_no starts from 1; or name of the record
+            number of the record, NOTE that rec_no starts from 1; or name of the record,
+            int only supported for the original CPSC2018 dataset
         data_format: str, default 'channels_last',
             format of the ecg data, 'channels_last' or 'channels_first' (original)
         
@@ -188,7 +198,8 @@ class CPSC2018(OtherDataBase):
         Parameters:
         -----------
         rec_no: int or str,
-            number of the record, NOTE that rec_no starts from 1; or name of the record
+            number of the record, NOTE that rec_no starts from 1; or name of the record,
+            int only supported for the original CPSC2018 dataset
         keep_original: bool, default True,
             keep the original annotations or not,
             mainly concerning 'N' and 'Normal' ('SNR' for the newer version)
@@ -248,7 +259,8 @@ class CPSC2018(OtherDataBase):
         Parameters:
         -----------
         rec_no: int or str,
-            number of the record, NOTE that rec_no starts from 1; or name of the record
+            number of the record, NOTE that rec_no starts from 1; or name of the record,
+            int only supported for the original CPSC2018 dataset
         keep_original: bool, default False,
             keep the original annotations or not,
             mainly concerning 'N' and 'Normal'
@@ -269,7 +281,8 @@ class CPSC2018(OtherDataBase):
         Parameters:
         -----------
         rec_no: int or str,
-            number of the record, NOTE that rec_no starts from 1; or name of the record
+            number of the record, NOTE that rec_no starts from 1; or name of the record,
+            int only supported for the original CPSC2018 dataset
         full_name: bool, default True,
             full name of the diagnosis or short name of it (ref. self.diagnosis_abbr_to_full)
         
@@ -290,7 +303,8 @@ class CPSC2018(OtherDataBase):
         Parameters:
         -----------
         rec_no: int or str,
-            number of the record, NOTE that rec_no starts from 1; or name of the record
+            number of the record, NOTE that rec_no starts from 1; or name of the record,
+            int only supported for the original CPSC2018 dataset
         items: list of str, optional,
             items of the patient information (e.g. sex, age, etc.)
         
@@ -316,7 +330,8 @@ class CPSC2018(OtherDataBase):
         Parameters:
         -----------
         rec_no: int or str,
-            number of the record, NOTE that rec_no starts from 1; or name of the record
+            number of the record, NOTE that rec_no starts from 1; or name of the record,
+            int only supported for the original CPSC2018 dataset
         output_dir: str,
             directory to save the predictions
         scores: list of real,
@@ -345,12 +360,13 @@ class CPSC2018(OtherDataBase):
 
 
     def plot(self, rec_no:Union[int,str], leads:Optional[Union[str, List[str]]]=None, **kwargs):
-        """
+        """ not finished, not checked,
 
         Parameters:
         -----------
         rec_no: int or str,
-            number of the record, NOTE that rec_no starts from 1; or name of the record
+            number of the record, NOTE that rec_no starts from 1; or name of the record,
+            int only supported for the original CPSC2018 dataset
         leads: str or list of str, optional,
             the leads to 
         kwargs: dict,

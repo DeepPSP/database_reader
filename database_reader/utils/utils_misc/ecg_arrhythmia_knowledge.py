@@ -149,6 +149,7 @@ STE = {
 
 
 # ref. https://github.com/physionetchallenges/physionetchallenges.github.io/blob/master/2020/Dx_map.csv
+# NOTE that 'SNR' is the 'Normal' rhythm
 Dx_map = pd.read_csv(StringIO("""dx,SNOMED code,Abbreviation
 1st degree av block,270492004,IAVB
 2nd degree av block,195042002,IIAVB

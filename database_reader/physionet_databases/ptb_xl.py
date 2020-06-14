@@ -40,6 +40,7 @@ class PTB_XL(PhysioNetDataBase):
     References:
     -----------
     [1] https://physionet.org/content/ptb-xl/1.0.1/
+    [2] https://physionetchallenges.github.io/2020/
     """
     def __init__(self, db_path:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """

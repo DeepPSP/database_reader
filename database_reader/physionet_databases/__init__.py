@@ -19,6 +19,9 @@ from .qtdb import *
 from .slpdb import *
 from .stdb import *
 from .ucddb import *
+from .incartdb import *
+from .ptbdb import *
+from .ptb_xl import *
 
 
 __all__ = [s for s in dir() if not s.startswith('_')]
