@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 from scipy.io import loadmat
 from datetime import datetime
-from typing import Union, Optional, Any, List, NoReturn
+from typing import Union, Optional, Any, List, Dict, NoReturn
 from numbers import Real
 from easydict import EasyDict as ED
 
