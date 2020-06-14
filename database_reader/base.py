@@ -104,6 +104,10 @@ class PhysioNetDataBase(object):
 
         self.logger.addHandler(c_handler)
         self.logger.addHandler(f_handler)
+
+        if self.verbose <= 2:
+            self.df_all_db_info = pd.DataFrame()
+            return
         
         try:
             all_dbs = wfdb.io.get_dbs()

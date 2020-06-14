@@ -92,6 +92,9 @@ class CINC2020(PhysioNetDataBase):
             "E": os.path.join(self.db_path_base, "WFDB"),
             "F": os.path.join(self.db_path_base, "Training_E", "WFDB"),
         })
+        self.all_records = ED({
+            tranche: get_record_list_recursive(self.db_paths[tranche]) for tranche in "ABCDEF"
+        })
         self.rec_prefix = ED({
             "A": "A", "B": "Q", "C": "I", "D": "S", "E": "HR", "F": "E",
         })
@@ -338,12 +341,12 @@ class CINC2020(PhysioNetDataBase):
         kwargs: dict,
         """
         tranche = self._get_tranche(rec)
-        physionet_lightwave_suffix = ED({
-            "C": "incartdb/1.0.0",
-            "D": "ptbdb/1.0.0",
-            "E": "ptb-xl/1.0.1",
-        })
         if tranche in "CDE":
+            physionet_lightwave_suffix = ED({
+                "C": "incartdb/1.0.0",
+                "D": "ptbdb/1.0.0",
+                "E": "ptb-xl/1.0.1",
+            })
             url = f"https://physionet.org/lightwave/?db={physionet_lightwave_suffix[tranche]}"
             print("better view: {}\n"*3)
             
