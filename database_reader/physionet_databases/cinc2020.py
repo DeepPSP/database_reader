@@ -55,7 +55,7 @@ class CINC2020(PhysioNetDataBase):
     NOTE:
     -----
     1. The datasets have been roughly processed to have a uniform format, hence differ from their original resource (e.g. differe in sampling frequency, sample duration, etc.)
-    2. The original datasets might have richer metadata (especially those from PhysioNet)
+    2. The original datasets might have richer metadata (especially those from PhysioNet), which can be fetched from corresponding reader's docstring or website of the original source
 
     ISSUES:
     -------
@@ -67,7 +67,10 @@ class CINC2020(PhysioNetDataBase):
     References:
     -----------
     [1] https://physionetchallenges.github.io/2020/
-    [2] database_reader.other_databases.cpsc2018
+    [2] http://2018.icbeb.org/#
+    [3] https://physionet.org/content/incartdb/1.0.0/
+    [4] https://physionet.org/content/ptbdb/1.0.0/
+    [5] https://physionet.org/content/ptb-xl/1.0.1/
     """
     def __init__(self, db_path:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
