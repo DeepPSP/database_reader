@@ -9,7 +9,7 @@ from datetime import datetime
 from typing import Union, Optional, Any, List, NoReturn
 from numbers import Real
 
-from database_reader.utils import ArrayLike
+from database_reader.utils.common import ArrayLike
 from database_reader.base import PhysioNetDataBase
 
 

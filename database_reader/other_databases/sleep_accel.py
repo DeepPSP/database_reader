@@ -7,8 +7,8 @@ from datetime import datetime
 from typing import Union, Optional, Any, List, Tuple, NoReturn
 from numbers import Real
 
-from ..utils import ArrayLike
-from ..utils import resample_irregular_timeseries
+from ..utils.common import ArrayLike
+from ..utils.utils_signal import resample_irregular_timeseries
 from ..base import OtherDataBase
 
 

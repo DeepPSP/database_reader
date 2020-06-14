@@ -12,7 +12,7 @@ from datetime import datetime
 from typing import Union, Optional, Any, List, Dict, Iterable, Sequence, NoReturn
 from numbers import Real
 
-from database_reader.utils import ArrayLike
+from database_reader.utils.common import ArrayLike
 from database_reader.utils.utils_universal import intervals_union
 from database_reader.base import NSRRDataBase
 

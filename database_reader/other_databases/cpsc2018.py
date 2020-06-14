@@ -11,7 +11,7 @@ from datetime import datetime
 from typing import Union, Optional, Any, List, Dict, NoReturn
 from numbers import Real
 
-from database_reader.utils import (
+from database_reader.utils.utils_misc import (
     ArrayLike,
     AF, I_AVB, LBBB, RBBB, PAC, PVC, STD, STE,
     Dx_map,

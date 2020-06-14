@@ -51,7 +51,7 @@ from parselmouth.praat import call
 from scipy.interpolate import interp1d
 
 from ._praat import PMSound
-from database_reader.utils import ArrayLike
+from database_reader.utils.common import ArrayLike
 from database_reader.utils.utils_signal import butter_bandpass_filter, MovingAverage
 from database_reader.utils.utils_universal import generalized_intervals_intersection
 from database_reader.utils.utils_misc import indicator_enter_leave_func

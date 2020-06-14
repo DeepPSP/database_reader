@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Union, Optional, Any, List, Tuple, NoReturn
 from numbers import Real
 
-from ..utils import ArrayLike
+from ..utils.common import ArrayLike
 from ..base import OtherDataBase
 
 
