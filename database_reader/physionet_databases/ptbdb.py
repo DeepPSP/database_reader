@@ -24,7 +24,7 @@ __all__ = [
 class PTBDB(PhysioNetDataBase):
     """ NOT finished,
 
-    PTB Diagnostic ECG Database
+    PTB (Physikalisch-Technische Bundesanstalt) Diagnostic ECG Database
 
     ABOUT ptbdb:
     ------------

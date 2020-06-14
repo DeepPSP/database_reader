@@ -28,7 +28,9 @@ class PTB_XL(PhysioNetDataBase):
 
     ABOUT ptb-xl:
     -------------
-    to write
+    1. consists of 21837 clinical 12-lead ECGs from 18885 patients of 10 second length between October 1989 and June 1996
+    2. data was annotated by up to two cardiologists, who assigned potentially multiple ECG statements to each record. The in total 71 different ECG statements conform to the SCP-ECG standard and cover diagnostic, form, and rhythm statements
+    3. 
 
     NOTE:
     -----

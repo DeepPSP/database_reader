@@ -223,10 +223,28 @@ def execute_cmd(cmd:str, logger:Optional[Logger]=None, raise_error:bool=True) ->
 
 
 def get_record_list_recursive(db_path:str, rec_ext:str) -> List[str]:
-    """
+    """ finished, checked,
+
+    get the list of records in `db_path` recursively,
+    for example, there are two folders 'patient1', 'patient2' in `db_path`,
+    and there are records 'A0001', 'A0002', ... in 'patient1'; 'B0001', 'B0002', ... in 'patient2',
+    then the output would be 'patient1{sep}A0001', ..., 'patient2{sep}B0001', ...,
+    sep is determined by the system
+
+    Parameters:
+    -----------
+    db_path: str,
+        the parent (root) path of the whole database
+    rec_ext: str,
+        extension of the record files
+
+    Returns:
+    --------
+    res: list of str,
+        list of records, in lexicographical order
     """
     res = []
-    db_path = os.path.join(db_path, "tmp").replace("tmp", "")
+    db_path = os.path.join(db_path, "tmp").replace("tmp", "")  # make sure `db_path` ends with a sep
     roots = [db_path]
     while len(roots) > 0:
         new_roots = []
