@@ -183,7 +183,7 @@ class CPSC2018(OtherDataBase):
         data: ndarray,
             the ecg data
         """
-        if isinstance(rec_no, int)
+        if isinstance(rec_no, int):
             assert rec_no in range(1, self.nb_records+1), "rec_no should be in range(1,{})".format(self.nb_records+1)
             rec_no = "A{0:04d}".format(rec_no)
         rec_fp = os.path.join(self.db_path, rec_no + self.rec_ext)
@@ -212,7 +212,7 @@ class CPSC2018(OtherDataBase):
         ann_dict, dict,
             the annotations with items: ref. self.ann_items
         """
-        if isinstance(rec_no, int)
+        if isinstance(rec_no, int):
             assert rec_no in range(1, self.nb_records+1), "rec_no should be in range(1,{})".format(self.nb_records+1)
             rec_no = "A{0:04d}".format(rec_no)
         ann_fp = os.path.join(self.db_path, rec_no + self.ann_ext)
