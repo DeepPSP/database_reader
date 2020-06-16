@@ -3,7 +3,7 @@ remarks: utilities for io of images for tensorflow object detection
 
 voc format: xmin, ymin, xmax, ymax
 coco format: xmin, ymin, w, h
-yolo format: (classIndex,) xcen, ycen, w, h
+yolo format: classIndex xcen ycen w h
 """
 import os
 import pandas as pd
