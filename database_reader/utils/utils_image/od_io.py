@@ -23,17 +23,17 @@ __all__ = [
 ]
 
 
-def dataset_to_tfrecords(img_paths:Union[str, List[str]], ann_paths:Union[str, List[str]], ann_fmt:str, tfrecords_save_path:str, pbtxt_dict:Dict[str,int], train_ratio:float=0.8, class_map:Optional[Dict[str,str]]=None, csv_save_path:Optional[str]=None, **kwargs):
+def dataset_to_tfrecords(img_dirs:Union[str, List[str]], ann_dirs:Union[str, List[str]], ann_fmt:str, tfrecords_save_path:str, pbtxt_dict:Dict[str,int], train_ratio:float=0.8, class_map:Optional[Dict[str,str]]=None, csv_save_path:Optional[str]=None, **kwargs):
     """ finished, checked,
 
     to tfrecords for object detection training
 
     Parameters:
     -----------
-    img_paths: str, or list of str,
-        path(s) for the image files
-    ann_paths: str, or list of str,
-        path(s) for the bounding box annotation
+    img_dirs: str, or list of str,
+        directory(s) for the image files
+    ann_dirs: str, or list of str,
+        directory(s) for the bounding box annotation
     ann_fmt: str,
         format of the bounding box annotations,
         can be one of 'voc', 'coco', 'yolo', case insensitive
@@ -54,21 +54,21 @@ def dataset_to_tfrecords(img_paths:Union[str, List[str]], ann_paths:Union[str, L
         with items "nb_train", "nb_test"
     """
     import time
-    if isinstance(img_paths, str) and isinstance(ann_paths, str):
-        ip, ap = [img_paths], [ann_paths]
-    elif isinstance(img_paths, (list, tuple)) and isinstance(ann_paths, (list, tuple)) and len(img_paths) == len(ann_paths):
-        ip, ap = list(img_paths), list(ann_paths)
+    if isinstance(img_dirs, str) and isinstance(ann_dirs, str):
+        ip, ap = [img_dirs], [ann_dirs]
+    elif isinstance(img_dirs, (list, tuple)) and isinstance(ann_dirs, (list, tuple)) and len(img_dirs) == len(ann_dirs):
+        ip, ap = list(img_dirs), list(ann_dirs)
     else:
         raise ValueError("Invalid input!")
 
     df_info = pd.DataFrame()
     for i, a in zip(ip, ap):
         if ann_fmt.lower() == 'voc':
-            df_tmp = voc_to_df(img_path=i, ann_path=a, save_path=None, class_map=class_map, **kwargs)
+            df_tmp = voc_to_df(img_dir=i, ann_dir=a, save_path=None, class_map=class_map, **kwargs)
         elif ann_fmt.lower() == 'coco':
-            df_tmp = coco_to_df(img_path=i, ann_path=a, save_path=None, class_map=class_map, **kwargs)
+            df_tmp = coco_to_df(img_dir=i, ann_dir=a, save_path=None, class_map=class_map, **kwargs)
         elif ann_fmt.lower() == 'yolo':
-            df_tmp = yolo_to_df(img_path=i, ann_path=a, save_path=None, class_map=class_map, **kwargs)
+            df_tmp = yolo_to_df(img_dir=i, ann_dir=a, save_path=None, class_map=class_map, **kwargs)
         else:
             raise ValueError("annotation format {} not recognized".format(ann_fmt))
         df_info = pd.concat([df_info, df_tmp])
@@ -107,17 +107,17 @@ def dataset_to_tfrecords(img_paths:Union[str, List[str]], ann_paths:Union[str, L
     return ret
 
 
-def voc_to_df(img_path:str, ann_path:str, save_path:Optional[str]=None, class_map:Optional[Dict[str,str]]=None, **kwargs) -> pd.DataFrame:
+def voc_to_df(img_dir:str, ann_dir:str, save_path:Optional[str]=None, class_map:Optional[Dict[str,str]]=None, **kwargs) -> pd.DataFrame:
     """ finished, checked,
 
-    pascal voc annotations to one csv file
+    pascal voc annotations to one DataFrame (csv file)
 
     Parameters:
     -----------
-    img_path: str,
-        path for the image files
-    ann_path: str,
-        path for the bounding box annotation xml files
+    img_dir: str,
+        directory of the image files
+    ann_dir: str,
+        directory of the bounding box annotation xml files
     save_path: str, optional,
         path to store the csv file
     class_map: dict, optional,
@@ -128,10 +128,10 @@ def voc_to_df(img_path:str, ann_path:str, save_path:Optional[str]=None, class_ma
     bbox_df: DataFrame,
         annotations in one DataFrame
     """
-    xml_list = []  
-    for xml_file in glob.glob(os.path.join(ann_path, '*.xml')):  
-        tree = ET.parse(xml_file)  
-        root = tree.getroot() 
+    xml_list = []
+    for xml_file in glob.glob(os.path.join(ann_dir, '*.xml')):
+        tree = ET.parse(xml_file)
+        root = tree.getroot()
         if len(root.findall('object')) == 0:
             print('{} has no bounding box annotation'.format(xml_file))
         for member in root.findall('object'):
@@ -171,24 +171,30 @@ def voc_to_df(img_path:str, ann_path:str, save_path:Optional[str]=None, class_ma
         bbox_df['class'] = bbox_df['subclass']
     else:
         bbox_df['class'] = bbox_df['subclass'].apply(lambda sc:class_map[sc])
-    column_name = ['filename', 'width', 'height', 'class', 'segmented', 'pose', 'truncated', 'difficult', 'xmin', 'ymin', 'xmax', 'ymax', 'box_width', 'box_height', 'subclass', 'area']
+    column_name = [
+        'filename', 'class', 'subclass',
+        'segmented', 'pose', 'truncated', 'difficult',
+        'width', 'height',
+        'xmin', 'ymin', 'xmax', 'ymax',
+        'box_width', 'box_height', 'area',
+    ]
     bbox_df = bbox_df[column_name]
     if save_path is not None:
         bbox_df.to_csv(save_path, index=False)
     return bbox_df
 
 
-def yolo_to_df(img_path:str, ann_path:str, save_path:Optional[str]=None, class_map:Optional[Dict[str,str]]=None, **kwargs) -> pd.DataFrame:
+def yolo_to_df(img_dir:str, ann_dir:str, save_path:Optional[str]=None, class_map:Optional[Dict[str,str]]=None, **kwargs) -> pd.DataFrame:
     """ finished, checked,
 
     pascal voc annotations to one csv file
 
     Parameters:
     -----------
-    img_path: str,
-        path for the image files
-    ann_path: str,
-        path for the bounding box annotation txt files
+    img_dir: str,
+        directory of the image files
+    ann_dir: str,
+        directory of the bounding box annotation txt files
     save_path: str, optional,
         path to store the csv file
     class_map: dict, optional,
@@ -198,21 +204,47 @@ def yolo_to_df(img_path:str, ann_path:str, save_path:Optional[str]=None, class_m
     --------
     bbox_df: DataFrame,
         annotations in one DataFrame
+
+    NOTE: each line of each file is of the form `classIndex xcen ycen w h`
     """
+    ann_list = []
+    all_img = os.listdir(img_dir)
+    for ann_file in glob.glob(os.path.join(ann_dir, '*.txt')):
+        img_file = os.path.splitext(os.path.basename(ann_file))[0]
+        img_file = [os.path.join(img_dir, item) for item in all_img if item.startswith(imgfile)]
+        if len(img_file) == 0:
+            continue
+        img_file = img_file[0]
+        with tf.gfile.GFile(img_file, 'rb') as fid:
+            encoded_jpg = fid.read()
+        encoded_jpg_io = io.BytesIO(encoded_jpg)
+        image = Image.open(encoded_jpg_io)
+        width, height = image.size
+        with open(ann_file, 'r') as f:
+            for l in f:
+                classIndex, xcen, ycen, box_w, box_h = l.strip().split(' ')
+                classIndex = int(classIndex)
+                box_w, box_h = int(float(box_w)*width), int(float(box_h)*height)
+                xcen, ycen = int(float(xcen)*width), int(float(ycen)*height)
+                xmin, xmax = xcen - box_w//2, xcen + box_w//2
+                ymin, ymax = ycen - box_h//2, ycen + box_h//2
+                area = box_w*box_h
+                
+                # TODO: add to ann_list
     raise NotImplementedError
 
 
-def coco_to_df(img_path:str, ann_path:str, save_path:Optional[str]=None, class_map:Optional[Dict[str,str]]=None, **kwargs) -> pd.DataFrame:
+def coco_to_df(img_dir:str, ann_dir:str, save_path:Optional[str]=None, class_map:Optional[Dict[str,str]]=None, **kwargs) -> pd.DataFrame:
     """ finished, checked,
 
     pascal voc annotations to one csv file
 
     Parameters:
     -----------
-    img_path: str,
-        path for the image files
-    ann_path: str,
-        path for the bounding box annotation json file
+    img_dir: str,
+        directory of the image files
+    ann_dir: str,
+        directory of the bounding box annotation json file
     save_path: str, optional,
         path to store the csv file
     class_map: dict, optional,
@@ -254,7 +286,7 @@ def create_tfexample(group:namedtuple, pbtxt_dict:Dict[str,int], ignore_difficul
     """
     with tf.gfile.GFile(group.filename, 'rb') as fid:
         encoded_jpg = fid.read()
-    encoded_jpg_io = io.BytesIO(encoded_jpg)  
+    encoded_jpg_io = io.BytesIO(encoded_jpg)
     image = Image.open(encoded_jpg_io)
     # width, height = image.size
     key = hashlib.sha256(encoded_jpg).hexdigest()
