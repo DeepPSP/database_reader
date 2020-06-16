@@ -110,7 +110,7 @@ def dataset_to_tfrecords(img_dirs:Union[str, List[str]], ann_dirs:Union[str, Lis
 def voc_to_df(img_dir:str, ann_dir:str, save_path:Optional[str]=None, class_map:Optional[Dict[str,str]]=None, **kwargs) -> pd.DataFrame:
     """ finished, checked,
 
-    pascal voc annotations to one DataFrame (csv file)
+    pascal voc annotations (in xml format) to one DataFrame (csv file)
 
     Parameters:
     -----------
@@ -165,29 +165,29 @@ def voc_to_df(img_dir:str, ann_dir:str, save_path:Optional[str]=None, class_map:
                 'area': area,
             }
             xml_list.append(value)
-    column_name = ['filename', 'width', 'height', 'segmented', 'pose', 'truncated', 'difficult', 'xmin', 'ymin', 'xmax', 'ymax', 'box_width', 'box_height', 'subclass', 'area']
-    bbox_df = pd.DataFrame(xml_list, columns=column_name)
+    column_names = ['filename', 'width', 'height', 'segmented', 'pose', 'truncated', 'difficult', 'xmin', 'ymin', 'xmax', 'ymax', 'box_width', 'box_height', 'subclass', 'area']
+    bbox_df = pd.DataFrame(xml_list, columns=column_names)
     if class_map is None:
         bbox_df['class'] = bbox_df['subclass']
     else:
         bbox_df['class'] = bbox_df['subclass'].apply(lambda sc:class_map[sc])
-    column_name = [
+    column_names = [
         'filename', 'class', 'subclass',
         'segmented', 'pose', 'truncated', 'difficult',
         'width', 'height',
         'xmin', 'ymin', 'xmax', 'ymax',
         'box_width', 'box_height', 'area',
     ]
-    bbox_df = bbox_df[column_name]
+    bbox_df = bbox_df[column_names]
     if save_path is not None:
         bbox_df.to_csv(save_path, index=False)
     return bbox_df
 
 
-def yolo_to_df(img_dir:str, ann_dir:str, save_path:Optional[str]=None, class_map:Optional[Dict[str,str]]=None, **kwargs) -> pd.DataFrame:
+def yolo_to_df(img_dir:str, ann_dir:str, save_path:Optional[str]=None, class_map:Optional[Dict[int,str]]=None, **kwargs) -> pd.DataFrame:
     """ finished, checked,
 
-    pascal voc annotations to one csv file
+    yolo annotations (in txt format) to one csv file
 
     Parameters:
     -----------
@@ -198,7 +198,7 @@ def yolo_to_df(img_dir:str, ann_dir:str, save_path:Optional[str]=None, class_map
     save_path: str, optional,
         path to store the csv file
     class_map: dict, optional,
-        label map, from class names of the annotations to the class names for training
+        label map, from class indices of the annotations to the class names for training
 
     Returns:
     --------
@@ -219,25 +219,53 @@ def yolo_to_df(img_dir:str, ann_dir:str, save_path:Optional[str]=None, class_map
             encoded_jpg = fid.read()
         encoded_jpg_io = io.BytesIO(encoded_jpg)
         image = Image.open(encoded_jpg_io)
-        width, height = image.size
+        fw, fh = image.size
         with open(ann_file, 'r') as f:
             for l in f:
-                classIndex, xcen, ycen, box_w, box_h = l.strip().split(' ')
+                classIndex, xcen, ycen, box_width, box_height = l.strip().split(' ')
                 classIndex = int(classIndex)
-                box_w, box_h = int(float(box_w)*width), int(float(box_h)*height)
-                xcen, ycen = int(float(xcen)*width), int(float(ycen)*height)
-                xmin, xmax = xcen - box_w//2, xcen + box_w//2
-                ymin, ymax = ycen - box_h//2, ycen + box_h//2
-                area = box_w*box_h
-                
+                if class_map is not None:
+                    classname = class_map[classIndex]
+                else:
+                    classname = str(classIndex)
+                box_width, box_height = int(float(box_width)*fw), int(float(box_height)*fh)
+                xcen, ycen = int(float(xcen)*fw), int(float(ycen)*fh)
+                xmin, xmax = xcen - box_width//2, xcen + box_width//2
+                ymin, ymax = ycen - box_height//2, ycen + box_height//2
+                area = box_width*box_height
                 # TODO: add to ann_list
-    raise NotImplementedError
+                if area <= 0:
+                    continue
+                values = {
+                    'filename': os.path.basename(img_file),
+                    'class': classname,
+                    'width': fw,
+                    'height': fh,
+                    'xmin': xmin,
+                    'ymin': ymin,
+                    'xmax': xmax,
+                    'ymax': ymax,
+                    'box_width': box_width,
+                    'box_height': box_height,
+                    'area': area,
+                }
+                ann_list.append(value)
+    column_names = [
+        'filename', 'class',
+        'width', 'height',
+        'xmin', 'ymin', 'xmax', 'ymax',
+        'box_width', 'box_height', 'area',
+    ]
+    bbox_df = pd.DataFrame(ann_list, columns=column_names)
+    if save_path is not None:
+        bbox_df.to_csv(save_path, index=False)
+    return bbox_df
 
 
 def coco_to_df(img_dir:str, ann_dir:str, save_path:Optional[str]=None, class_map:Optional[Dict[str,str]]=None, **kwargs) -> pd.DataFrame:
     """ finished, checked,
 
-    pascal voc annotations to one csv file
+    coco annotations (in json format) to one csv file
 
     Parameters:
     -----------
