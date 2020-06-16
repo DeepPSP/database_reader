@@ -164,7 +164,7 @@ def voc_to_df(img_dir:str, ann_dir:str, save_path:Optional[str]=None, class_map:
                 'box_height': box_height,
                 'area': area,
             }
-            xml_list.append(value)
+            xml_list.append(values)
     column_names = ['filename', 'width', 'height', 'segmented', 'pose', 'truncated', 'difficult', 'xmin', 'ymin', 'xmax', 'ymax', 'box_width', 'box_height', 'subclass', 'area']
     bbox_df = pd.DataFrame(xml_list, columns=column_names)
     if class_map is None:
@@ -249,7 +249,7 @@ def yolo_to_df(img_dir:str, ann_dir:str, save_path:Optional[str]=None, class_map
                     'box_height': box_height,
                     'area': area,
                 }
-                ann_list.append(value)
+                ann_list.append(values)
     column_names = [
         'filename', 'class',
         'width', 'height',
