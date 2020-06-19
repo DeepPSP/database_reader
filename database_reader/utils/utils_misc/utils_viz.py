@@ -12,6 +12,7 @@ from ..common import ArrayLike
 
 __all__ = [
     "plot_single_lead_ecg",
+    "plot_hypnogram",
 ]
 
 
@@ -63,3 +64,9 @@ def plot_single_lead_ecg(s:ArrayLike, freq:Real, use_idx:bool=False, **kwargs) -
             plt.xlabel('Time [s]')
         plt.ylabel('Voltage [mV]')
         plt.show()
+
+
+def plot_hypnogram(sleep_stage_curve:ArrayLike, style:str='original'):
+    """
+    """
+    raise NotImplementedError

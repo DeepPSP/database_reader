@@ -56,6 +56,9 @@ class CINC2020(PhysioNetDataBase):
     -----
     1. The datasets have been roughly processed to have a uniform format, hence differ from their original resource (e.g. differe in sampling frequency, sample duration, etc.)
     2. The original datasets might have richer metadata (especially those from PhysioNet), which can be fetched from corresponding reader's docstring or website of the original source
+    3. Each sub-dataset might have its own organizing scheme of data, which should be carefully dealt with
+    4. There are few 'absolute' diagnoses in 12 lead ECGs, where large discrepancies in the interpretation of the ECG can be found even inspected by experts. There is inevitably something lost in translation, especially when you do not have the context. This doesn't mean making an algorithm isn't important
+    5. The labels are noisy, which one has to deal with in all real world data
 
     ISSUES:
     -------
