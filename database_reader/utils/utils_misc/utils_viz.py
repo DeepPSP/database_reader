@@ -6,6 +6,7 @@ import numpy as np
 from numbers import Real
 from typing import Union, Optional, List, Tuple, NoReturn
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 
 from ..common import ArrayLike
 
@@ -66,7 +67,46 @@ def plot_single_lead_ecg(s:ArrayLike, freq:Real, use_idx:bool=False, **kwargs) -
         plt.show()
 
 
-def plot_hypnogram(sleep_stage_curve:ArrayLike, style:str='original'):
+def plot_hypnogram(sleep_stage_curve:ArrayLike, style:str='original', **kwargs) -> NoReturn:
     """
+
+    plot the hypnogram
+
+    Parameters:
+    -----------
+    sleep_stage_curve: array_like,
+        the sleep stage curve, each element is of the form 't, val',
+        allowed stages are (case insensitive)
+        - awake
+        - REM
+        - NREM1, NREM2, NREM3, NREM4
+    style: str, default 'original'
+        style of the hypnogram, can be the original style, or 'vspan'
+    kwargs: dict,
+        other key word arguments, including
+        - ax: the axis to plot
     """
+    all_stages = ['NREM4', 'NREM3', 'NREM2', 'NREM1', 'REM', 'awake',]
+    all_stages = [item for item in all_stages if item.lower() in set([p[1].lower() for p in sleep_stage_curve])]
+    all_stages = {all_stages[idx]:idx for idx in range(1,len(all_stages)+1)}
+
+    palette = {
+        'awake': 'orange',
+        'REM': 'yellow',
+        'NREM1': 'green',
+        'NREM2': 'cyan',
+        'NREM3': 'blue',
+        'NREM4': 'purple',
+    }
+    patches = {k: mpatches.Patch(color=c, label=k) for k,c in palette.items()}
+
+    ax = kwargs.get('ax', None)
+    if ax is None:
+        fig, ax = plt.subplots(figsize=(20,12))
+
+    if style == 'original':
+        pass
+    elif style == 'vspan':
+        pass
+
     raise NotImplementedError
