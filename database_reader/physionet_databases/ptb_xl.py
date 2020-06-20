@@ -85,6 +85,13 @@ class PTB_XL(PhysioNetDataBase):
         except:
             self.all_records = []
         self.freq = kwargs.get("freq", 500)
+        assert int(self.freq) in [100, 500]
+        self.spacing = 1000/self.freq
+
+        self.metadata_fp = os.path.join(self.db_path, "ptbxl_database.csv")
+        self.scp_statements_fp = os.path.join(self.db_path, "scp_statements.csv")
+        self.df_metadata = pd.read_csv(self.metadata_fp)
+        self.df_scp_statements = pd.read_csv(self.scp_statements_fp)
         
 
     def get_subject_id(self, rec) -> int:
