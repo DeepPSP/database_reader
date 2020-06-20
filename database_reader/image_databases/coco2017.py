@@ -4,22 +4,19 @@
 import os
 import numpy as np
 import pandas as pd
-from typing import Union, Optional, Any, List, NoReturn
-from numbers import Real
+import json
+import cv2
+from PIL import Image
 
-from database_reader.utils.common import (
-    ArrayLike,
-    get_record_list_recursive,
-)
 from database_reader.base import ImageDataBase
 
 
 __all__ = [
-    "Hands11K"
+    "COCO"
 ]
 
 
-class Hands11K(ImageDataBase):
+class COCO2017(ImageDataBase):
     """
     """
     def __init__(self, db_path:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
@@ -32,4 +29,5 @@ class Hands11K(ImageDataBase):
             working directory, to store intermediate files and log file
         verbose: int, default 2,
         """
-        super().__init__(db_name="11kHands", db_path=db_path, working_dir=working_dir, verbose=verbose, **kwargs)
+        super().__init__(db_name="COCO2017", db_path=db_path, working_dir=working_dir, verbose=verbose, **kwargs)
+

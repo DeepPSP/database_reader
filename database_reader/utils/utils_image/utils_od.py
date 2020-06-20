@@ -6,6 +6,9 @@ coco format: xmin, ymin, w, h
 yolo format: classIndex xcen ycen w h
 """
 import os
+import io
+from PIL import Image
+import numpy as np
 import pandas as pd
 import tensorflow as tf
 import glob
@@ -144,8 +147,8 @@ def voc_to_df(img_dir:str, ann_dir:str, save_path:Optional[str]=None, class_map:
             ymax = int(member.find('bndbox').find('ymax').text)
             box_width = xmax-xmin
             box_height = ymax-ymin
-            area = box_width*box_height
-            if area <= 0:
+            box_area = box_width*box_height
+            if box_area <= 0:
                 continue
             values = {
                 'filename': root.find('filename').text if root.find('filename') is not None else '',
@@ -162,10 +165,10 @@ def voc_to_df(img_dir:str, ann_dir:str, save_path:Optional[str]=None, class_map:
                 'ymax': ymax,
                 'box_width': box_width,
                 'box_height': box_height,
-                'area': area,
+                'box_area': box_area,
             }
             xml_list.append(values)
-    column_names = ['filename', 'width', 'height', 'segmented', 'pose', 'truncated', 'difficult', 'xmin', 'ymin', 'xmax', 'ymax', 'box_width', 'box_height', 'subclass', 'area']
+    column_names = ['filename', 'width', 'height', 'segmented', 'pose', 'truncated', 'difficult', 'xmin', 'ymin', 'xmax', 'ymax', 'box_width', 'box_height', 'subclass', 'box_area']
     bbox_df = pd.DataFrame(xml_list, columns=column_names)
     if class_map is None:
         bbox_df['class'] = bbox_df['subclass']
@@ -176,7 +179,7 @@ def voc_to_df(img_dir:str, ann_dir:str, save_path:Optional[str]=None, class_map:
         'segmented', 'pose', 'truncated', 'difficult',
         'width', 'height',
         'xmin', 'ymin', 'xmax', 'ymax',
-        'box_width', 'box_height', 'area',
+        'box_width', 'box_height', 'box_area',
     ]
     bbox_df = bbox_df[column_names]
     if save_path is not None:
@@ -232,9 +235,9 @@ def yolo_to_df(img_dir:str, ann_dir:str, save_path:Optional[str]=None, class_map
                 xcen, ycen = int(float(xcen)*fw), int(float(ycen)*fh)
                 xmin, xmax = xcen - box_width//2, xcen + box_width//2
                 ymin, ymax = ycen - box_height//2, ycen + box_height//2
-                area = box_width*box_height
+                box_area = box_width*box_height
                 # TODO: add to ann_list
-                if area <= 0:
+                if box_area <= 0:
                     continue
                 values = {
                     'filename': os.path.basename(img_file),
@@ -247,14 +250,14 @@ def yolo_to_df(img_dir:str, ann_dir:str, save_path:Optional[str]=None, class_map
                     'ymax': ymax,
                     'box_width': box_width,
                     'box_height': box_height,
-                    'area': area,
+                    'box_area': box_area,
                 }
                 ann_list.append(values)
     column_names = [
         'filename', 'class',
         'width', 'height',
         'xmin', 'ymin', 'xmax', 'ymax',
-        'box_width', 'box_height', 'area',
+        'box_width', 'box_height', 'box_area',
     ]
     bbox_df = pd.DataFrame(ann_list, columns=column_names)
     if save_path is not None:
@@ -443,6 +446,7 @@ def get_ann_id():
     return GLOBAL_ANN_ID
 
 
+import torch
 from torch import Tensor
 
 def bboxes_iou_torch(bboxes_a:Tensor, bboxes_b:Tensor, fmt:str='voc', iou_type:str='iou') -> Tensor:
