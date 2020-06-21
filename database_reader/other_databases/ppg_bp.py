@@ -51,22 +51,22 @@ class PPGBP(OtherDataBase):
     [3] Elgendi M. On the analysis of fingertip photoplethysmogram signals[J]. Current cardiology reviews, 2012, 8(1): 14-25.
     """
     
-    def __init__(self, db_path:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
+    def __init__(self, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """ finished, to be improved,
 
         Parameters:
         -----------
-        db_path: str,
+        db_dir: str,
             storage path of the database
         working_dir: str, optional,
             working directory, to store intermediate files and log file
         verbose: int, default 2,
 
-        typical 'db_path': '/export/servers/kuangzhexiang/data/PPG_BP/'
+        typical 'db_dir': '/export/servers/kuangzhexiang/data/PPG_BP/'
         ------------------
         to be written
         """
-        super().__init__(db_name="PPG_BP", db_path=db_path, working_dir=working_dir, verbose=verbose, **kwargs)
+        super().__init__(db_name="PPG_BP", db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
 
         self.ppg_data_path = None
         self.unkown_file = None
@@ -88,9 +88,9 @@ class PPGBP(OtherDataBase):
         """ finished, checked, to be improved,
 
         """
-        self.ppg_data_path = self.db_path + '0_subject/'
-        self.unkown_file = self.db_path + 'Table 1.xlsx'
-        self.ann_file = self.db_path + 'PPG-BP dataset.xlsx'
+        self.ppg_data_path = self.db_dir + '0_subject/'
+        self.unkown_file = self.db_dir + 'Table 1.xlsx'
+        self.ann_file = self.db_dir + 'PPG-BP dataset.xlsx'
 
 
     def get_patient_id(self, rec_no:int) -> int:

@@ -37,13 +37,13 @@ class PhysioNetDataBase(object):
     """
     https://www.physionet.org/
     """
-    def __init__(self, db_name:str, db_path:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
+    def __init__(self, db_name:str, db_dir:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
         Parameters:
         -----------
         db_name: str,
             name of the database
-        db_path: str, optional,
+        db_dir: str, optional,
             storage path of the database,
             if not specified, `wfdb` will fetch data from the website of PhysioNet
         working_dir: str, optional,
@@ -54,13 +54,13 @@ class PhysioNetDataBase(object):
         NOTE:
         -----
 
-        typical `db_path`:
+        typical `db_dir`:
         ------------------
             "E:\\notebook_dir\\ecg\\data\\PhysioNet\\xxx\\"
             "/export/algo/wenh06/ecg_data/xxx/"
         """
         self.db_name = db_name
-        self.db_path = db_path
+        self.db_dir = db_dir
         """
         `self.freq` for those with single signal source, e.g. ECG,
         for those with multiple signal sources like PSG, self.freq is default to the frequency of ECG if ECG applicable
@@ -446,26 +446,26 @@ class NSRRDataBase(object):
     """
     https://sleepdata.org/
     """
-    def __init__(self, db_name:str, db_path:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
+    def __init__(self, db_name:str, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
         Parameters:
         -----------
         db_name: str,
             name of the database
-        db_path: str,
+        db_dir: str,
             storage path of the database
         working_dir: str, optional,
             working directory, to store intermediate files and log file
         verbose: int, default 2,
         kwargs: dict,
 
-        typical `db_path`:
+        typical `db_dir`:
         ------------------
             "E:\\notebook_dir\\ecg\\data\\NSRR\\xxx\\"
             "/export/algo/wenh06/ecg_data/NSRR/xxx/"
         """
         self.db_name = db_name
-        self.db_path = db_path
+        self.db_dir = db_dir
         self.working_dir = working_dir or os.getcwd()
         self.freq = None
         self.all_records = None
@@ -633,13 +633,13 @@ class ImageDataBase(object):
     """
 
     """
-    def __init__(self, db_name:str, db_path:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
+    def __init__(self, db_name:str, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
         Parameters:
         -----------
         db_name: str,
             name of the database
-        db_path: str,
+        db_dir: str,
             storage path of the database
         working_dir: str, optional,
             working directory, to store intermediate files and log file
@@ -647,7 +647,7 @@ class ImageDataBase(object):
         kwargs: dict,
         """
         self.db_name = db_name
-        self.db_path = db_path
+        self.db_dir = db_dir
         self.working_dir = working_dir or os.getcwd()
         self.verbose = verbose
 
@@ -712,13 +712,13 @@ class AudioDataBase(object):
     """
 
     """
-    def __init__(self, db_name:str, db_path:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
+    def __init__(self, db_name:str, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
         Parameters:
         -----------
         db_name: str,
             name of the database
-        db_path: str,
+        db_dir: str,
             storage path of the database
         working_dir: str, optional,
             working directory, to store intermediate files and log file
@@ -726,7 +726,7 @@ class AudioDataBase(object):
         kwargs: dict,
         """
         self.db_name = db_name
-        self.db_path = db_path
+        self.db_dir = db_dir
         self.working_dir = working_dir or os.getcwd()
         self.verbose = verbose
 
@@ -791,26 +791,26 @@ class OtherDataBase(object):
     """
 
     """
-    def __init__(self, db_name:str, db_path:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
+    def __init__(self, db_name:str, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         r"""
         Parameters:
         -----------
         db_name: str,
             name of the database
-        db_path: str,
+        db_dir: str,
             storage path of the database
         working_dir: str, optional,
             working directory, to store intermediate files and log file
         verbose: int, default 2,
         kwargs: dict,
 
-        typical 'db_path':
+        typical 'db_dir':
         ------------------
             "E:\\notebook_dir\\ecg\\data\xxx\\"
             "/export/algo/wenh06/ecg_data/xxx/"
         """
         self.db_name = db_name
-        self.db_path = db_path
+        self.db_dir = db_dir
         self.working_dir = working_dir or os.getcwd()
         self.freq = None
         self.all_records = None

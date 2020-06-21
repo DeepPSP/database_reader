@@ -52,25 +52,25 @@ class SleepAccel(OtherDataBase):
     [3] https://alpha.physionet.org/content/sleep-accel/1.0.0/
     [4] to add acc_to_count references
     """
-    def __init__(self, db_path:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
+    def __init__(self, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """ not finished,
 
         Parameters:
         -----------
-        db_path: str,
+        db_dir: str,
             storage path of the database
         working_dir: str, optional,
             working directory, to store intermediate files and log file
         verbose: int, default 2,
 
-        typical 'db_path':  "/export/servers/data/sleep_accel/"
+        typical 'db_dir':  "/export/servers/data/sleep_accel/"
         """
-        super().__init__(db_name="SleepAccel", db_path=db_path, working_dir=working_dir, verbose=verbose, **kwargs)
+        super().__init__(db_name="SleepAccel", db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
 
-        self.hr_path = os.path.join(db_path, "heart_rate")
-        self.lb_path = os.path.join(db_path, "labels")
-        self.motion_path = os.path.join(db_path, "motion")
-        self.steps_path = os.path.join(db_path, "steps")
+        self.hr_dir = os.path.join(db_dir, "heart_rate")
+        self.lb_dir = os.path.join(db_dir, "labels")
+        self.motion_dir = os.path.join(db_dir, "motion")
+        self.steps_dir = os.path.join(db_dir, "steps")
 
         self.hr_file_suffix = "_heartrate.txt"
         self.lb_file_suffix = "_labeled_sleep.txt"
@@ -80,7 +80,7 @@ class SleepAccel(OtherDataBase):
         self.acc_freq = 50
         self.hr_freq = None  # to be checked
         self.all_subjects = ['1066528', '1360686', '1449548', '1455390', '1818471', '2598705', '2638030', '3509524', '3997827', '4018081', '4314139', '4426783', '46343', '5132496', '5383425', '5498603', '5797046', '6220552', '759667', '7749105', '781756', '8000685', '8173033', '8258170', '844359', '8530312', '8686948', '8692923', '9106476', '9618981', '9961348']
-        # self.all_subjects = [item.split("_")[0] for item in os.listdir(self.motion_path)]
+        # self.all_subjects = [item.split("_")[0] for item in os.listdir(self.motion_dir)]
 
         self.to_conventional_lables = {
             -1: 0,  # unscored
@@ -116,7 +116,7 @@ class SleepAccel(OtherDataBase):
         --------
         df_lb: DataFrame, with columns 'sec','sleep_stage'
         """
-        fp = os.path.join(self.lb_path, subject_id+self.lb_file_suffix)
+        fp = os.path.join(self.lb_dir, subject_id+self.lb_file_suffix)
         df_lb = pd.read_csv(fp,sep=' ',header=None,names=['sec','sleep_stage'])
         df_lb['sleep_stage'] = df_lb['sleep_stage'].apply(lambda ss: self.to_conventional_lables[ss])
         return df_lb
@@ -136,7 +136,7 @@ class SleepAccel(OtherDataBase):
         --------
         df_mt: DataFrame, with columns 'sec','x','y','z'
         """
-        mt_fp = os.path.join(self.motion_path, subject_id+self.motion_file_suffix)
+        mt_fp = os.path.join(self.motion_dir, subject_id+self.motion_file_suffix)
         df_mt = pd.read_csv(mt_fp,sep=' ',header=None,names=['sec','x','y','z'])
         df_mt = df_mt.sort_values(by='sec').drop_duplicates(subset='sec').reset_index(drop=True)
         return df_mt
@@ -156,7 +156,7 @@ class SleepAccel(OtherDataBase):
         --------
         df_hr: DataFrame, with columns 'sec','hr'
         """
-        hr_fp = os.path.join(self.hr_path, subject_id+self.hr_file_suffix)
+        hr_fp = os.path.join(self.hr_dir, subject_id+self.hr_file_suffix)
         df_hr = pd.read_csv(hr_fp,sep=',',header=None,names=['sec','hr'])
         df_hr = df_hr.sort_values(by='sec').drop_duplicates(subset='sec').reset_index(drop=True)
         return df_hr
@@ -176,7 +176,7 @@ class SleepAccel(OtherDataBase):
         --------
         df_sp: DataFrame, with columns 'sec','step_count'
         """
-        sp_fp = os.path.join(self.steps_path, subject_id+self.steps_file_suffix)
+        sp_fp = os.path.join(self.steps_dir, subject_id+self.steps_file_suffix)
         df_sp = pd.read_csv(sp_fp,sep=',',header=None,names=['sec','step_count'])
         df_sp = df_sp.sort_values(by='sec').drop_duplicates(subset='sec').reset_index(drop=True)
         return df_sp

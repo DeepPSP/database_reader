@@ -76,24 +76,24 @@ class CPSC2018(OtherDataBase):
     [2] https://physionetchallenges.github.io/2020/
     [3] 
     """
-    def __init__(self, db_path:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
+    def __init__(self, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """ finished, to be improved,
 
         Parameters:
         -----------
-        db_path: str,
+        db_dir: str,
             storage path of the database
         working_dir: str, optional,
             working directory, to store intermediate files and log file
         verbose: int, default 2,
         """
-        super().__init__(db_name="CPSC2018", db_path=db_path, working_dir=working_dir, verbose=verbose, **kwargs)
+        super().__init__(db_name="CPSC2018", db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
 
         self.freq = 500
         self.spacing = 1000 / self.freq
         self.rec_ext = '.mat'
         self.ann_ext = '.hea'
-        self.all_records = [os.path.splitext(os.path.basename(item))[0] for item in glob.glob(os.path.join(db_path, '*'+self.rec_ext))]
+        self.all_records = [os.path.splitext(os.path.basename(item))[0] for item in glob.glob(os.path.join(db_dir, '*'+self.rec_ext))]
         self.nb_records = 6877
         self.all_leads = ['I', 'II', 'III', 'aVR', 'aVL', 'aVF', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6',]
         self.all_diagnosis = ['N', 'AF', 'I-AVB', 'LBBB', 'RBBB', 'PAC', 'PVC', 'STD', 'STE',]
@@ -186,7 +186,7 @@ class CPSC2018(OtherDataBase):
         if isinstance(rec_no, int):
             assert rec_no in range(1, self.nb_records+1), "rec_no should be in range(1,{})".format(self.nb_records+1)
             rec_no = "A{0:04d}".format(rec_no)
-        rec_fp = os.path.join(self.db_path, rec_no + self.rec_ext)
+        rec_fp = os.path.join(self.db_dir, rec_no + self.rec_ext)
         data = loadmat(rec_fp)
         data = np.asarray(data['val'], dtype=np.float64)
         if data_format == 'channels_last':
@@ -215,7 +215,7 @@ class CPSC2018(OtherDataBase):
         if isinstance(rec_no, int):
             assert rec_no in range(1, self.nb_records+1), "rec_no should be in range(1,{})".format(self.nb_records+1)
             rec_no = "A{0:04d}".format(rec_no)
-        ann_fp = os.path.join(self.db_path, rec_no + self.ann_ext)
+        ann_fp = os.path.join(self.db_dir, rec_no + self.ann_ext)
         with open(ann_fp, 'r') as f:
             header_data = f.read().splitlines()
 

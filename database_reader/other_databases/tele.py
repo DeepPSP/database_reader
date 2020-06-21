@@ -51,15 +51,15 @@ class TELE(OtherDataBase):
     -----------
     [1] https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/QTG0EP
     """
-    def __init__(self, db_path:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
+    def __init__(self, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """ not finished,
 
         Parameters:
         -----------
-        db_path: str,
+        db_dir: str,
             storage path of the database
         working_dir: str, optional,
             working directory, to store intermediate files and log file
         verbose: int, default 2,
         """
-        super().__init__(db_name="TELE", db_path=db_path, working_dir=working_dir, verbose=verbose, **kwargs)
+        super().__init__(db_name="TELE", db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)

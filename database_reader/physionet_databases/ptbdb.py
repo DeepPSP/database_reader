@@ -45,23 +45,23 @@ class PTBDB(PhysioNetDataBase):
     [1] https://physionet.org/content/ptbdb/1.0.0/
     [2] https://physionetchallenges.github.io/2020/
     """
-    def __init__(self, db_path:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
+    def __init__(self, db_dir:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
         Parameters:
         -----------
-        db_path: str, optional,
+        db_dir: str, optional,
             storage path of the database
             if not specified, data will be fetched from Physionet
         working_dir: str, optional,
             working directory, to store intermediate files and log file
         verbose: int, default 2,
         """
-        super().__init__(db_name='ptbdb', db_path=db_path, working_dir=working_dir, verbose=verbose, **kwargs)
+        super().__init__(db_name='ptbdb', db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
         try:
             self.all_records = wfdb.get_record_list('ptbdb')
         except:
             try:
-                self.all_records = get_record_list_recursive(self.db_path, "dat")
+                self.all_records = get_record_list_recursive(self.db_dir, "dat")
             except:
                 self.all_records = []
         

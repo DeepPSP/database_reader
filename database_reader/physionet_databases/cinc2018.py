@@ -75,21 +75,21 @@ class CINC2018(PhysioNetDataBase):
     -----------
     [1] https://physionet.org/content/challenge-2018/1.0.0/
     """
-    def __init__(self, db_path:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
+    def __init__(self, db_dir:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
         Parameters:
         -----------
-        db_path: str, optional,
+        db_dir: str, optional,
             storage path of the database
             if not specified, data will be fetched from Physionet
         working_dir: str, optional,
             working directory, to store intermediate files and log file
         verbose: int, default 2,
         """
-        super().__init__(db_name='CINC2018', db_path=db_path, working_dir=working_dir, verbose=verbose, **kwargs)
+        super().__init__(db_name='CINC2018', db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
         self.freq = None
-        self.training_path = os.path.join(self.db_path, 'training')
-        self.test_path = os.path.join(self.db_path, 'test')
+        self.training_dir = os.path.join(self.db_dir, 'training')
+        self.test_dir = os.path.join(self.db_dir, 'test')
         self.training_records = []
         self.test_records = []
         self.all_records = []

@@ -67,29 +67,29 @@ class PTB_XL(PhysioNetDataBase):
     [1] https://physionet.org/content/ptb-xl/1.0.1/
     [2] https://physionetchallenges.github.io/2020/
     """
-    def __init__(self, db_path:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
+    def __init__(self, db_dir:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
         Parameters:
         -----------
-        db_path: str, optional,
+        db_dir: str, optional,
             storage path of the database
             if not specified, data will be fetched from Physionet
         working_dir: str, optional,
             working directory, to store intermediate files and log file
         verbose: int, default 2,
         """
-        super().__init__(db_name='ptb-xl', db_path=db_path, working_dir=working_dir, verbose=verbose, **kwargs)
+        super().__init__(db_name='ptb-xl', db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
         # wfdb.get_record_list currently not available for this new dataset
         try:
-            self.all_records = get_record_list_recursive(self.db_path, "dat")
+            self.all_records = get_record_list_recursive(self.db_dir, "dat")
         except:
             self.all_records = []
         self.freq = kwargs.get("freq", 500)
         assert int(self.freq) in [100, 500]
         self.spacing = 1000/self.freq
 
-        self.metadata_fp = os.path.join(self.db_path, "ptbxl_database.csv")
-        self.scp_statements_fp = os.path.join(self.db_path, "scp_statements.csv")
+        self.metadata_fp = os.path.join(self.db_dir, "ptbxl_database.csv")
+        self.scp_statements_fp = os.path.join(self.db_dir, "scp_statements.csv")
         self.df_metadata = pd.read_csv(self.metadata_fp)
         self.df_scp_statements = pd.read_csv(self.scp_statements_fp)
         

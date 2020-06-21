@@ -202,21 +202,21 @@ class SHHS(NSRRDataBase):
     [9] http://healthysleep.med.harvard.edu/sleep-apnea/diagnosing-osa/understanding-results
     [10] https://sleepdata.org/datasets/shhs/pages/full-description.md
     """
-    def __init__(self, db_path:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
+    def __init__(self, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
         
         Parameters:
         -----------
-        db_path: str,
+        db_dir: str,
             storage path of the database
         working_dir: str, optional,
             working directory, to store intermediate files and log file
         verbose: int, default 2,
 
-        default db_path:
+        default db_dir:
             "/export/algo/wenh06/ecg_data/shhs/"
         """
-        super().__init__(db_name='SHHS', db_path=db_path, working_dir=working_dir, verbose=verbose, **kwargs)
+        super().__init__(db_name='SHHS', db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
 
         self.current_version = kwargs.get("current_version" , "0.15.0")
 
@@ -434,13 +434,13 @@ class SHHS(NSRRDataBase):
         """ finished,
 
         """
-        self.psg_data_path = os.path.join(self.db_path, "polysomnography", "edfs")
-        self.ann_path = os.path.join(self.db_path, "datasets")
+        self.psg_data_path = os.path.join(self.db_dir, "polysomnography", "edfs")
+        self.ann_path = os.path.join(self.db_dir, "datasets")
         self.hrv_ann_path = os.path.join(self.ann_path, "hrv-analysis")
         self.eeg_ann_path = os.path.join(self.ann_path, "eeg-spectral-analysis")
-        self.wave_deli_path = os.path.join(self.db_path, "polysomnography", "annotations-rpoints")
-        self.event_ann_path = os.path.join(self.db_path, "polysomnography", "annotations-events-nsrr")
-        self.event_profusion_ann_path = os.path.join(self.db_path, "polysomnography", "annotations-events-profusion")
+        self.wave_deli_path = os.path.join(self.db_dir, "polysomnography", "annotations-rpoints")
+        self.event_ann_path = os.path.join(self.db_dir, "polysomnography", "annotations-events-nsrr")
+        self.event_profusion_ann_path = os.path.join(self.db_dir, "polysomnography", "annotations-events-profusion")
 
 
     def update_sleep_stage_names(self) -> NoReturn:

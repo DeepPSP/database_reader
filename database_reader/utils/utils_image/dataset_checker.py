@@ -19,7 +19,7 @@ class ObjectDetectionCheck(object):
 
     check and label validity of images and bounding box annotations for object detection datasets
     """
-    def __init__(self, checker:str, ann_path:str, save_path:str, check_col:str="class", check_cls:Optional[Union[str,List[str]]]=None, **kwargs):
+    def __init__(self, checker:str, ann_path:str, save_dir:str, check_col:str="class", check_cls:Optional[Union[str,List[str]]]=None, **kwargs):
         """
 
         Parameters:
@@ -31,8 +31,8 @@ class ObjectDetectionCheck(object):
             the csv file should contain at least the following columns:
             "filename", "xmin", "ymin", "xmax", "ymax",
             "filename" should better be absolute path of the images
-        save_path: str,
-            path to save the check result, will be a csv file with the following columns:
+        save_dir: str,
+            directory to save the check result, will be a csv file with the following columns:
             "filename", "valid", "checker",
             the column "valid": 1 for valid, 0 for invalid
         check_col: str, default "class",
@@ -50,17 +50,17 @@ class ObjectDetectionCheck(object):
             raise ValueError("Invalid input of annotation file")
         self.df_ann = pd.read_csv(self.ann_path)
         self.check_cls = self.check_cls or self.df_ann[self.df_ann[self.check_col]].unique().tolist()
-        self.save_path = save_path
+        self.save_dir = save_dir
         
         self.df_check_images = self.df_ann[self.df_ann['filename'].str.contains('|'.join(self.check_cls), case=False)==True].reset_index(drop=True)
         self.check_image_paths = self.df_check_images['filename'].unique().tolist()
         shuffle(self.check_image_paths)
         
-        if os.path.isfile(self.save_path):
-            self.df_saved = pd.read_csv(self.save_path)
+        if os.path.isfile(self.save_dir):
+            self.df_saved = pd.read_csv(self.save_dir)
         else:
             self.df_saved = pd.DataFrame(columns=['filename', 'valid', 'checker'])
-            self.df_saved.to_csv(self.save_path, index=False)
+            self.df_saved.to_csv(self.save_dir, index=False)
         self.pending_image_paths = list(set(self.check_image_paths).difference(set(self.df_saved['filename'])))
         
         self.batch_len = kwargs.get("batch_len", 20)
@@ -77,7 +77,7 @@ class ObjectDetectionCheck(object):
     def update_save_status(self):
         """
         """
-        self.df_saved = pd.read_csv(self.save_path).dropna().reset_index(drop=True)
+        self.df_saved = pd.read_csv(self.save_dir).dropna().reset_index(drop=True)
         self.pending_image_paths = list(set(self.check_image_paths).difference(set(self.df_saved['filename'])))
         print(f"pending images updated, current total number is {len(self.pending_image_paths)}")
         self.df_saving = pd.DataFrame(columns=['filename', 'valid', 'checker'])
@@ -89,11 +89,11 @@ class ObjectDetectionCheck(object):
     def save_to_file(self):
         """
         """
-        self.df_saved = pd.read_csv(self.save_path).dropna().reset_index(drop=True)
+        self.df_saved = pd.read_csv(self.save_dir).dropna().reset_index(drop=True)
         self.pending_image_paths = set(self.check_image_paths).difference(set(self.df_saved['filename']))
         print(f"pending images updated, current total number is {len(self.pending_image_paths)}")
         self.df_saving = self.df_saving[self.df_saving['filename'].isin(self.pending_image_paths)].dropna()
-        self.df_saving.to_csv(self.save_path, index=False, header=False, mode='a')
+        self.df_saving.to_csv(self.save_dir, index=False, header=False, mode='a')
         
     def __iter__(self):
         """

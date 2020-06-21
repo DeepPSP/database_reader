@@ -65,18 +65,18 @@ class CPSC2020(OtherDataBase):
     [1] http://www.icbeb.org/CPSC2020.html
     [2] https://github.com/mondejar/ecg-classification
     """
-    def __init__(self, db_path:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
+    def __init__(self, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """ finished, to be improved,
 
         Parameters:
         -----------
-        db_path: str,
+        db_dir: str,
             storage path of the database
         working_dir: str, optional,
             working directory, to store intermediate files and log file
         verbose: int, default 2,
         """
-        super().__init__(db_name="CPSC2020", db_path=db_path, working_dir=working_dir, verbose=verbose, **kwargs)
+        super().__init__(db_name="CPSC2020", db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
 
         self.freq = 400
         self.spacing = 1000/self.freq
@@ -87,8 +87,8 @@ class CPSC2020(OtherDataBase):
         self.all_records = ["A{0:02d}".format(i) for i in range(1,1+self.nb_records)]
         self.all_annotations = ["R{0:02d}".format(i) for i in range(1,1+self.nb_records)]
         self.all_references = self.all_annotations
-        self.rec_folder = os.path.join(self.db_path, "data")
-        self.ann_folder = os.path.join(self.db_path, "ref")
+        self.rec_folder = os.path.join(self.db_dir, "data")
+        self.ann_folder = os.path.join(self.db_dir, "ref")
         self.ref_folder = self.ann_folder
 
         self.palette = {"spb": "black", "pvc": "red",}

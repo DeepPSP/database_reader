@@ -57,24 +57,24 @@ class ApneaECG(PhysioNetDataBase):
     [1] https://physionet.org/content/apnea-ecg/1.0.0/
     [2] T Penzel, GB Moody, RG Mark, AL Goldberger, JH Peter. The Apnea-ECG Database. Computers in Cardiology 2000;27:255-258
     """
-    def __init__(self, db_path:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
+    def __init__(self, db_dir:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
         Parameters:
         -----------
-        db_path: str, optional,
+        db_dir: str, optional,
             storage path of the database
             if not specified, data will be fetched from Physionet
         working_dir: str, optional,
             working directory, to store intermediate files and log file
         verbose: int, default 2,
         """
-        super().__init__(db_name='apnea-ecg', db_path=db_path, working_dir=working_dir, verbose=verbose, **kwargs)
+        super().__init__(db_name='apnea-ecg', db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
         self.freq = 100
         try:
             self.all_records = wfdb.get_record_list('apnea-ecg')
         except:
             try:
-                self.all_records = get_record_list_recursive(self.db_path, "dat")
+                self.all_records = get_record_list_recursive(self.db_dir, "dat")
             except:
                 self.all_records = ['a01', 'a01er', 'a01r', 'a02', 'a02er', 'a02r', 'a03', 'a03er', 'a03r', 'a04', 'a04er', 'a04r', 'a05', 'a06', 'a07', 'a08', 'a09', 'a10', 'a11', 'a12', 'a13', 'a14', 'a15', 'a16', 'a17', 'a18', 'a19', 'a20', 'b01', 'b01er', 'b01r', 'b02', 'b03', 'b04', 'b05', 'c01', 'c01er', 'c01r', 'c02', 'c02er', 'c02r', 'c03', 'c03er', 'c03r', 'c04', 'c05', 'c06', 'c07', 'c08', 'c09', 'c10', 'x01', 'x02', 'x03', 'x04', 'x05', 'x06', 'x07', 'x08', 'x09', 'x10', 'x11', 'x12', 'x13', 'x14', 'x15', 'x16', 'x17', 'x18', 'x19', 'x20', 'x21', 'x22', 'x23', 'x24', 'x25', 'x26', 'x27', 'x28', 'x29', 'x30', 'x31', 'x32', 'x33', 'x34', 'x35']
         self.ecg_records = [r for r in self.all_records if 'r' not in r]
@@ -133,7 +133,7 @@ class ApneaECG(PhysioNetDataBase):
             path of the file which contains the ecg data,
             if not given, default path will be used
         """
-        file_path = rec_path if rec_path is not None else os.path.join(self.db_path, rec)
+        file_path = rec_path if rec_path is not None else os.path.join(self.db_dir, rec)
         self.wfdb_rec = wfdb.rdrecord(file_path)
         sig = self.wfdb_rec.p_signal
         if not rec.endswith(('r', 'er')):
@@ -181,7 +181,7 @@ class ApneaECG(PhysioNetDataBase):
         detailed_ann: list,
             annotations of the form [idx, ann]
         """
-        file_path = ann_path if ann_path is not None else os.path.join(self.db_path, rec)
+        file_path = ann_path if ann_path is not None else os.path.join(self.db_dir, rec)
         extension = kwargs.get('extension', 'apn')
         self.wfdb_ann = wfdb.rdann(file_path, extension=extension)
         detailed_ann = [[si//(self.freq*60), sy] for si, sy in zip(self.wfdb_ann.sample, self.wfdb_ann.symbol)]

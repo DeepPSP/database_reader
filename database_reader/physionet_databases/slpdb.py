@@ -51,24 +51,24 @@ class SLPDB(PhysioNetDataBase):
     -----------
     [1] https://physionet.org/content/slpdb/1.0.0/
     """
-    def __init__(self, db_path:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
+    def __init__(self, db_dir:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
         Parameters:
         -----------
-        db_path: str, optional,
+        db_dir: str, optional,
             storage path of the database
             if not specified, data will be fetched from Physionet
         working_dir: str, optional,
             working directory, to store intermediate files and log file
         verbose: int, default 2,
         """
-        super().__init__(db_name='slpdb', db_path=db_path, working_dir=working_dir, verbose=verbose, **kwargs)
+        super().__init__(db_name='slpdb', db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
         self.freq = 250  # for ecg
         try:
             self.all_records = wfdb.get_record_list('slpdb')
         except:
             try:
-                self.all_records = get_record_list_recursive(self.db_path, "dat")
+                self.all_records = get_record_list_recursive(self.db_dir, "dat")
             except:
                 self.all_records = ['slp01a', 'slp01b', 'slp02a', 'slp02b', 'slp03', 'slp04', 'slp14', 'slp16', 'slp32', 'slp37', 'slp41', 'slp45', 'slp48', 'slp59', 'slp60', 'slp61', 'slp66', 'slp67x']
         self.epoch_len_t = 30  # 30 seconds

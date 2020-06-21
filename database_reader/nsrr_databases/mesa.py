@@ -78,17 +78,17 @@ class MESA(NSRRDataBase):
     -----------
     [1] https://sleepdata.org/datasets/mesa
     """
-    def __init__(self, db_path:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
+    def __init__(self, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
         Parameters:
         -----------
-        db_path: str,
+        db_dir: str,
             storage path of the database
         working_dir: str, optional,
             working directory, to store intermediate files and log file
         verbose: int, default 2,
         """
-        super().__init__(db_name='MESA', db_path=db_path, working_dir=working_dir, verbose=verbose, **kwargs)
+        super().__init__(db_name='MESA', db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
 
         self.actigraph_cols = [
             "mesaid",
@@ -129,13 +129,13 @@ class MESA(NSRRDataBase):
         """ not finished,
 
         """
-        # self.psg_data_path = os.path.join(self.db_path, "polysomnography", "edfs")
-        # self.ann_path = os.path.join(self.db_path, "datasets")
-        # self.hrv_ann_path = os.path.join(self.db_path, "hrv-analysis")
-        # self.eeg_ann_path = os.path.join(self.db_path, "eeg-spectral-analysis")
-        # self.wave_deli_path = os.path.join(self.db_path, "polysomnography", "annotations-rpoints")
-        # self.event_ann_path = os.path.join(self.db_path, "polysomnography", "annotations-events-nsrr")
-        # self.event_profusion_ann_path = os.path.join(self.db_path, "polysomnography", "annotations-events-profusion")
+        # self.psg_data_path = os.path.join(self.db_dir, "polysomnography", "edfs")
+        # self.ann_path = os.path.join(self.db_dir, "datasets")
+        # self.hrv_ann_path = os.path.join(self.db_dir, "hrv-analysis")
+        # self.eeg_ann_path = os.path.join(self.db_dir, "eeg-spectral-analysis")
+        # self.wave_deli_path = os.path.join(self.db_dir, "polysomnography", "annotations-rpoints")
+        # self.event_ann_path = os.path.join(self.db_dir, "polysomnography", "annotations-events-nsrr")
+        # self.event_profusion_ann_path = os.path.join(self.db_dir, "polysomnography", "annotations-events-profusion")
 
     
     def database_info(self, detailed:bool=False) -> NoReturn:

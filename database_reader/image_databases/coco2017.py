@@ -19,23 +19,35 @@ __all__ = [
 
 class COCO2017(ImageDataBase):
     """
+
+    Common Object in Context
+
+    NOTE:
+    -----
+    1. cocoapi `pycocotools` in pypi has not been updated for a long time, with bugs left unfixed; the github repo on the contrary is more up-to-date. Hence the recommended installation is via
+    `git+https://github.com/cocodataset/cocoapi.git#subdirectory=PythonAPI`
+
+    References:
+    -----------
+    [1] http://cocodataset.org/#download
+    [2] https://github.com/cocodataset/cocoapi/blob/master/PythonAPI/pycocotools/coco.py
     """
-    def __init__(self, db_path:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
+    def __init__(self, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
         Parameters:
         -----------
-        db_path: str,
+        db_dir: str,
             storage path of the database
         working_dir: str, optional,
             working directory, to store intermediate files and log file
         verbose: int, default 2,
         """
-        super().__init__(db_name="COCO2017", db_path=db_path, working_dir=working_dir, verbose=verbose, **kwargs)
+        super().__init__(db_name="COCO2017", db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
         self.image_dirs = ED({
-            'train': os.path.join(self.db_path, "train2017"),
-            'val': os.path.join(self.db_path, "val2017")
+            'train': os.path.join(self.db_dir, "train2017"),
+            'val': os.path.join(self.db_dir, "val2017")
         })
-        self.ann_dir = os.path.join(self.db_path, "annotations")
+        self.ann_dir = os.path.join(self.db_dir, "annotations")
         self.ann_paths = ED({
             'captions': {
                 'train': os.path.join(self.ann_dir, 'captions_train2017.json'),
@@ -98,6 +110,12 @@ class COCO2017(ImageDataBase):
                     df_ann[part] = pd.concat([df_ann[part],pd.DataFrame([vals])],ignore_index=True)
             df_ann[part].to_csv(os.path.join(self.working_dir, f"od_{part}_coco2017.csv"), index=False)
         return df_ann
+
+
+    def get_seg_ann_csv(self) -> pd.DataFrame:
+        """
+        """
+        raise NotImplementedError
 
 
 def _image_id_to_filename(image_id:int) -> str:

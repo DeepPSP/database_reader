@@ -75,31 +75,31 @@ class CINC2020(PhysioNetDataBase):
     [4] https://physionet.org/content/ptbdb/1.0.0/
     [5] https://physionet.org/content/ptb-xl/1.0.1/
     """
-    def __init__(self, db_path:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
+    def __init__(self, db_dir:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
         Parameters:
         -----------
-        db_path: str, optional,
+        db_dir: str, optional,
             storage path of the database
             if not specified, data will be fetched from Physionet
         working_dir: str, optional,
             working directory, to store intermediate files and log file
         verbose: int, default 2,
         """
-        super().__init__(db_name='CINC2020', db_path=db_path, working_dir=working_dir, verbose=verbose, **kwargs)
+        super().__init__(db_name='CINC2020', db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
         self.freq = 500
         self.spacing = 1000 / self.freq
-        self.db_path_base = self.db_path
-        self.db_paths = ED({
-            "A": os.path.join(self.db_path_base, "Training_WFDB"),
-            "B": os.path.join(self.db_path_base, "Training_2"),
-            "C": os.path.join(self.db_path_base, "Training_StPetersburg"),
-            "D": os.path.join(self.db_path_base, "Training_PTB"),
-            "E": os.path.join(self.db_path_base, "WFDB"),
-            "F": os.path.join(self.db_path_base, "Training_E", "WFDB"),
+        self.db_dir_base = self.db_dir
+        self.db_dirs = ED({
+            "A": os.path.join(self.db_dir_base, "Training_WFDB"),
+            "B": os.path.join(self.db_dir_base, "Training_2"),
+            "C": os.path.join(self.db_dir_base, "Training_StPetersburg"),
+            "D": os.path.join(self.db_dir_base, "Training_PTB"),
+            "E": os.path.join(self.db_dir_base, "WFDB"),
+            "F": os.path.join(self.db_dir_base, "Training_E", "WFDB"),
         })
         self.all_records = ED({
-            tranche: get_record_list_recursive(self.db_paths[tranche]) for tranche in "ABCDEF"
+            tranche: get_record_list_recursive(self.db_dirs[tranche]) for tranche in "ABCDEF"
         })
         self.rec_prefix = ED({
             "A": "A", "B": "Q", "C": "I", "D": "S", "E": "HR", "F": "E",
@@ -107,7 +107,7 @@ class CINC2020(PhysioNetDataBase):
         """
         prefixes can be obtained using the following code:
         >>> pfs = ED({k:set() for k in "ABCDEF"})
-        >>> for k, p in db_path.items():
+        >>> for k, p in db_dir.items():
         >>>     af = os.listdir(p)
         >>>     for fn in af:
         >>>         pfs[k].add("".join(re.findall(r"[A-Z]", os.path.splitext(fn)[0])))
@@ -190,7 +190,7 @@ class CINC2020(PhysioNetDataBase):
             the ecg data
         """
         tranche = self._get_tranche(rec)
-        rec_fp = os.path.join(self.db_paths[tranche], rec + self.rec_ext)
+        rec_fp = os.path.join(self.db_dirs[tranche], rec + self.rec_ext)
         data = loadmat(rec_fp)
         data = np.asarray(data['val'], dtype=np.float64)
         if data_format == 'channels_last':
@@ -213,7 +213,7 @@ class CINC2020(PhysioNetDataBase):
             the annotations with items: ref. self.ann_items
         """
         tranche = self._get_tranche(rec)
-        rec_fp = os.path.join(self.db_paths[tranche], rec + self.rec_ext)
+        rec_fp = os.path.join(self.db_dirs[tranche], rec + self.rec_ext)
         with open(ann_fp, 'r') as f:
             header_data = f.read().splitlines()
 
