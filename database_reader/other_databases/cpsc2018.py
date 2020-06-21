@@ -416,8 +416,19 @@ class CPSC2018(OtherDataBase):
 
     
     @classmethod
-    def get_disease_knowledge(cls, disease:Union[str,List[str]], **kwargs) -> Union[str, Dict[str, list]]:
-        """
+    def get_disease_knowledge(cls, diseases:Union[str,List[str]], **kwargs) -> Union[str, Dict[str, list]]:
+        """ not finished, not checked,
+
+        knowledge about ECG features of specific diseases,
+
+        Parameters:
+        -----------
+        diseases: str, or list of str,
+            the disease(s) to check
+
+        Returns:
+        --------
+        to write
         """
         if isinstance(disease, str):
             d = [disease]
