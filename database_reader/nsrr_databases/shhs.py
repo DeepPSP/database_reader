@@ -1376,7 +1376,7 @@ class SHHS(NSRRDataBase):
     def _plot_ann(self, df_sleep_stage:Optional[pd.DataFrame]=None, df_sleep_event:Optional[pd.DataFrame]=None) -> NoReturn:
         """ not finished,
 
-        Paramters:
+        Parameters:
         ----------
         df_sleep_stage: DataFrame, optional,
             sleep stage annotations

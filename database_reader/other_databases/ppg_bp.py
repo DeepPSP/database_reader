@@ -68,13 +68,13 @@ class PPGBP(OtherDataBase):
         """
         super().__init__(db_name="PPG_BP", db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
 
-        self.ppg_data_path = None
+        self.ppg_data_dir = None
         self.unkown_file = None
         self.ann_file = None
         self.form_paths()
 
         self.freq = 1000
-        self.all_records = sorted(list(set([fn.split('_')[0] for fn in os.listdir(self.ppg_data_path)])), key=lambda r:int(r))
+        self.all_records = sorted(list(set([fn.split('_')[0] for fn in os.listdir(self.ppg_data_dir)])), key=lambda r:int(r))
         self.rec_ext = '.txt'
 
         self.ann_items = [
@@ -88,7 +88,7 @@ class PPGBP(OtherDataBase):
         """ finished, checked, to be improved,
 
         """
-        self.ppg_data_path = self.db_dir + '0_subject/'
+        self.ppg_data_dir = self.db_dir + '0_subject/'
         self.unkown_file = self.db_dir + 'Table 1.xlsx'
         self.ann_file = self.db_dir + 'PPG-BP dataset.xlsx'
 
@@ -141,7 +141,7 @@ class PPGBP(OtherDataBase):
         verbose = self.verbose if verbose is None else verbose
         rec_fn = "{}_{}.txt".format(self.all_records[rec_no], seg_no)
         data = []
-        with open(self.ppg_data_path+rec_fn, 'r') as f:
+        with open(self.ppg_data_dir+rec_fn, 'r') as f:
             data = f.readlines()
         data = np.array([float(i) for i in data[0].split('\t') if len(i)>0]).astype(int)
         

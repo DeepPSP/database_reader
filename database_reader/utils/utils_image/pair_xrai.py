@@ -77,7 +77,7 @@ class SaliencyMask(object):
         """
         Returns a mask that is smoothed with the SmoothGrad method.
 
-        Paramters:
+        Parameters:
         ----------
         x_value: ndarray,
             input value, not batched.
@@ -122,7 +122,7 @@ class GradientSaliency(SaliencyMask):
         """
         Returns a vanilla gradient mask.
 
-        Paramters:
+        Parameters:
         ----------
         x_value: ndarray,
             input value, not batched.
@@ -148,7 +148,7 @@ class IntegratedGradients(GradientSaliency):
         """
         Returns a integrated gradients mask.
 
-        Paramters:
+        Parameters:
         ----------
         x_value: ndarray,
             input ndarray
@@ -471,7 +471,7 @@ class XRAI(SaliencyMask):
         """
         Applies XRAI method on an input image and returns the result saliency heatmap along with other detailed information.
 
-        Paramters:
+        Parameters:
         ----------
         x_value: ndarray,
             input value, not batched.

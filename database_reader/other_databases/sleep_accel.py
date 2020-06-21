@@ -107,7 +107,7 @@ class SleepAccel(OtherDataBase):
 
         load labels of sleep stages
 
-        Paramters:
+        Parameters:
         ----------
         subject_id: str,
             subject id in `self.all_subjects`
@@ -127,7 +127,7 @@ class SleepAccel(OtherDataBase):
 
         load motion (accelerometer) data
 
-        Paramters:
+        Parameters:
         ----------
         subject_id: str,
             subject id in `self.all_subjects`
@@ -147,7 +147,7 @@ class SleepAccel(OtherDataBase):
 
         load heart rate data
 
-        Paramters:
+        Parameters:
         ----------
         subject_id: str,
             subject id in `self.all_subjects`
@@ -167,7 +167,7 @@ class SleepAccel(OtherDataBase):
 
         load step count data
 
-        Paramters:
+        Parameters:
         ----------
         subject_id: str,
             subject id in `self.all_subjects`
@@ -187,7 +187,7 @@ class SleepAccel(OtherDataBase):
 
         plot labels of sleep stages
 
-        Paramters:
+        Parameters:
         ----------
         subject_id: str,
             subject id in `self.all_subjects`
@@ -214,7 +214,7 @@ class SleepAccel(OtherDataBase):
 
         plot labels of sleep stages together with the triaxial motion data
 
-        Paramters:
+        Parameters:
         ----------
         subject_id: str,
             subject id in `self.all_subjects`
@@ -265,7 +265,7 @@ class SleepAccel(OtherDataBase):
 
         plot labels of sleep stages together with the actigraph count data
 
-        Paramters:
+        Parameters:
         ----------
         subject_id: str,
             subject id in `self.all_subjects`

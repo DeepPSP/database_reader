@@ -213,7 +213,7 @@ class Voice(object):
     def resample(self, new_freq:Real) -> NoReturn:
         """
 
-        Paramters:
+        Parameters:
         ----------
         new_freq: real,
             the new frequency

@@ -27,7 +27,7 @@ def fit_savgol_sure(data:ArrayLike, orders:Union[int,List[int],Tuple[int]], radi
         orders=[1,5]
         radii=20ms(e.g. 5 for frequency=250)
 
-    Paramters:
+    Parameters:
     ----------
     data: array_like,
         the signal to be filtered
@@ -148,7 +148,7 @@ def savgol_polyn_coeffs(x:ArrayLike, order:int) -> Tuple[np.ndarray]:
 
     compute coefficients of the savitzky golay polynomial that best fit the data x
 
-    Paramters:
+    Parameters:
     ----------
     x: array_like,
         the signal to be fitted to get the coefficients
@@ -182,7 +182,7 @@ def sure_savgol_objective_func(order:int, radius:int, data:ArrayLike, verbose:in
 
     the SURE objective function with Savitzky-Golay filter for an instance centered in data
 
-    Paramters:
+    Parameters:
     ----------
     order: int,
     radius: int,
@@ -232,7 +232,7 @@ def reg_sure_savgol_objective_func(order:int, radius:int, data:ArrayLike, verbos
     
     the 'regularized' SURE objective function with Savitzky-Golay filter for an instance centered in data
 
-    Paramters:
+    Parameters:
     ----------
     order: int,
     radius: int,

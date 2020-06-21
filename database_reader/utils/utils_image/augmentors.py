@@ -45,7 +45,7 @@ def image_augmentation(img:np.ndarray, num:int, aug_operations:Optional[List[str
 
     perform augmentations on `img`
 
-    Paramters:
+    Parameters:
     ----------
     img: ndarray,
         the image to be augmented

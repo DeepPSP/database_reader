@@ -652,7 +652,7 @@ def train_test_split_dataframe(df:pd.DataFrame, split_cols:Optional[Union[str,Li
     1. the distributions of certain features are the same in both the train and the test set
     2. subjects with some certain features are not split, preventing data leakage
 
-    Paramters:
+    Parameters:
     ----------
     df: DataFrame,
         the DataFrame to be split

@@ -268,7 +268,7 @@ class ConvexCone2D(GeometricObject):
             **kwargs):
         """ finished, checked,
 
-        Paramters:
+        Parameters:
         ----------
         apex: array_like,
             point in 2d Cartesian space, apex of the 2D convex cone
