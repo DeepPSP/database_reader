@@ -58,7 +58,18 @@ def LCSubStr(X:str, Y:str) -> Tuple[int, List[str]]:
 
 
 def dict_depth(d:dict) -> int:
-    """
+    """ finished, checked,
+
+    find the 'depth' of a (possibly) nested dict
+
+    Parameters:
+    -----------
+    d: dict,
+        a (possibly) nested dict
+    
+    Returns:
+    --------
+    int, the 'depth' of `d`
     """
     try:
         return 1+max([dict_depth(v) for _,v in d.items() if isinstance(v, dict)])
@@ -67,7 +78,23 @@ def dict_depth(d:dict) -> int:
 
 
 def dict_to_str(d:dict, current_depth:int=1, indent_spaces:int=4) -> str:
-    """
+    """ finished, checked,
+
+    convert a (possibly) nested dict into a string of json-like format
+
+    Parameters:
+    -----------
+    d: dict,
+        a (possibly) nested dict
+    current_depth: int, default 1,
+        depth of `d` in the (possible) parent dict
+    indent_spaces: int, default 0,
+        the indent spaces of each depth
+
+    Returns:
+    --------
+    s: str,
+        the formatted string
     """
     s = "{\n"
     unit_indent = " "*indent_spaces
