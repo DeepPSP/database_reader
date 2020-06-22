@@ -5,6 +5,12 @@ docstring, to write
 from typing import Tuple, List
 
 
+__all__ = [
+    "LCSubStr",
+    "dict_depth", "dict_to_str",
+]
+
+
 def LCSubStr(X:str, Y:str) -> Tuple[int, List[str]]:
     """ finished, checked,
 
@@ -49,3 +55,27 @@ def LCSubStr(X:str, Y:str) -> Tuple[int, List[str]]:
             else:
                 LCSuff[i][j] = 0
     return lcs_len, lcs
+
+
+def dict_depth(d:dict) -> int:
+    """
+    """
+    try:
+        return 1+max([dict_depth(v) for _,v in d.items() if isinstance(v, dict)])
+    except:
+        return 1
+
+
+def dict_to_str(d:dict, current_depth:int=1, indent_spaces:int=4) -> str:
+    """
+    """
+    s = "{\n"
+    unit_indent = " "*indent_spaces
+    prefix = unit_indent*current_depth
+    for k, v in d.items():
+        if isinstance(v,dict):
+            s += f"{prefix}{k}: {dict_to_str(v, current_depth+1)}\n"
+        else:
+            s += f"{prefix}{k}: {v}\n"
+    s += unit_indent*(current_depth-1)+"}"
+    return s
