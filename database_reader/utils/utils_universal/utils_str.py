@@ -69,18 +69,20 @@ def dict_depth(d:dict) -> int:
     
     Returns:
     --------
-    int, the 'depth' of `d`
+    depth: int,
+        the 'depth' of `d`
     """
     try:
-        return 1+max([dict_depth(v) for _,v in d.items() if isinstance(v, dict)])
+        depth = 1+max([dict_depth(v) for _,v in d.items() if isinstance(v, dict)])
     except:
-        return 1
+        depth = 1
+    return depth
 
 
 def dict_to_str(d:dict, current_depth:int=1, indent_spaces:int=4) -> str:
     """ finished, checked,
 
-    convert a (possibly) nested dict into a string of json-like format
+    convert a (possibly) nested dict into a string of json-like formatted form
 
     Parameters:
     -----------
@@ -88,7 +90,7 @@ def dict_to_str(d:dict, current_depth:int=1, indent_spaces:int=4) -> str:
         a (possibly) nested dict
     current_depth: int, default 1,
         depth of `d` in the (possible) parent dict
-    indent_spaces: int, default 0,
+    indent_spaces: int, default 4,
         the indent spaces of each depth
 
     Returns:
