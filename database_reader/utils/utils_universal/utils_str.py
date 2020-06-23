@@ -83,7 +83,7 @@ def dict_to_str(d:dict, current_depth:int=1, indent_spaces:int=4) -> str:
     """ finished, checked,
 
     convert a (possibly) nested dict into a `str` of json-like formatted form,
-    this nested dict might also contain list (consisting only) of dict,
+    this nested dict might also contain lists of dict (and of str, int, etc.)
 
     Parameters:
     -----------
