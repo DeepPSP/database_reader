@@ -79,15 +79,15 @@ def dict_depth(d:dict) -> int:
     return depth
 
 
-def dict_to_str(d:dict, current_depth:int=1, indent_spaces:int=4) -> str:
+def dict_to_str(d:Union[dict, list, tuple], current_depth:int=1, indent_spaces:int=4) -> str:
     """ finished, checked,
 
     convert a (possibly) nested dict into a `str` of json-like formatted form,
-    this nested dict might also contain lists of dict (and of str, int, etc.)
+    this nested dict might also contain lists or tuples of dict (and of str, int, etc.)
 
     Parameters:
     -----------
-    d: dict, or list of dict,
+    d: dict, or list, or tuple,
         a (possibly) nested `dict`, or a list of `dict`
     current_depth: int, default 1,
         depth of `d` in the (possible) parent `dict` or `list`
@@ -99,19 +99,19 @@ def dict_to_str(d:dict, current_depth:int=1, indent_spaces:int=4) -> str:
     s: str,
         the formatted string
     """
-    assert isinstance(d, (dict, list))
+    assert isinstance(d, (dict, list, tuple))
     s = "\n"
     unit_indent = " "*indent_spaces
     prefix = unit_indent*current_depth
-    if isinstance(d, list):
+    if isinstance(d, (list, tuple)):
         for v in d:
-            if isinstance(v, (dict, list)):
+            if isinstance(v, (dict, list, tuple)):
                 s += f"{prefix}{dict_to_str(v, current_depth+1)}\n"
             else:
                 s += f"{prefix}{v}\n"
     elif isinstance(d, dict):
         for k, v in d.items():
-            if isinstance(v, (dict, list)):
+            if isinstance(v, (dict, list, tuple)):
                 s += f"{prefix}{k}: {dict_to_str(v, current_depth+1)}\n"
             else:
                 s += f"{prefix}{k}: {v}\n"
