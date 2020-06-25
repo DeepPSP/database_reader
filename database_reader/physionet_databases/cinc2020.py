@@ -18,7 +18,10 @@ from database_reader.utils.common import (
 )
 from database_reader.utils.utils_misc import (
     AF, I_AVB, LBBB, RBBB, PAC, PVC, STD, STE,
+)
+from database_reader.utils.utils_misc.cinc2020_aux_data import (
     Dx_map,
+    dx_mapping_scored_cinc2020, dx_mapping_unscored_cinc2020,
 )
 from database_reader.base import PhysioNetDataBase
 
@@ -51,6 +54,8 @@ class CINC2020(PhysioNetDataBase):
         E: database_reader.physionet_databases.ptb_xl.PTB_XL
     the C tranche has folder name `Training_StPetersburg`, the D tranche has folder name `Training_PTB`, the F tranche has folder name `WFDB`
     3. the F tranche is entirely new, posted for this Challenge, and represents a unique demographic of the Southeastern United States. It has folder name `Training_E/WFDB`.
+    4. only a part of diagnosis (diseases that appear in the labels of the 6 tranches of training data) are used in the scoring function (ref. `dx_mapping_scored_cinc2020`), while others are ignored (ref. `dx_mapping_unscored_cinc2020`). The scored diagnoses were chosen based on prevalence of the diagnoses in the training data, the severity of the diagnoses, and the ability to determine the diagnoses from ECG recordings. The ignored diagnosis can be put in a a 'non-class' group.
+    5. the (updated) scoring function has a scoring matrix with nonzero off-diagonal elements. This scoring function reflects the clinical reality that some misdiagnoses are more harmful than others and should be scored accordingly. Moreover, it reflects the fact that confusing some classes is much less harmful than confusing other classes.
 
     NOTE:
     -----
