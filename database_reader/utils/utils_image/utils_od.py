@@ -448,6 +448,14 @@ def get_ann_id():
 
 import torch
 from torch import Tensor
+from packaging import version
+
+if version.parse(torch.__version__) >= version.parse('1.5.0'):
+    def _true_divide(dividend, divisor):
+        return torch.true_divide(dividend, divisor)
+else:
+    def _true_divide(dividend, divisor):
+        return dividend / divisor
 
 def bboxes_iou_torch(bboxes_a:Tensor, bboxes_b:Tensor, fmt:str='voc', iou_type:str='iou') -> Tensor:
     """ finished, checked,
@@ -489,6 +497,7 @@ def bboxes_iou_torch(bboxes_a:Tensor, bboxes_b:Tensor, fmt:str='voc', iou_type:s
         br_intersect = torch.min(bboxes_a[:, np.newaxis, 2:], bboxes_b[:, 2:])
         bb_a = bboxes_a[:, 2:] - bboxes_a[:, :2]
         bb_b = bboxes_b[:, 2:] - bboxes_b[:, :2]
+        # bb_* can also be seen vectors representing box_width, box_height
     elif fmt.lower() == 'coco':  # xmin, ymin, w, h
         tl_intersect = torch.max((bboxes_a[:, np.newaxis, :2] - bboxes_a[:, np.newaxis, 2:] / 2),
                        (bboxes_b[:, :2] - bboxes_b[:, 2:] / 2))
@@ -509,7 +518,7 @@ def bboxes_iou_torch(bboxes_a:Tensor, bboxes_b:Tensor, fmt:str='voc', iou_type:s
     area_intersect = torch.prod(br_intersect - tl_intersect, 2) * en  # * ((tl < br).all())
     area_union = (area_a[:, np.newaxis] + area_b - area_intersect)
 
-    iou = torch.true_divide(area_intersect, area_union)
+    iou = _true_divide(area_intersect, area_union)
 
     if iou_type.lower() == 'iou':
         return iou
@@ -554,9 +563,13 @@ def bboxes_iou_torch(bboxes_a:Tensor, bboxes_b:Tensor, fmt:str='voc', iou_type:s
 
     # bb_a of shape `(N,2)`, bb_b of shape `(K,2)`
     v = torch.einsum('nm,km->nk', bb_a, bb_b)
-    v = torch.true_divide(v, (torch.norm(bb_a, p='fro', dim=1)[:,np.newaxis] * torch.norm(bb_b, p='fro', dim=1)))
-    v = torch.true_divide(2*torch.acos(v), np.pi).pow(2)
-    alpha = (torch.true_divide(v, 1-iou+v))*((iou>=0.5).type(iou.type()))
+    v = _true_divide(v, (torch.norm(bb_a, p='fro', dim=1)[:,np.newaxis] * torch.norm(bb_b, p='fro', dim=1)))
+    # avoid nan for torch.acos near \pm 1
+    # https://github.com/pytorch/pytorch/issues/8069
+    eps = 1e-7
+    v = torch.clamp(v, -1+eps, 1-eps)
+    v = (_true_divide(2*torch.acos(v), np.pi)).pow(2)
+    alpha = (_true_divide(v, 1-iou+v))*((iou>=0.5).type(iou.type()))
 
     ciou = diou - alpha * v
 
