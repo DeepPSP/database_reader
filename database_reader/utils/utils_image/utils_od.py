@@ -581,3 +581,70 @@ def bboxes_iou_tf(bboxes_a, bboxes_b, fmt='voc', iou_type='iou'):
     """
     """
     raise NotImplementedError
+
+
+def nms(boxes:np.ndarray, confs:np.ndarray, box_fmt:str='coco', nms_thresh:float=0.5, min_mode:bool=False):
+    """
+    non-maximum suppression
+
+    Paramters:
+    ----------
+    boxes: ndarray, of shape (n, 4),
+        the bounding boxes
+    confs: ndarray, of shape (n,),
+        confidence (score) of each bounding box
+    box_fmt: str, default 'coco',
+        the format of the bounding boxes
+    nms_thresh: float, default 0.5,
+        threshold for eliminating redundant boxes
+    min_mode: bool, default False,
+        if True, denominator of computing the intersection ratio will be the area of the smaller box;
+        otherwise the area of the union of two boxes
+
+    Returns:
+    --------
+    ndarray, of shape (m, 4), m <= n
+
+    References:
+    -----------
+    [1] https://github.com/Tianxiaomo/pytorch-YOLOv4/blob/master/tool/utils.py
+    """
+    if box_fmt.lower() == 'coco':
+        x1 = boxes[:, 0]
+        y1 = boxes[:, 1]
+        x2 = boxes[:, 0] + boxes[:, 2]
+        y2 = boxes[:, 1] + boxes[:, 3]
+    elif box_fmt.lower() == 'voc':
+        x1 = boxes[:, 0]
+        y1 = boxes[:, 1]
+        x2 = boxes[:, 2]
+        y2 = boxes[:, 3]
+
+    areas = (x2 - x1) * (y2 - y1)
+    order = confs.argsort()[::-1]
+
+    keep = []
+    while order.size > 0:
+        idx_self = order[0]
+        idx_other = order[1:]
+
+        keep.append(idx_self)
+
+        xx1 = np.maximum(x1[idx_self], x1[idx_other])
+        yy1 = np.maximum(y1[idx_self], y1[idx_other])
+        xx2 = np.minimum(x2[idx_self], x2[idx_other])
+        yy2 = np.minimum(y2[idx_self], y2[idx_other])
+
+        w = np.maximum(0.0, xx2 - xx1)
+        h = np.maximum(0.0, yy2 - yy1)
+        inter = w * h
+
+        if min_mode:
+            over = inter / np.minimum(areas[order[0]], areas[order[1:]])
+        else:
+            over = inter / (areas[order[0]] + areas[order[1:]] - inter)
+
+        inds = np.where(over <= nms_thresh)[0]
+        order = order[inds + 1]
+    
+    return np.array(keep)
