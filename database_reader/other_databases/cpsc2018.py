@@ -17,8 +17,8 @@ from database_reader.utils.common import (
 )
 from database_reader.utils.utils_misc import (
     AF, I_AVB, LBBB, RBBB, PAC, PVC, STD, STE,
-    Dx_map,
 )
+from database_reader.utils.utils_misc.cinc2020_aux_data import Dx_map
 from database_reader.base import OtherDataBase
 
 
