@@ -3,7 +3,7 @@
 docstring, to write
 """
 from .io import *
-from .od_io import *
+from .utils_od import *
 from .utils_color import *
 from .grad_cam import *
 from .pair_xrai import *
