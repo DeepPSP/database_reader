@@ -175,7 +175,7 @@ class CPSC2020(OtherDataBase):
         assert rec_no in range(1, self.nb_records+1), "rec_no should be in range(1,{})".format(self.nb_records+1)
         ann_fp = os.path.join(self.ann_folder, self.all_annotations[rec_no-1] + self.ann_ext)
         ann = loadmat(ann_fp)['ref']
-        sf, st = (sampfrom or 0), (sampto or len(data))
+        sf, st = (sampfrom or 0), (sampto or np.inf)
         ann = {
             "SPB_indices": [p for p in ann['S_ref'][0,0] if sf<=p<st],
             "PVC_indices": [p for p in ann['V_ref'][0,0] if sf<=p<st],

@@ -7,13 +7,14 @@ import pandas as pd
 import json
 import cv2
 from PIL import Image
+from typing import Optional
 from easydict import EasyDict as ED
 
 from database_reader.base import ImageDataBase
 
 
 __all__ = [
-    "COCO"
+    "COCO2017"
 ]
 
 
@@ -79,7 +80,7 @@ class COCO2017(ImageDataBase):
                 content = json.load(f)
                 for d in content:
                     iscrowd = d['iscrowd']
-                    fn = _image_id_to_filename(d['image_id')
+                    fn = _image_id_to_filename(d['image_id'])
                     category_id = d['category_id']
                     cate = [item for item in content['categories'] if item['id'] == category_id][0]
                     _id = d['id']
