@@ -132,14 +132,22 @@ def voc_to_df(img_dir:str, ann_dir:str, save_path:Optional[str]=None, class_map:
         annotations in one DataFrame
     """
     xml_list = []
+    img_dir_filenames = os.listdir(img_dir)
     for xml_file in glob.glob(os.path.join(ann_dir, '*.xml')):
         tree = ET.parse(xml_file)
+        img_file = os.path.splitext(os.path.basename(xml_file))[0]
+        img_file = [os.path.join(img_dir, item) for item in img_dir_filenames if item.startswith(img_file)]
+        if len(img_file) != 1:
+            print(f"number of images corresponding to {os.path.basename(xml_file)} is {len(img_file)}")
+            continue
+        img_file = img_file[0]
         root = tree.getroot()
         if len(root.findall('object')) == 0:
             print('{} has no bounding box annotation'.format(xml_file))
         for member in root.findall('object'):
             fw = int(root.find('size').find('width').text)
             fh = int(root.find('size').find('height').text)
+            # or obtain fw, fh from image read from `img_file`
             subcls_name = member.find('name').text
             xmin = int(member.find('bndbox').find('xmin').text)
             ymin = int(member.find('bndbox').find('ymin').text)
@@ -211,11 +219,12 @@ def yolo_to_df(img_dir:str, ann_dir:str, save_path:Optional[str]=None, class_map
     NOTE: each line of each file is of the form `classIndex xcen ycen w h`
     """
     ann_list = []
-    all_img = os.listdir(img_dir)
+    img_dir_filenames = os.listdir(img_dir)
     for ann_file in glob.glob(os.path.join(ann_dir, '*.txt')):
         img_file = os.path.splitext(os.path.basename(ann_file))[0]
-        img_file = [os.path.join(img_dir, item) for item in all_img if item.startswith(imgfile)]
-        if len(img_file) == 0:
+        img_file = [os.path.join(img_dir, item) for item in img_dir_filenames if item.startswith(img_file)]
+        if len(img_file) != 1:
+            print(f"number of images corresponding to {os.path.basename(xml_file)} is {len(img_file)}")
             continue
         img_file = img_file[0]
         with tf.gfile.GFile(img_file, 'rb') as fid:
