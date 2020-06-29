@@ -4,7 +4,16 @@ facilities for easy reading of various databases
 
 subpackages:
 ------------
+    physionet_databases
+    nsrr_databases
+    audio_databases
+    image_databases
+    other_databases
+    utils
 """
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
+
 from .base import *
 from .physionet_databases import *
 from .nsrr_databases import *
