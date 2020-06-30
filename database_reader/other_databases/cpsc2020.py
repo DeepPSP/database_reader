@@ -52,6 +52,11 @@ class CPSC2020(OtherDataBase):
 
     NOTE:
     -----
+    1. the records can roughly be classified into 4 groups:
+        N:  A01, A03, A05, A06
+        V:  A02, A08
+        S:  A09, A10
+        VS: A04, A07
 
     ISSUES:
     -------
