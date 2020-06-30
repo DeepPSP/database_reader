@@ -14,6 +14,7 @@ from .cinc2020 import *
 from .edb import *
 from .ltstdb import *
 from .mimic3 import *
+from .mitdb import *
 from .nstdb import *
 from .qtdb import *
 from .slpdb import *
