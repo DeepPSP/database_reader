@@ -57,11 +57,11 @@ def overlaps(interval:Interval, another:Interval) -> int:
 
     Parameters:
     -----------
-    to write
+    interval, another: two `Interval`s
 
     Returns:
     --------
-    to write
+    int, overlap length of two intervals; if < 0, the distance of two intervals
     """
     # in case a or b is not in ascending order
     interval.sort()
@@ -69,7 +69,7 @@ def overlaps(interval:Interval, another:Interval) -> int:
     return min(interval[-1], another[-1]) - max(interval[0], another[0])
 
 
-def validate_interval(interval:Union[Interval,GeneralizedInterval], join_book_endeds:bool=True) -> Tuple[bool,Union[Interval,GeneralizedInterval]]:
+def validate_interval(interval:Union[Interval, GeneralizedInterval], join_book_endeds:bool=True) -> Tuple[bool,Union[Interval, GeneralizedInterval]]:
     """ finished, not checked,
 
     check whether `interval` is an `Interval` or a `GeneralizedInterval`,
@@ -78,11 +78,15 @@ def validate_interval(interval:Union[Interval,GeneralizedInterval], join_book_en
 
     Parameters:
     -----------
-    to write
+    interval: Interval, or unions of `Interval`s
+    join_book_endeds: bool, default True,
+        if True, two book-ended intervals will be joined into one
 
     Returns:
     --------
-    to write
+    tuple, consisting of
+        a bool, indicating whether `interval` is a valid interval
+        an interval (can be empty)
     """
     if isinstance(interval[0], (list,tuple)):
         info = [validate_interval(itv,join_book_endeds) for itv in interval]
@@ -104,11 +108,12 @@ def in_interval(val:Real, interval:Interval) -> bool:
 
     Parameters:
     -----------
-    to write
+    val: real number,
+    interval: Interval,
 
     Returns:
     --------
-    to write
+    bool,
     """
     interval.sort()
     return True if interval[0] <= val <= interval[-1] else False
@@ -121,10 +126,12 @@ def in_generalized_interval(val:Real, generalized_interval:GeneralizedInterval) 
 
     Parameters:
     -----------
-    to write
+    val: real number,
+    generalized_interval: union of `Interval`s,
 
     Returns:
     --------
+    bool,
     """
     for interval in generalized_interval:
         if in_interval(val, interval):
@@ -137,14 +144,18 @@ def get_confidence_interval(data:Optional[ArrayLike]=None, val:Optional[Real]=No
 
     Parameters:
     -----------
-    to write
+    data: array_like, optional,
+    val: real number, optional,
+    rmse: float, optional,
+    confidence: float, default 0.95,
+    kwargs: dict,
 
     Returns:
     --------
-    to write
+    conf_itv: ndarray,
     """
     from scipy.stats import norm
-    assert data or (val and rmse)
+    assert data or (val and rmse), "insufficient data for computing"
     correct_factor = kwargs.get('correct_factor', 1)
     bias = norm.ppf(0.5 + confidence / 2)
     if data is None:
@@ -155,7 +166,8 @@ def get_confidence_interval(data:Optional[ArrayLike]=None, val:Optional[Real]=No
         std = np.std(np.array(data), ddof=1)
         lower_bound = (average - std * bias) * correct_factor
         upper_bound = (average + std * bias) / correct_factor
-    return np.array([lower_bound, upper_bound])
+    conf_itv = np.array([lower_bound, upper_bound])
+    return conf_itv
 
 
 def intervals_union(interval_list:GeneralizedInterval, join_book_endeds:bool=True) -> GeneralizedInterval:
@@ -312,15 +324,17 @@ def generalized_intervals_intersection(generalized_interval:GeneralizedInterval,
 def generalized_interval_complement(total_interval:Interval, generalized_interval:GeneralizedInterval) -> GeneralizedInterval:
     """ finished, checked, to be improved,
 
-    暂时先处理total_interval是一个Interval的情况
+    TODO: the case `total_interval` is a `GeneralizedInterval`
 
     Parameters:
     -----------
-    to write
+    total_interval, Interval,
+    generalized_interval: union of `Interval`s
 
     Returns:
     --------
-    to write
+    cpl: union of `Interval`s,
+        the complement of `generalized_interval` in `total_interval`
     """
     rearranged_intervals = intervals_union(generalized_interval)
     total_interval.sort()
@@ -333,11 +347,11 @@ def generalized_interval_complement(total_interval:Interval, generalized_interva
     for item in rearranged_intervals:
         slice_points += item
     slice_points.append(tot_end)
-    ret = []
+    cpl = []
     for i in range(len(slice_points) // 2):
         if slice_points[2 * i + 1] - slice_points[2 * i] > 0:
-            ret.append([slice_points[2 * i], slice_points[2 * i + 1]])
-    return ret
+            cpl.append([slice_points[2 * i], slice_points[2 * i + 1]])
+    return cpl
 
 
 def get_optimal_covering(total_interval:Interval, to_cover:list, min_len:int, split_threshold:int, traceback:bool=False, **kwargs) -> Tuple[GeneralizedInterval,list]:
