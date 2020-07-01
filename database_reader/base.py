@@ -60,12 +60,15 @@ class _DataBase(object):
 
     def _set_logger(self, prefix:Optional[str]=None):
         """
+
+        Parameters:
+        -----------
+        prefix: str, optional,
+            prefix (for each line) of the logger, and its file name
         """
-        if prefix:
-            self.logger = logging.getLogger('{}-{}-logger'.format(prefix, self.db_name))
-        else:
-            self.logger = logging.getLogger('{}-logger'.format(self.db_name))
-        log_filepath = os.path.join(self.working_dir, "PhysioNet-{}.log".format(self.db_name))
+        _prefix = prefix+"-" if prefix else ""
+        self.logger = logging.getLogger('{}-{}-logger'.format(_prefix, self.db_name))
+        log_filepath = os.path.join(self.working_dir, "{}{}.log".format(_prefix, self.db_name))
         print("log file path is set {}".format(log_filepath))
 
         c_handler = logging.StreamHandler(sys.stdout)
@@ -94,6 +97,11 @@ class _DataBase(object):
 
         self.logger.addHandler(c_handler)
         self.logger.addHandler(f_handler)
+
+    def train_test_split(self):
+        """
+        """
+        raise NotImplementedError
 
 
 class PhysioNetDataBase(_DataBase):
