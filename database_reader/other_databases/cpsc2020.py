@@ -5,7 +5,7 @@ import os
 import random
 import numpy as np
 import pandas as pd
-from scipy.io import loadmat
+from scipy.io import loadmat, savemat
 from datetime import datetime
 from easydict import EasyDict as ED
 from typing import Union, Optional, Any, List, Dict, NoReturn
@@ -33,7 +33,7 @@ class CPSC2020(OtherDataBase):
 
     ABOUT CPSC2019:
     ---------------
-    1. training data consists of 10 single-lead ECG recordings collected from arrhythmia patients, each of the recording last for about 24 hours
+    1. training data consists of 10 single-lead ECG recordings collected from arrhythmia patients, each of the recording last for about 24 hours. Data and annotations are stored in v5 .mat files
     2. A02, A03, A08 are patient with atrial fibrillation
     3. sampling frequency = 400 Hz
     4. about PVC and SPB, ref utils.utils_misc.ecg_arrhythmia_knowledge
@@ -94,9 +94,10 @@ class CPSC2020(OtherDataBase):
         self.all_records = ["A{0:02d}".format(i) for i in range(1,1+self.nb_records)]
         self.all_annotations = ["R{0:02d}".format(i) for i in range(1,1+self.nb_records)]
         self.all_references = self.all_annotations
-        self.rec_folder = os.path.join(self.db_dir, "data")
-        self.ann_folder = os.path.join(self.db_dir, "ref")
-        self.ref_folder = self.ann_folder
+        self.rec_dir = os.path.join(self.db_dir, "data")
+        self.ann_dir = os.path.join(self.db_dir, "ref")
+        self.data_dir = self.rec_dir
+        self.ref_dir = self.ann_dir
 
         self.subgroups = ED({
             "N":  ["A01", "A03", "A05", "A06",],
@@ -165,13 +166,8 @@ class CPSC2020(OtherDataBase):
         data: ndarray,
             the ecg data
         """
-        if isinstance(rec, int):
-            assert rec in range(1, self.nb_records+1), "rec should be in range(1,{})".format(self.nb_records+1)
-            rec_name = self.all_records[rec-1]
-        elif isinstance(rec, str):
-            assert rec in self.all_records, "rec should be one of {}".format(self.all_records)
-            rec_name = rec
-        rec_fp = os.path.join(self.rec_folder, rec_name + self.rec_ext)
+        rec_name = self._get_rec_name(rec)
+        rec_fp = os.path.join(self.rec_dir, f"{rec_name}{self.rec_ext}")
         data = (1000 * loadmat(rec_fp)['ecg']).astype(int)
         sf, st = (sampfrom or 0), (sampto or len(data))
         data = data[sf:st]
@@ -194,13 +190,8 @@ class CPSC2020(OtherDataBase):
         ann: dict,
             with items "SPB_indices" and "PVC_indices", which record the indices of SPBs and PVCs
         """
-        if isinstance(rec, int):
-            assert rec in range(1, self.nb_records+1), "rec should be in range(1,{})".format(self.nb_records+1)
-            ann_name = self.all_annotations[rec-1]
-        elif isinstance(rec, str):
-            assert rec in self.all_annotations+self.all_records, "rec should be one of {} or one of {}".format(self.all_records, self.all_annotations)
-            ann_name = rec if rec in self.all_annotations else rec.replace("A", "R")
-        ann_fp = os.path.join(self.ann_folder, ann_name + self.ann_ext)
+        ann_name = self._get_ann_name(rec)
+        ann_fp = os.path.join(self.ann_dir, f"{ann_name}{self.ann_ext}")
         ann = loadmat(ann_fp)['ref']
         sf, st = (sampfrom or 0), (sampto or np.inf)
         ann = {
@@ -208,6 +199,30 @@ class CPSC2020(OtherDataBase):
             "PVC_indices": [p for p in ann['V_ref'][0,0].flatten() if sf<=p<st],
         }
         return ann
+
+
+    def _get_ann_name(self, rec:Union[int,str]) -> str:
+        """
+        """
+        if isinstance(rec, int):
+            assert rec in range(1, self.nb_records+1), f"rec should be in range(1,{self.nb_records+1})"
+            ann_name = self.all_annotations[rec-1]
+        elif isinstance(rec, str):
+            assert rec in self.all_annotations+self.all_records, f"rec should be one of {self.all_records} or one of {self.all_annotations}"
+            ann_name = rec.replace("A", "R")
+        return ann_name
+
+
+    def _get_rec_name(self, rec:Union[int,str]) -> str:
+        """
+        """
+        if isinstance(rec, int):
+            assert rec in range(1, self.nb_records+1), f"rec should be in range(1,{self.nb_records+1})"
+            rec_name = self.all_records[rec-1]
+        elif isinstance(rec, str):
+            assert rec in self.all_records, f"rec should be one of {self.all_records}"
+            rec_name = rec
+        return rec_name
 
     
     def plot(self, rec:Union[int,str], sampfrom:Optional[int]=None, sampto:Optional[int]=None, ectopic_beats_only:bool=False, **kwargs) -> NoReturn:
