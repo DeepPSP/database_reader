@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 """
-import os
+import os, io
 import re
 from datetime import datetime
 from typing import Union, Optional, Any, List, Dict, NoReturn
@@ -21,8 +21,8 @@ from database_reader.utils.utils_misc import (
     AF, I_AVB, LBBB, RBBB, PAC, PVC, STD, STE,
 )
 from database_reader.utils.utils_misc.cinc2020_aux_data import (
-    Dx_map,
-    dx_mapping_scored_cinc2020, dx_mapping_unscored_cinc2020,
+    dx_mapping_all,
+    dx_mapping_scored, dx_mapping_unscored,
 )
 from database_reader.base import PhysioNetDataBase
 
@@ -409,10 +409,10 @@ class CINC2020(PhysioNetDataBase):
         --------
         to write
         """
-        if isinstance(disease, str):
-            d = [disease]
+        if isinstance(diseases, str):
+            d = [diseases]
         else:
-            d = disease
+            d = diseases
         assert all([item in cls.diagnosis_abbr_to_full.keys() for item in d])
 
         # AF

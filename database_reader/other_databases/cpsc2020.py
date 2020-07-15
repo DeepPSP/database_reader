@@ -90,6 +90,8 @@ class CPSC2020(OtherDataBase):
         self.rec_ext = '.mat'
         self.ann_ext = '.mat'
 
+        self._to_mv = False
+
         self.nb_records = 10
         self.all_records = ["A{0:02d}".format(i) for i in range(1,1+self.nb_records)]
         self.all_annotations = ["R{0:02d}".format(i) for i in range(1,1+self.nb_records)]
@@ -146,7 +148,7 @@ class CPSC2020(OtherDataBase):
             print(self.__doc__)
 
 
-    def load_data(self, rec:Union[int,str], sampfrom:Optional[int]=None, sampto:Optional[int]=None, keep_dim:bool=True) -> np.ndarray:
+    def load_data(self, rec:Union[int,str], sampfrom:Optional[int]=None, sampto:Optional[int]=None, keep_dim:bool=True, **kwargs) -> np.ndarray:
         """ finished, checked,
 
         Parameters:
@@ -168,7 +170,9 @@ class CPSC2020(OtherDataBase):
         """
         rec_name = self._get_rec_name(rec)
         rec_fp = os.path.join(self.rec_dir, f"{rec_name}{self.rec_ext}")
-        data = (1000 * loadmat(rec_fp)['ecg']).astype(int)
+        data = loadmat(rec_fp)['ecg']
+        if self._to_mv or kwargs.get("to_mv", False):
+            data = (1000 * data).astype(int)
         sf, st = (sampfrom or 0), (sampto or len(data))
         data = data[sf:st]
         if not keep_dim:
