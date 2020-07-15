@@ -75,13 +75,12 @@ class CINC2018(PhysioNetDataBase):
     -----------
     [1] https://physionet.org/content/challenge-2018/1.0.0/
     """
-    def __init__(self, db_dir:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
+    def __init__(self, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
         Parameters:
         -----------
         db_dir: str, optional,
             storage path of the database
-            if not specified, data will be fetched from Physionet
         working_dir: str, optional,
             working directory, to store intermediate files and log file
         verbose: int, default 2,

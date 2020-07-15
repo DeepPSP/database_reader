@@ -81,13 +81,12 @@ class CINC2020(PhysioNetDataBase):
     [4] https://physionet.org/content/ptbdb/1.0.0/
     [5] https://physionet.org/content/ptb-xl/1.0.1/
     """
-    def __init__(self, db_dir:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
+    def __init__(self, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
         Parameters:
         -----------
         db_dir: str, optional,
             storage path of the database
-            if not specified, data will be fetched from Physionet
         working_dir: str, optional,
             working directory, to store intermediate files and log file
         verbose: int, default 2,
@@ -95,7 +94,11 @@ class CINC2020(PhysioNetDataBase):
         super().__init__(db_name='CINC2020', db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
         self.freq = 500
         self.spacing = 1000 / self.freq
-        self.db_dir_base = self.db_dir
+
+        self.rec_ext = '.mat'
+        self.ann_ext = '.hea'
+
+        self.db_dir_base = db_dir
         self.db_dirs = ED({
             "A": os.path.join(self.db_dir_base, "Training_WFDB"),
             "B": os.path.join(self.db_dir_base, "Training_2"),
@@ -104,9 +107,13 @@ class CINC2020(PhysioNetDataBase):
             "E": os.path.join(self.db_dir_base, "WFDB"),
             "F": os.path.join(self.db_dir_base, "Training_E", "WFDB"),
         })
+        print("Please wait patiently to let the reader find all records of all the tranches...")
         self.all_records = ED({
-            tranche: get_record_list_recursive(self.db_dirs[tranche]) for tranche in "ABCDEF"
+            tranche: get_record_list_recursive(self.db_dirs[tranche], self.rec_ext) \
+                for tranche in "ABCDEF"
         })
+        print(f"Done in {time.time() - start} seconds!")
+
         self.rec_prefix = ED({
             "A": "A", "B": "Q", "C": "I", "D": "S", "E": "HR", "F": "E",
         })
@@ -118,23 +125,10 @@ class CINC2020(PhysioNetDataBase):
         >>>     for fn in af:
         >>>         pfs[k].add("".join(re.findall(r"[A-Z]", os.path.splitext(fn)[0])))
         """
-        self.rec_ext = '.mat'
-        self.ann_ext = '.hea'
 
         self.all_leads = ['I', 'II', 'III', 'aVR', 'aVL', 'aVF', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6',]
-        self.all_diagnosis = ['N', 'AF', 'I-AVB', 'LBBB', 'RBBB', 'PAC', 'PVC', 'STD', 'STE',]
-        self.all_diagnosis_original = sorted(['Normal', 'AF', 'I-AVB', 'LBBB', 'RBBB', 'PAC', 'PVC', 'STD', 'STE',])
-        self.diagnosis_abbr_to_full = {  # to check
-            'N': 'Normal',
-            'AF': 'Atrial fibrillation',
-            'I-AVB': 'First-degree atrioventricular block',
-            'LBBB': 'Left bundle brunch block',
-            'RBBB': 'Right bundle brunch block',
-            'PAC': 'Premature atrial contraction',
-            'PVC': 'Premature ventricular contraction',
-            'STD': 'ST-segment depression',
-            'STE': 'ST-segment elevated',
-        }
+
+        self.df_ecg_arrhythmia = dx_mapping_all[['Dx','SNOMED CT Code','Abbreviation']]
 
 
     def get_patient_id(self, rec:str) -> int:
@@ -176,7 +170,7 @@ class CINC2020(PhysioNetDataBase):
     def _get_tranche(self, rec:str) -> str:
         """
         """
-        prefix = "".join(re.findall(r"[A-Z]", "rec"))
+        prefix = "".join(re.findall(r"[A-Z]", rec))
         return {v:k for k,v in self.rec_prefix.items()}[prefix]
 
 
@@ -219,7 +213,7 @@ class CINC2020(PhysioNetDataBase):
             the annotations with items: ref. self.ann_items
         """
         tranche = self._get_tranche(rec)
-        rec_fp = os.path.join(self.db_dirs[tranche], rec + self.rec_ext)
+        ann_fp = os.path.join(self.db_dirs[tranche], rec + self.ann_ext)
         with open(ann_fp, 'r') as f:
             header_data = f.read().splitlines()
 
@@ -234,20 +228,20 @@ class CINC2020(PhysioNetDataBase):
         except:
             ann_dict['age'] = np.nan
         ann_dict['sex'] = [l for l in header_data if l.startswith('#Sex')][0].split(": ")[-1]
-        ann_dict['diagnosis_Dx'] = [l for l in header_data if l.startswith('#Dx')][0].split(": ")[-1].split(",")
+        ann_dict['diagnosis_code'] = [l for l in header_data if l.startswith('#Dx')][0].split(": ")[-1].split(",")
         try:
-            ann_dict['diagnosis_Dx'] = [int(item) for item in ann_dict['diagnosis_Dx']]
-            selection = Dx_map['SNOMED code'].isin(ann_dict['diagnosis_Dx'])
-            ann_dict['diagnosis'] = Dx_map[selection]['Abbreviation'].tolist()
-            ann_dict['diagnosis_fullname'] = Dx_map[selection]['dx'].tolist()
+            ann_dict['diagnosis_code'] = [int(item) for item in ann_dict['diagnosis_code']]
+            selection = dx_mapping_all['SNOMED CT Code'].isin(ann_dict['diagnosis_code'])
+            ann_dict['diagnosis_abbr'] = dx_mapping_all[selection]['Abbreviation'].tolist()
+            ann_dict['diagnosis_fullname'] = dx_mapping_all[selection]['Dx'].tolist()
         except:  # the old version, the Dx's are abbreviations
-            ann_dict['diagnosis'] = ann_dict['diagnosis_Dx']
-            selection = Dx_map['Abbreviation'].isin(ann_dict['diagnosis'])
-            ann_dict['diagnosis_fullname'] = Dx_map[selection]['dx'].tolist()
+            ann_dict['diagnosis_abbr'] = ann_dict['diagnosis_code']
+            selection = dx_mapping_all['Abbreviation'].isin(ann_dict['diagnosis_abbr'])
+            ann_dict['diagnosis_fullname'] = dx_mapping_all[selection]['Dx'].tolist()
         # if not keep_original:
-        #     for idx, d in enumerate(ann_dict['diagnosis']):
+        #     for idx, d in enumerate(ann_dict['diagnosis_abbr']):
         #         if d in ['Normal', 'SNR']:
-        #             ann_dict['diagnosis'] = ['N']
+        #             ann_dict['diagnosis_abbr'] = ['N']
         ann_dict['medical_prescription'] = [l for l in header_data if l.startswith('#Rx')][0].split(": ")[-1]
         ann_dict['history'] = [l for l in header_data if l.startswith('#Hx')][0].split(": ")[-1]
         ann_dict['symptom_or_surgery'] = [l for l in header_data if l.startswith('#Sx')][0].split(": ")[-1]
@@ -275,13 +269,13 @@ class CINC2020(PhysioNetDataBase):
         Returns:
         --------
         labels, list,
-            the list of labels (abbr. diagnosis)
+            the list of labels (abbr. diagnosis_abbr)
         """
         ann_dict = self.load_ann(rec)
         if fullname:
             labels = ann_dict['diagnosis_fullname']
         else:
-            labels = ann_dict['diagnosis']
+            labels = ann_dict['diagnosis_abbr']
         return labels
 
     
