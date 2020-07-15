@@ -55,8 +55,10 @@ class _DataBase(object):
         self.db_name = db_name
         self.db_dir = db_dir
         self.working_dir = working_dir or os.getcwd()
+        os.makedirs(self.working_dir, exist_ok=True)
         self.verbose = verbose
         self.logger = None
+        self._set_logger(prefix=type(self).__name__)
 
     def _set_logger(self, prefix:Optional[str]=None):
         """
@@ -131,7 +133,7 @@ class PhysioNetDataBase(_DataBase):
             "/export/algo/wenh06/ecg_data/xxx/"
         """
         super().__init__(db_name=db_name, db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
-        self._set_logger(prefix="PhysioNet")
+        # self._set_logger(prefix="PhysioNet")
         """
         `self.freq` for those with single signal source, e.g. ECG,
         for those with multiple signal sources like PSG, self.freq is default to the frequency of ECG if ECG applicable
@@ -503,7 +505,7 @@ class NSRRDataBase(_DataBase):
             "/export/algo/wenh06/ecg_data/NSRR/xxx/"
         """
         super().__init__(db_name=db_name, db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
-        self._set_logger(prefix="NSRR")
+        # self._set_logger(prefix="NSRR")
         self.freq = None
         self.all_records = None
         self.device_id = None  # maybe data are imported into impala db, to facilitate analyzing
@@ -652,7 +654,7 @@ class ImageDataBase(_DataBase):
         kwargs: dict,
         """
         super().__init__(db_name=db_name, db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
-        self._set_logger(prefix=None)
+        # self._set_logger(prefix=None)
 
 
     def helper(self, items:Union[List[str],str,type(None)]=None, **kwargs) -> NoReturn:
@@ -698,7 +700,7 @@ class AudioDataBase(object):
         kwargs: dict,
         """
         super().__init__(db_name=db_name, db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
-        self._set_logger(prefix=None)
+        # self._set_logger(prefix=None)
 
 
     def helper(self, items:Union[List[str],str,type(None)]=None, **kwargs) -> NoReturn:
@@ -749,7 +751,7 @@ class OtherDataBase(object):
             "/export/algo/wenh06/ecg_data/xxx/"
         """
         super().__init__(db_name=db_name, db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
-        self._set_logger(prefix=None)
+        # self._set_logger(prefix=None)
 
         self.freq = None
         self.all_records = None
