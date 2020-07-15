@@ -2,14 +2,15 @@
 """
 """
 import os
-import wfdb
 import re
-import numpy as np
-import pandas as pd
-from scipy.io import loadmat
 from datetime import datetime
 from typing import Union, Optional, Any, List, Dict, NoReturn
 from numbers import Real
+
+import numpy as np
+import pandas as pd
+import wfdb
+from scipy.io import loadmat
 from easydict import EasyDict as ED
 
 from database_reader.utils.common import (
