@@ -28,10 +28,27 @@ class PTBDB(PhysioNetDataBase):
 
     ABOUT ptbdb:
     ------------
-    to write
+    1. contains 549 records from 290 subjects, with each subject represented by 1-5 records
+    2. aach record includes 15 simultaneously measured signals:
+        the conventional 12 leads (i, ii, iii, avr, avl, avf, v1, v2, v3, v4, v5, v6),
+        together with the 3 Frank lead ECGs (vx, vy, vz)
+    3. sampling frequency is 1000 Hz
+    4. diagnoses distribution:
+        Diagnosis                       # Patients
+        Myocardial infarction           148
+        Cardiomyopathy/Heart failure	18
+        Bundle branch block             15
+        Dysrhythmia                     14
+        Myocardial hypertrophy          7
+        Valvular heart disease          6
+        Myocarditis                     4
+        Miscellaneous                   4
+        Healthy controls                52
 
     NOTE:
     -----
+    1. no subjects numbered 124, 132, 134, or 161
+    2. clinical summary (.hea files) is not available for 22 subjects
 
     ISSUES:
     -------
@@ -64,6 +81,12 @@ class PTBDB(PhysioNetDataBase):
                 self.all_records = get_record_list_recursive(self.db_dir, "dat")
             except:
                 self.all_records = []
+        self.freq = 1000
+        self.spacing = 1000/self.freq
+
+        self.rec_ext = '.dat'
+        self.aux_rec_ext = '.xyz'  # the extra 3 Frank lead ECGs
+        self.ann_ext = '.atr'
         
 
     def get_subject_id(self, rec) -> int:

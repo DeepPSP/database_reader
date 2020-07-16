@@ -33,7 +33,7 @@ class INCARTDB(PhysioNetDataBase):
     2. sampling frequency is 257 Hz
     3. ADC gain ranges from 250 to 1100
     4. annotations are beat-wise, totaling a number of 175,000 beats
-    5. diagnosis distribution:
+    5. diagnoses distribution:
         Diagnosis	                                    # Patients
         Acute MI	                                    2
         Transient ischemic attack (angina pectoris)	    5
@@ -85,7 +85,7 @@ class INCARTDB(PhysioNetDataBase):
 
         self.rec_ext = '.dat'
         self.ann_ext = '.atr'
-        self.aux_ext = '.hea'
+        self.aux_ann_ext = '.hea'
 
         # this file links record names with patient's `subject_id`
         self.patients_file = os.path.join(self.db_dir, 'files-patients-diagnoses.txt')
