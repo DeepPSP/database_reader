@@ -65,9 +65,14 @@ class CINC2020(PhysioNetDataBase):
     3. Each sub-dataset might have its own organizing scheme of data, which should be carefully dealt with
     4. There are few 'absolute' diagnoses in 12 lead ECGs, where large discrepancies in the interpretation of the ECG can be found even inspected by experts. There is inevitably something lost in translation, especially when you do not have the context. This doesn't mean making an algorithm isn't important
     5. The labels are noisy, which one has to deal with in all real world data
+    6. each line of the following classes are considered the same (in the scoring matrix):
+        - RBBB, CRBBB (NOT including IRBBB)
+        - PAC, SVPB
+        - PVC, VPB
 
     ISSUES:
     -------
+    1.
 
     Usage:
     ------
@@ -242,9 +247,9 @@ class CINC2020(PhysioNetDataBase):
             ann_dict['diagnosis']['diagnosis_abbr'] = dx_mapping_all[selection]['Abbreviation'].tolist()
             ann_dict['diagnosis']['diagnosis_fullname'] = dx_mapping_all[selection]['Dx'].tolist()
             scored_indices = np.isin(ann_dict['diagnosis']['diagnosis_code'], dx_mapping_scored['SNOMED CT Code'].values)
-            ann_dict['diagnosis_scored']['diagnosis_code'] = [item for idx, item in enumerate(ann_dict['diagnosis']['diagnosis_code']) if scored_indices[idx]]]
-            ann_dict['diagnosis_scored']['diagnosis_abbr'] = [item for idx, item in enumerate(ann_dict['diagnosis']['diagnosis_abbr']) if scored_indices[idx]]]
-            ann_dict['diagnosis_scored']['diagnosis_fullname'] = [item for idx, item in enumerate(ann_dict['diagnosis']['diagnosis_fullname']) if scored_indices[idx]]]
+            ann_dict['diagnosis_scored']['diagnosis_code'] = [item for idx, item in enumerate(ann_dict['diagnosis']['diagnosis_code']) if scored_indices[idx]]
+            ann_dict['diagnosis_scored']['diagnosis_abbr'] = [item for idx, item in enumerate(ann_dict['diagnosis']['diagnosis_abbr']) if scored_indices[idx]]
+            ann_dict['diagnosis_scored']['diagnosis_fullname'] = [item for idx, item in enumerate(ann_dict['diagnosis']['diagnosis_fullname']) if scored_indices[idx]]
         except:  # the old version, the Dx's are abbreviations
             ann_dict['diagnosis']['diagnosis_abbr'] = ann_dict['diagnosis']['diagnosis_code']
             selection = dx_mapping_all['Abbreviation'].isin(ann_dict['diagnosis']['diagnosis_abbr'])
