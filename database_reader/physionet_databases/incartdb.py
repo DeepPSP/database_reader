@@ -28,7 +28,21 @@ class INCARTDB(PhysioNetDataBase):
 
     ABOUT incartdb:
     ---------------
-    to write
+    1. consists of 75 annotated recordings extracted from 32 Holter records, each of 12 leads and of length 30 minutes.
+    2. sampling frequency is 257 Hz
+    3. ADC gain ranges from 250 to 1100
+    4. diagnosis distribution:
+        Diagnosis	                                    # Patients
+        Acute MI	                                    2
+        Transient ischemic attack (angina pectoris)	    5
+        Prior MI	                                    4
+        Coronary artery disease with hypertension  	    7 (4 with left ventricular hypertrophy)
+        Sinus node dysfunction	                        1
+        Supraventricular ectopy	                        18
+        Atrial fibrillation or SVTA	                    3 (2 with paroxysmal AF)
+        WPW	                                            2
+        AV block                                        1
+        Bundle branch block                             3
 
     NOTE:
     -----
@@ -38,7 +52,7 @@ class INCARTDB(PhysioNetDataBase):
 
     Usage:
     ------
-    1.
+    1. ECG arrhythmia detection
 
     References:
     -----------
@@ -64,6 +78,8 @@ class INCARTDB(PhysioNetDataBase):
                 self.all_records = get_record_list_recursive(self.db_dir, "dat")
             except:
                 self.all_records = []
+        self.freq = 257
+        self.spacing = 1000/self.freq
         
 
     def get_subject_id(self, rec) -> int:
@@ -78,3 +94,14 @@ class INCARTDB(PhysioNetDataBase):
 
         """
         print(self.__doc__)
+
+
+    def load_data(self) -> np.ndarray:
+        """
+        """
+        raise NotImplementedError
+
+    def load_ann(self) -> np.ndarray:
+        """
+        """
+        raise NotImplementedError
