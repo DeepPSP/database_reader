@@ -92,8 +92,6 @@ class CINC2020(PhysioNetDataBase):
         verbose: int, default 2,
         """
         super().__init__(db_name='CINC2020', db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
-        self.freq = 500
-        self.spacing = 1000 / self.freq
 
         self.rec_ext = '.mat'
         self.ann_ext = '.hea'
@@ -125,6 +123,11 @@ class CINC2020(PhysioNetDataBase):
         >>>     for fn in af:
         >>>         pfs[k].add("".join(re.findall(r"[A-Z]", os.path.splitext(fn)[0])))
         """
+
+        self.freq = {
+            "A": 500, "B": 500, "C": 257, "D": 1000, "E": 500, "F": 500,
+        }
+        self.spacing = {t: 1000 / f for t,f in self.freq.items()}
 
         self.all_leads = ['I', 'II', 'III', 'aVR', 'aVL', 'aVF', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6',]
 
@@ -219,6 +222,7 @@ class CINC2020(PhysioNetDataBase):
 
         ann_dict = {}
         ann_dict['rec_name'], ann_dict['nb_leads'], ann_dict['freq'], ann_dict['nb_samples'], ann_dict['datetime'], daytime = header_data[0].split(' ')
+
         ann_dict['nb_leads'] = int(ann_dict['nb_leads'])
         ann_dict['freq'] = int(ann_dict['freq'])
         ann_dict['nb_samples'] = int(ann_dict['nb_samples'])
@@ -228,23 +232,32 @@ class CINC2020(PhysioNetDataBase):
         except:
             ann_dict['age'] = np.nan
         ann_dict['sex'] = [l for l in header_data if l.startswith('#Sex')][0].split(": ")[-1]
-        ann_dict['diagnosis_code'] = [l for l in header_data if l.startswith('#Dx')][0].split(": ")[-1].split(",")
+
+        ann_dict['diagnosis'] = dict()
+        ann_dict['diagnosis_scored'] = dict()
+        ann_dict['diagnosis']['diagnosis_code'] = [l for l in header_data if l.startswith('#Dx')][0].split(": ")[-1].split(",")
         try:
-            ann_dict['diagnosis_code'] = [int(item) for item in ann_dict['diagnosis_code']]
-            selection = dx_mapping_all['SNOMED CT Code'].isin(ann_dict['diagnosis_code'])
-            ann_dict['diagnosis_abbr'] = dx_mapping_all[selection]['Abbreviation'].tolist()
-            ann_dict['diagnosis_fullname'] = dx_mapping_all[selection]['Dx'].tolist()
+            ann_dict['diagnosis']['diagnosis_code'] = [int(item) for item in ann_dict['diagnosis']['diagnosis_code']]
+            selection = dx_mapping_all['SNOMED CT Code'].isin(ann_dict['diagnosis']['diagnosis_code'])
+            ann_dict['diagnosis']['diagnosis_abbr'] = dx_mapping_all[selection]['Abbreviation'].tolist()
+            ann_dict['diagnosis']['diagnosis_fullname'] = dx_mapping_all[selection]['Dx'].tolist()
+            scored_indices = np.isin(ann_dict['diagnosis']['diagnosis_code'], dx_mapping_scored['SNOMED CT Code'].values)
+            ann_dict['diagnosis_scored']['diagnosis_code'] = [item for idx, item in enumerate(ann_dict['diagnosis']['diagnosis_code']) if scored_indices[idx]]]
+            ann_dict['diagnosis_scored']['diagnosis_abbr'] = [item for idx, item in enumerate(ann_dict['diagnosis']['diagnosis_abbr']) if scored_indices[idx]]]
+            ann_dict['diagnosis_scored']['diagnosis_fullname'] = [item for idx, item in enumerate(ann_dict['diagnosis']['diagnosis_fullname']) if scored_indices[idx]]]
         except:  # the old version, the Dx's are abbreviations
-            ann_dict['diagnosis_abbr'] = ann_dict['diagnosis_code']
-            selection = dx_mapping_all['Abbreviation'].isin(ann_dict['diagnosis_abbr'])
-            ann_dict['diagnosis_fullname'] = dx_mapping_all[selection]['Dx'].tolist()
+            ann_dict['diagnosis']['diagnosis_abbr'] = ann_dict['diagnosis']['diagnosis_code']
+            selection = dx_mapping_all['Abbreviation'].isin(ann_dict['diagnosis']['diagnosis_abbr'])
+            ann_dict['diagnosis']['diagnosis_fullname'] = dx_mapping_all[selection]['Dx'].tolist()
         # if not keep_original:
         #     for idx, d in enumerate(ann_dict['diagnosis_abbr']):
         #         if d in ['Normal', 'SNR']:
         #             ann_dict['diagnosis_abbr'] = ['N']
+        
         ann_dict['medical_prescription'] = [l for l in header_data if l.startswith('#Rx')][0].split(": ")[-1]
         ann_dict['history'] = [l for l in header_data if l.startswith('#Hx')][0].split(": ")[-1]
         ann_dict['symptom_or_surgery'] = [l for l in header_data if l.startswith('#Sx')][0].split(": ")[-1]
+
         df_leads = pd.read_csv(io.StringIO('\n'.join(header_data[1:13])), delim_whitespace=True, header=None)
         df_leads.columns = ['filename', 'res+offset', 'resolution(mV)', 'ADC', 'baseline', 'first_value', 'checksum', 'redundant', 'lead_name']
         df_leads['resolution(bits)'] = df_leads['res+offset'].apply(lambda s: s.split('+')[0])
