@@ -2,6 +2,7 @@
 """
 """
 import os
+import time
 import wfdb
 import numpy as np
 import pandas as pd
@@ -31,7 +32,8 @@ class INCARTDB(PhysioNetDataBase):
     1. consists of 75 annotated recordings extracted from 32 Holter records, each of 12 leads and of length 30 minutes.
     2. sampling frequency is 257 Hz
     3. ADC gain ranges from 250 to 1100
-    4. diagnosis distribution:
+    4. annotations are beat-wise, totaling a number of 175,000 beats
+    5. diagnosis distribution:
         Diagnosis	                                    # Patients
         Acute MI	                                    2
         Transient ischemic attack (angina pectoris)	    5
@@ -80,6 +82,15 @@ class INCARTDB(PhysioNetDataBase):
                 self.all_records = []
         self.freq = 257
         self.spacing = 1000/self.freq
+
+        self.rec_ext = '.dat'
+        self.ann_ext = '.atr'
+        self.aux_ext = '.hea'
+
+        # this file links record names with patient's `subject_id`
+        self.patients_file = os.path.join(self.db_dir, 'files-patients-diagnoses.txt')
+        # this file decribes each record's diagnosis
+        self.record_description_file = os.path.join(self.db_dir, 'files-patients-diagnoses.txt')
         
 
     def get_subject_id(self, rec) -> int:
@@ -96,12 +107,34 @@ class INCARTDB(PhysioNetDataBase):
         print(self.__doc__)
 
 
-    def load_data(self) -> np.ndarray:
-        """
+    def load_data(self, rec:str, data_format='channels_last') -> np.ndarray:
+        """ finished, checked,
+
+        Parameters:
+        -----------
+        rec: str,
+            name of the record
+        data_format: str, default 'channels_last',
+            format of the ecg data, 'channels_last' or 'channels_first' (original)
+        
+        Returns:
+        --------
+        data: ndarray,
+            the ecg data
         """
         raise NotImplementedError
 
-    def load_ann(self) -> np.ndarray:
-        """
+    def load_ann(self, rec:str) -> dict:
+        """ finished, checked,
+        
+        Parameters:
+        -----------
+        rec: str,
+            name of the record
+        
+        Returns:
+        --------
+        ann_dict, dict,
+            the annotations with items: ref. self.ann_items
         """
         raise NotImplementedError
