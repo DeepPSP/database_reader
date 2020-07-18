@@ -64,13 +64,12 @@ class SLPDB(PhysioNetDataBase):
         """
         super().__init__(db_name='slpdb', db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
         self.freq = 250  # for ecg
-        try:
-            self.all_records = wfdb.get_record_list('slpdb')
-        except:
-            try:
-                self.all_records = get_record_list_recursive(self.db_dir, "dat")
-            except:
-                self.all_records = ['slp01a', 'slp01b', 'slp02a', 'slp02b', 'slp03', 'slp04', 'slp14', 'slp16', 'slp32', 'slp37', 'slp41', 'slp45', 'slp48', 'slp59', 'slp60', 'slp61', 'slp66', 'slp67x']
+        self.data_ext = "dat"
+        self.ann_ext = "st"
+        self.beat_ann_ext = "ecg"
+        
+        self._ls_rec()
+
         self.epoch_len_t = 30  # 30 seconds
         self.epoch_len = self.epoch_len_t * self.freq
         self.all_ann_states = ['1', '2', '3', '4', 'M', 'MT', 'R', 'W']
@@ -118,6 +117,18 @@ class SLPDB(PhysioNetDataBase):
         4   --- N3
         5   --- N4
         """
+
+
+    def _ls_rec(self) -> NoReturn:
+        """ finished, checked,
+
+        find all records (relative path without file extension),
+        and save into `self.all_records` for further use
+        """
+        try:
+            super()._ls_rec()
+        except:
+            self.all_records = ['slp01a', 'slp01b', 'slp02a', 'slp02b', 'slp03', 'slp04', 'slp14', 'slp16', 'slp32', 'slp37', 'slp41', 'slp45', 'slp48', 'slp59', 'slp60', 'slp61', 'slp66', 'slp67x']
 
     
     def get_subject_id(self, rec) -> int:

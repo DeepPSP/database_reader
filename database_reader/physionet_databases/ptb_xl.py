@@ -79,11 +79,11 @@ class PTB_XL(PhysioNetDataBase):
         verbose: int, default 2,
         """
         super().__init__(db_name='ptb-xl', db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
+        self.data_ext = "dat"
+        self.ann_ext = "atr"
         # wfdb.get_record_list currently not available for this new dataset
-        try:
-            self.all_records = get_record_list_recursive(self.db_dir, "dat")
-        except:
-            self.all_records = []
+        self._ls_rec()
+        
         self.freq = kwargs.get("freq", 500)
         assert int(self.freq) in [100, 500]
         self.spacing = 1000/self.freq

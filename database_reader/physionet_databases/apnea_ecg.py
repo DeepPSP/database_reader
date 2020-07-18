@@ -2,12 +2,14 @@
 """
 """
 import os
-import wfdb
-import numpy as np
-import pandas as pd
+import json
 from datetime import datetime
 from typing import Union, Optional, Any, List, Tuple, NoReturn
 from numbers import Real
+
+import numpy as np
+import pandas as pd
+import wfdb
 
 from database_reader.utils.common import (
     ArrayLike,
@@ -70,13 +72,12 @@ class ApneaECG(PhysioNetDataBase):
         """
         super().__init__(db_name='apnea-ecg', db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
         self.freq = 100
-        try:
-            self.all_records = wfdb.get_record_list('apnea-ecg')
-        except:
-            try:
-                self.all_records = get_record_list_recursive(self.db_dir, "dat")
-            except:
-                self.all_records = ['a01', 'a01er', 'a01r', 'a02', 'a02er', 'a02r', 'a03', 'a03er', 'a03r', 'a04', 'a04er', 'a04r', 'a05', 'a06', 'a07', 'a08', 'a09', 'a10', 'a11', 'a12', 'a13', 'a14', 'a15', 'a16', 'a17', 'a18', 'a19', 'a20', 'b01', 'b01er', 'b01r', 'b02', 'b03', 'b04', 'b05', 'c01', 'c01er', 'c01r', 'c02', 'c02er', 'c02r', 'c03', 'c03er', 'c03r', 'c04', 'c05', 'c06', 'c07', 'c08', 'c09', 'c10', 'x01', 'x02', 'x03', 'x04', 'x05', 'x06', 'x07', 'x08', 'x09', 'x10', 'x11', 'x12', 'x13', 'x14', 'x15', 'x16', 'x17', 'x18', 'x19', 'x20', 'x21', 'x22', 'x23', 'x24', 'x25', 'x26', 'x27', 'x28', 'x29', 'x30', 'x31', 'x32', 'x33', 'x34', 'x35']
+        self.data_ext = "dat"
+        self.ann_ext = "apn"
+        self.qrs_ann_ext = "qrs"
+
+        self._ls_rec()
+        
         self.ecg_records = [r for r in self.all_records if 'r' not in r]
         self.rsp_records = [r for r in self.all_records if 'r' in r and 'er' not in r]
         self.rsp_channels = ['Resp C', 'Resp A', 'Resp N', 'SpO2']
@@ -90,6 +91,18 @@ class ApneaECG(PhysioNetDataBase):
         self.palette = {
             'Obstructive Apnea': 'yellow',
         }
+
+
+    def _ls_rec(self) -> NoReturn:
+        """ finished, checked,
+
+        find all records (relative path without file extension),
+        and save into `self.all_records` for further use
+        """
+        try:
+            super()._ls_rec()
+        except:
+            self.all_records = ['a01', 'a01er', 'a01r', 'a02', 'a02er', 'a02r', 'a03', 'a03er', 'a03r', 'a04', 'a04er', 'a04r', 'a05', 'a06', 'a07', 'a08', 'a09', 'a10', 'a11', 'a12', 'a13', 'a14', 'a15', 'a16', 'a17', 'a18', 'a19', 'a20', 'b01', 'b01er', 'b01r', 'b02', 'b03', 'b04', 'b05', 'c01', 'c01er', 'c01r', 'c02', 'c02er', 'c02r', 'c03', 'c03er', 'c03r', 'c04', 'c05', 'c06', 'c07', 'c08', 'c09', 'c10', 'x01', 'x02', 'x03', 'x04', 'x05', 'x06', 'x07', 'x08', 'x09', 'x10', 'x11', 'x12', 'x13', 'x14', 'x15', 'x16', 'x17', 'x18', 'x19', 'x20', 'x21', 'x22', 'x23', 'x24', 'x25', 'x26', 'x27', 'x28', 'x29', 'x30', 'x31', 'x32', 'x33', 'x34', 'x35']
 
 
     def get_subject_id(self, rec:str) -> int:

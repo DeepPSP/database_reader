@@ -13,13 +13,15 @@ Remarks:
 import os
 import sys
 import pprint
-import wfdb
 import logging
+import time
+from typing import Union, Optional, Any, List, NoReturn
+from numbers import Real
+
+import wfdb
 import numpy as np
 import pandas as pd
 from pyedflib import EdfReader
-from typing import Union, Optional, Any, List, NoReturn
-from numbers import Real
 
 from .utils.common import *
 
@@ -56,9 +58,17 @@ class _DataBase(object):
         self.db_dir = db_dir
         self.working_dir = working_dir or os.getcwd()
         os.makedirs(self.working_dir, exist_ok=True)
+        self.data_ext = None
+        self.ann_ext = None
+        self.header_ext = "hea"
         self.verbose = verbose
         self.logger = None
         self._set_logger(prefix=type(self).__name__)
+
+    def _ls_rec(self) -> NoReturn:
+        """
+        """
+        raise NotImplementedError
 
     def _set_logger(self, prefix:Optional[str]=None):
         """
@@ -297,6 +307,34 @@ class PhysioNetDataBase(_DataBase):
                 "db_description": [item[1] for item in all_dbs]
             }
         )
+
+    
+    def _ls_rec(self, db_name:Optional[str]=None) -> NoReturn:
+        """ finished, checked,
+
+        find all records (relative path without file extension),
+        and save into `self.all_records` for further use
+
+        Parameters:
+        -----------
+        db_name: str, optional,
+            name of the database for using `wfdb.get_record_list`,
+            if not set, `self.db_name` will be used
+        """
+        try:
+            self.all_records = wfdb.get_record_list(db_name or self.db_name)
+        except:
+            record_list_fp = os.path.join(self.db_dir, "record_list.json")
+            if os.path.isfile(record_list_fp):
+                with open(record_list_fp, "r") as f:
+                    self.all_records = json.load(f)
+            else:
+                print("Please wait patiently to let the reader find all records of all the tranches...")
+                start = time.time()
+                self.all_records = get_record_list_recursive(self.db_dir, self.data_ext)
+                print(f"Done in {time.time() - start} seconds!")
+                with open(record_list_fp, "w") as f:
+                    json.dump(self.all_records, f)
 
 
     def get_subject_id(self, rec:str) -> int:

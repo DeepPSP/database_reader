@@ -63,20 +63,10 @@ class LTSTDB(PhysioNetDataBase):
         """
         super().__init__(db_name='ltstdb', db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
         self.freq = 250
-        try:
-            self.all_records = wfdb.get_record_list('ltstdb')
-        except:
-            try:
-                self.all_records = get_record_list_recursive(self.db_dir, "dat")
-            except:
-                self.all_records = ['s20011', 's20021', 's20031', 's20041', 's20051', 's20061', 's20071', 's20081', 's20091', 's20101', 's20111', 's20121', 's20131', 's20141', 's20151', 's20161', 's20171', 's20181', 's20191', 's20201', 's20211', 's20221', 's20231', 's20241', 's20251', 's20261', 's20271', 's20272', 's20273', 's20274', 's20281', 's20291', 's20301', 's20311', 's20321', 's20331', 's20341', 's20351', 's20361', 's20371', 's20381', 's20391', 's20401', 's20411', 's20421', 's20431', 's20441', 's20451', 's20461', 's20471', 's20481', 's20491', 's20501', 's20511', 's20521', 's20531', 's20541', 's20551', 's20561', 's20571', 's20581', 's20591', 's20601', 's20611', 's20621', 's20631', 's20641', 's20651', 's30661', 's30671', 's30681', 's30691', 's30701', 's30711', 's30721', 's30731', 's30732', 's30741', 's30742', 's30751', 's30752', 's30761', 's30771', 's30781', 's30791', 's30801']
-        """
-        the first digit in the record name (2 or 3) indicates the number of ECG signals
         
-        records obtained from the same subject have names that differ in the last digit only
-        """
+        self.data_ext = "dat"
+        self.ann_ext = "atr"
         self.all_anno_extensions = ['ari', 'atr', '16a', 'sta', 'stb', 'stc']
-        
         """
         1. ari (automatically-generated beat annotations)
         2. atr (manually corrected beat annotations)
@@ -85,6 +75,9 @@ class LTSTDB(PhysioNetDataBase):
         5. stb (ST-segment episode annotations, Vmin = 100 µV, Tmin = 30 s)
         6. stc (ST-segment episode annotations, Vmin = 100 µV, Tmin = 60 s)
         """
+
+        self._ls_rec()
+        
         self.all_leads = ['ML2', 'A-I', 'ECG', 'II', 'MV2', 'V3', 'V6', 'aVF', 'E-S', 'A-S', 'V4', 'MLIII', 'V2', 'V5']
         self.episode_protocols = ['a', 'b', 'c']
         self.all_urd_intervals = [
@@ -273,6 +266,20 @@ class LTSTDB(PhysioNetDataBase):
         self.global_ref_with_lead_conditions = lambda note, lead_number: 'GRST'+str(lead_number) in note
         self.local_ref_with_lead_conditions = lambda note, lead_number: 'LRST'+str(lead_number) in note
         self.urd_eps_with_lead_conditions = lambda note, lead_number: 'urd'+str(lead_number) in note
+
+
+    def _ls_rec(self) -> NoReturn:
+        """ finished, checked,
+
+        find all records (relative path without file extension),
+        and save into `self.all_records` for further use
+        """
+        try:
+            super()._ls_rec()
+        except:
+            # the first digit in the record name (2 or 3) indicates the number of ECG signals
+            # records obtained from the same subject have names that differ in the last digit only
+            self.all_records = ['s20011', 's20021', 's20031', 's20041', 's20051', 's20061', 's20071', 's20081', 's20091', 's20101', 's20111', 's20121', 's20131', 's20141', 's20151', 's20161', 's20171', 's20181', 's20191', 's20201', 's20211', 's20221', 's20231', 's20241', 's20251', 's20261', 's20271', 's20272', 's20273', 's20274', 's20281', 's20291', 's20301', 's20311', 's20321', 's20331', 's20341', 's20351', 's20361', 's20371', 's20381', 's20391', 's20401', 's20411', 's20421', 's20431', 's20441', 's20451', 's20461', 's20471', 's20481', 's20491', 's20501', 's20511', 's20521', 's20531', 's20541', 's20551', 's20561', 's20571', 's20581', 's20591', 's20601', 's20611', 's20621', 's20631', 's20641', 's20651', 's30661', 's30671', 's30681', 's30691', 's30701', 's30711', 's30721', 's30731', 's30732', 's30741', 's30742', 's30751', 's30752', 's30761', 's30771', 's30781', 's30791', 's30801']
 
 
     def get_subject_id(self, rec) -> int:

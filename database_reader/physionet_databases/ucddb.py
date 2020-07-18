@@ -66,7 +66,7 @@ class UCDDB(PhysioNetDataBase):
 
     NOTE:
     -----
-    1. this dataset is not in the standard wfdb format, but rather in EDF format
+    1. this dataset is NOT in the standard wfdb format, but rather in EDF format
     2. in record ucddb002, only two distinct ECG signals were recorded; the second ECG signal was also used as the third signal.
 
     ISSUES:
@@ -93,8 +93,16 @@ class UCDDB(PhysioNetDataBase):
         verbose: int, default 2,
         """
         super().__init__(db_name='ucddb', db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
+        self.data_ext = "rec"
+        self.extra_data_ext = "_lifecard.edf"
+        self.ann_ext = None
+        self.stage_ann_ext = "_stage.txt"
+        self.event_ann_ext = "_stage.txt"
+        
+        self._ls_rec()
+        
         self.freq = None
-        self.file_opened = None    
+        self.file_opened = None
 
 
     def safe_edf_file_operation(self, operation:str='close', full_file_path:Optional[str]=None) -> Union[EdfReader, NoReturn]:

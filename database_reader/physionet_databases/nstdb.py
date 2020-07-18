@@ -56,13 +56,11 @@ class NSTDB(PhysioNetDataBase):
         verbose: int, default 2,
         """
         super().__init__(db_name='nstdb', db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
-        try:
-            self.all_records = wfdb.get_record_list('nstdb')
-        except:
-            try:
-                self.all_records = get_record_list_recursive(self.db_dir, "dat")
-            except:
-                self.all_records = []
+        self.freq = None
+        self.data_ext = "dat"
+        self.ann_ext = "atr"
+
+        self._ls_rec()
         
 
     def get_subject_id(self, rec) -> int:
