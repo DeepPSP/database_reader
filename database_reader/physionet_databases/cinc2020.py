@@ -127,7 +127,14 @@ class CINC2020(PhysioNetDataBase):
         >>>     for fn in af:
         >>>         pfs[k].add("".join(re.findall(r"[A-Z]", os.path.splitext(fn)[0])))
         """
-
+        self.tranche_names = ED({
+            "A": "CPSC",
+            "B": "CPSC-Extra",
+            "C": "StPetersburg",
+            "D": "PTB",
+            "E": "PTB-XL",
+            "F": "Georgia",
+        })
         self.freq = {
             "A": 500, "B": 500, "C": 257, "D": 1000, "E": 500, "F": 500,
         }
@@ -260,13 +267,25 @@ class CINC2020(PhysioNetDataBase):
         ann_dict['diagnosis']['diagnosis_code'] = [l for l in header_data if l.startswith('#Dx')][0].split(": ")[-1].split(",")
         try:
             ann_dict['diagnosis']['diagnosis_code'] = [int(item) for item in ann_dict['diagnosis']['diagnosis_code']]
-            selection = dx_mapping_all['SNOMED CT Code'].isin(ann_dict['diagnosis']['diagnosis_code'])
-            ann_dict['diagnosis']['diagnosis_abbr'] = dx_mapping_all[selection]['Abbreviation'].tolist()
-            ann_dict['diagnosis']['diagnosis_fullname'] = dx_mapping_all[selection]['Dx'].tolist()
+            # selection = dx_mapping_all['SNOMED CT Code'].isin(ann_dict['diagnosis']['diagnosis_code'])
+            # ann_dict['diagnosis']['diagnosis_abbr'] = dx_mapping_all[selection]['Abbreviation'].tolist()
+            # ann_dict['diagnosis']['diagnosis_fullname'] = dx_mapping_all[selection]['Dx'].tolist()
+            ann_dict['diagnosis']['diagnosis_abbr'] = \
+                [ dx_mapping_all[dx_mapping_all['SNOMED CT Code']==dc]['Abbreviation'].values[0] \
+                    for dc in ann_dict['diagnosis']['diagnosis_code'] ]
+            ann_dict['diagnosis']['diagnosis_fullname'] = \
+                [ dx_mapping_all[dx_mapping_all['SNOMED CT Code']==dc]['Dx'].values[0] \
+                    for dc in ann_dict['diagnosis']['diagnosis_code'] ]
             scored_indices = np.isin(ann_dict['diagnosis']['diagnosis_code'], dx_mapping_scored['SNOMED CT Code'].values)
-            ann_dict['diagnosis_scored']['diagnosis_code'] = [item for idx, item in enumerate(ann_dict['diagnosis']['diagnosis_code']) if scored_indices[idx]]
-            ann_dict['diagnosis_scored']['diagnosis_abbr'] = [item for idx, item in enumerate(ann_dict['diagnosis']['diagnosis_abbr']) if scored_indices[idx]]
-            ann_dict['diagnosis_scored']['diagnosis_fullname'] = [item for idx, item in enumerate(ann_dict['diagnosis']['diagnosis_fullname']) if scored_indices[idx]]
+            ann_dict['diagnosis_scored']['diagnosis_code'] = \
+                [ item for idx, item in enumerate(ann_dict['diagnosis']['diagnosis_code']) \
+                    if scored_indices[idx] ]
+            ann_dict['diagnosis_scored']['diagnosis_abbr'] = \
+                [ item for idx, item in enumerate(ann_dict['diagnosis']['diagnosis_abbr']) \
+                    if scored_indices[idx] ]
+            ann_dict['diagnosis_scored']['diagnosis_fullname'] = \
+                [ item for idx, item in enumerate(ann_dict['diagnosis']['diagnosis_fullname']) \
+                    if scored_indices[idx] ]
         except:  # the old version, the Dx's are abbreviations
             ann_dict['diagnosis']['diagnosis_abbr'] = ann_dict['diagnosis']['diagnosis_code']
             selection = dx_mapping_all['Abbreviation'].isin(ann_dict['diagnosis']['diagnosis_abbr'])
@@ -408,20 +427,22 @@ class CINC2020(PhysioNetDataBase):
         # lead_list = self.load_ann(rec)['df_leads']['lead_name'].tolist()
         # lead_indices = [lead_list.index(l) for l in leads]
         lead_indices = [self.all_leads.index(l) for l in leads]
-        data = self.load_data(rec)[lead_indices]
+        data = self.load_data(rec, data_format='channels_first')[lead_indices]
         y_ranges = np.max(np.abs(data), axis=1) + 100
 
         diag = self.get_labels(rec, scored_only=True, abbr=True)
 
         nb_leads = len(leads)
 
-        t = np.arange(data.shape[1]) / self.freq
-        duration = len(t) / self.freq
+        t = np.arange(data.shape[1]) / self.freq[tranche]
+        duration = len(t) / self.freq[tranche]
         fig_sz_w = int(round(4.8 * duration))
         fig_sz_h = 6 * y_ranges / 1500
+        nl = "\n"
         fig, axes = plt.subplots(nb_leads, 1, sharex=True, figsize=(fig_sz_w, np.sum(fig_sz_h)))
         for idx in range(nb_leads):
-            axes[idx].plot(t, data[idx], label='lead - ' + leads[idx] + '\n' + 'labels - ' + ",".join(diag))
+            # axes[idx].plot(t, data[idx], label='lead - ' + leads[idx] + '\n' + 'labels - ' + ",".join(diag))
+            axes[idx].plot(t, data[idx], label=f'lead - {leads[idx]}{nl}labels - {",".join(diag)}')
             axes[idx].axhline(y=0, linestyle='-', linewidth='1.0', color='red')
             axes[idx].xaxis.set_major_locator(plt.MultipleLocator(0.2))
             axes[idx].xaxis.set_minor_locator(plt.MultipleLocator(0.04))
@@ -429,7 +450,11 @@ class CINC2020(PhysioNetDataBase):
             axes[idx].yaxis.set_minor_locator(plt.MultipleLocator(100))
             axes[idx].grid(which='major', linestyle='-', linewidth='0.5', color='red')
             axes[idx].grid(which='minor', linestyle=':', linewidth='0.5', color='black')
-            axes[idx].legend(loc='best')
+            # add extra info. to legend
+            # https://stackoverflow.com/questions/16826711/is-it-possible-to-add-a-string-as-a-legend-item-in-matplotlib
+            axes[idx].plot([], [], ' ', label=f"tranche - {self.tranche_names[tranche]}")
+            axes[idx].plot([], [], ' ', label=f"freq - {self.freq[tranche]}")
+            axes[idx].legend(loc='upper left')
             axes[idx].set_xlim(t[0], t[-1])
             axes[idx].set_ylim(-y_ranges[idx], y_ranges[idx])
             axes[idx].set_xlabel('Time [s]')
