@@ -68,6 +68,23 @@ class CINC2020(PhysioNetDataBase):
         - RBBB, CRBBB (NOT including IRBBB)
         - PAC, SVPB
         - PVC, VPB
+    7. for getting the co-occurences of different arrhythmias, one can use the following code
+        >>> db_dir = "/media/cfs/wenhao71/data/cinc2020_data/"
+        >>> working_dir = "./working_dir"
+        >>> data_gen = CINC2020(db_dir=db_dir,working_dir=working_dir)
+        >>> dx_cooccurence_all = pd.DataFrame(np.zeros((len(dx_mapping_all.Abbreviation), len(dx_mapping_all.Abbreviation)),dtype=int), columns=dx_mapping_all.Abbreviation.values)
+        >>> dx_cooccurence_all.index = dx_mapping_all.Abbreviation.values
+        >>> for tranche, l_rec in data_gen.all_records.items():
+        ...     for rec in l_rec:
+        ...         ann = data_gen.load_ann(rec)
+        ...         d = ann['diagnosis']['diagnosis_abbr']
+        ...         for item in d:
+        ...             mat_cooccurance.loc[item,item] += 1
+        ...         for i in range(len(d)-1):
+        ...             for j in range(i+1,len(d)):
+        ...                 mat_cooccurance.loc[d[i],d[j]] += 1
+        ...                 mat_cooccurance.loc[d[j],d[i]] += 1
+        the diagonal entries are total occurence of corresponding arrhythmias in the dataset
 
     ISSUES:
     -------
