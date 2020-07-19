@@ -70,7 +70,7 @@ class _DataBase(object):
         """
         raise NotImplementedError
 
-    def _set_logger(self, prefix:Optional[str]=None):
+    def _set_logger(self, prefix:Optional[str]=None) -> NoReturn:
         """
 
         Parameters:
@@ -360,7 +360,7 @@ class PhysioNetDataBase(_DataBase):
         return self.get_subject_id(rec=rec)
 
 
-    def load_data(self, rec:str, **kwargs):
+    def load_data(self, rec:str, **kwargs) -> Any:
         """
         load data from the record `rec`
         """
@@ -374,7 +374,7 @@ class PhysioNetDataBase(_DataBase):
         raise NotImplementedError
 
 
-    def load_ann(self, rec:str, **kwargs):
+    def load_ann(self, rec:str, **kwargs) -> Any:
         """
         load annotations of the record `rec`
 
