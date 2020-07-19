@@ -17,7 +17,7 @@ from database_reader.utils.common import (
     ArrayLike,
     get_record_list_recursive,
 )
-from database_reader.utils.utils_misc import ecg_arrhythmia_knowledge
+from database_reader.utils.utils_misc import ecg_arrhythmia_knowledge as EAK
 from database_reader.utils.utils_misc.cinc2020_aux_data import (
     dx_mapping_all,
     dx_mapping_scored, dx_mapping_unscored,
@@ -85,6 +85,7 @@ class CINC2020(PhysioNetDataBase):
         ...                 mat_cooccurance.loc[d[i],d[j]] += 1
         ...                 mat_cooccurance.loc[d[j],d[i]] += 1
         the diagonal entries are total occurence of corresponding arrhythmias in the dataset
+    8. unfortunately, the newly added tranches (C - F) have baseline drift and are much noisier. In contrast, CPSC data have had baseline removed and have higher SNR
 
     ISSUES:
     -------
@@ -504,6 +505,6 @@ class CINC2020(PhysioNetDataBase):
         assert len(unsupported) == 0, \
             f"{unsupported} {'is' if len(unsupported)==1 else 'are'} not supported!"
         for idx, item in enumerate(d):
-            print(dict_to_str(eval(f"ecg_arrhythmia_knowledge.{item}")))
+            print(dict_to_str(eval(f"EAK.{item}")))
             if idx < len(d)-1:
                 print("*"*110)
