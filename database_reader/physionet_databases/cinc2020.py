@@ -501,7 +501,7 @@ class CINC2020(PhysioNetDataBase):
         else:
             d = arrhythmias
         # unsupported = [item for item in d if item not in dx_mapping_all['Abbreviation']]
-        unsupported = [item for item in d if item not in dx_mapping_scored['Abbreviation']]
+        unsupported = [item for item in d if item not in dx_mapping_scored['Abbreviation'].values]
         assert len(unsupported) == 0, \
             f"{unsupported} {'is' if len(unsupported)==1 else 'are'} not supported!"
         for idx, item in enumerate(d):
