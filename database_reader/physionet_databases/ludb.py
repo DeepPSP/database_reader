@@ -167,7 +167,7 @@ class LUDB(PhysioNetDataBase):
         self._ls_rec()
     
 
-    def get_subject_id(self, rec) -> int:
+    def get_subject_id(self, rec:str) -> int:
         """
 
         """
