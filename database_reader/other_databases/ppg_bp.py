@@ -93,7 +93,7 @@ class PPGBP(OtherDataBase):
         self.ann_file = self.db_dir + 'PPG-BP dataset.xlsx'
 
 
-    def get_patient_id(self, rec_no:int) -> int:
+    def get_subject_id(self, rec_no:int) -> int:
         """ not finished,
 
         Parameters:
@@ -102,7 +102,7 @@ class PPGBP(OtherDataBase):
             number of the record, or 'subject_ID'
 
         Returns:
-        int, the `patient_id` corr. to `rec_no`
+        int, the `subject_id` corr. to `rec_no`
         """
         return int(self.all_records[rec_no])
     

@@ -65,7 +65,7 @@ class CPSC2019(OtherDataBase):
         self.all_records = []
 
 
-    def get_patient_id(self, rec_no:int) -> int:
+    def get_subject_id(self, rec_no:int) -> int:
         """ not finished,
 
         Parameters:
@@ -76,7 +76,7 @@ class CPSC2019(OtherDataBase):
         Returns:
         --------
         pid: int,
-            the `patient_id` corr. to `rec_no`
+            the `subject_id` corr. to `rec_no`
         """
         pid = 0
         raise NotImplementedError

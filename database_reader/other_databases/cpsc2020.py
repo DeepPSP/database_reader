@@ -111,7 +111,7 @@ class CPSC2020(OtherDataBase):
         self.palette = {"spb": "black", "pvc": "red",}
 
 
-    def get_patient_id(self, rec:Union[int,str]) -> int:
+    def get_subject_id(self, rec:Union[int,str]) -> int:
         """ not finished,
 
         Parameters:
@@ -123,7 +123,7 @@ class CPSC2020(OtherDataBase):
         Returns:
         --------
         pid: int,
-            the `patient_id` corr. to `rec_no`
+            the `subject_id` corr. to `rec_no`
         """
         pid = 0
         raise NotImplementedError

@@ -126,7 +126,7 @@ class CPSC2018(OtherDataBase):
         ]
 
 
-    def get_patient_id(self, rec_no:Union[int,str]) -> int:
+    def get_subject_id(self, rec_no:Union[int,str]) -> int:
         """ not finished,
 
         Parameters:
@@ -137,7 +137,7 @@ class CPSC2018(OtherDataBase):
         Returns:
         --------
         pid: int,
-            the `patient_id` corr. to `rec_no`
+            the `subject_id` corr. to `rec_no`
         """
         if isinstance(rec_no, int):
             pass
@@ -184,8 +184,8 @@ class CPSC2018(OtherDataBase):
             the ecg data
         """
         if isinstance(rec_no, int):
-            assert rec_no in range(1, self.nb_records+1), "rec_no should be in range(1,{})".format(self.nb_records+1)
-            rec_no = "A{0:04d}".format(rec_no)
+            assert rec_no in range(1, self.nb_records+1), f"rec_no should be in range(1,{self.nb_records+1})"
+            rec_no = f"A{rec_no:04d}"
         rec_fp = os.path.join(self.db_dir, rec_no + self.rec_ext)
         data = loadmat(rec_fp)
         data = np.asarray(data['val'], dtype=np.float64)
