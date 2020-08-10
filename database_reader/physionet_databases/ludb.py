@@ -165,6 +165,16 @@ class LUDB(PhysioNetDataBase):
         self.all_leads = ['I', 'II', 'III', 'aVR', 'aVL', 'aVF', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6',]
         self.beat_ann_ext = [f"atr_{item.lower()}" for item in self.all_leads]
 
+        self._all_symbols = ['(', ')', 'N', 'p', 't']
+        """
+        this can be obtained using the following code:
+        >>> data_gen = LUDB(db_dir="/home/wenhao71/data/PhysioNet/ludb/1.0.0/")
+        >>> all_symbols = set()
+        >>> for rec in data_gen.all_records:
+        ...     for ext in data_gen.beat_ann_ext:
+        ...         ann = wfdb.rdann(os.path.join(data_gen.db_dir, rec), extension=ext)
+        ...         all_symbols.update(ann.symbol)
+        """
         self._symbol_to_wavename = ED(N='qrs', p='pwave', t='twave')
 
         self._ls_rec()
@@ -204,12 +214,43 @@ class LUDB(PhysioNetDataBase):
             ann = wfdb.rdann(os.path.join(self.db_dir, rec), extension=e)
             df_lead_ann = pd.DataFrame()
             symbols = np.array(ann.symbol)
-            df_lead_ann['onset'] = ann.sample[np.where(symbols=='(')[0]]
-            df_lead_ann['offset'] = ann.sample[np.where(symbols==')')[0]]
-            df_lead_ann['duration'] = df_lead_ann['offset'] - df_lead_ann['onset']
             peak_inds = np.where(np.isin(symbols, ['p', 'N', 't']))[0]
             df_lead_ann['peak'] = ann.sample[peak_inds]
+            df_lead_ann['onset'] = np.nan
+            df_lead_ann['offset'] = np.nan
+            for i, row in df_lead_ann.iterrows():
+                peak_idx = peak_inds[i]
+                if peak_idx == 0:
+                    df_lead_ann.loc[i, 'onset'] = row['peak']
+                    if symbols[peak_idx+1] == ')':
+                        df_lead_ann.loc[i, 'offset'] = ann.sample[peak_idx+1]
+                    else:
+                        df_lead_ann.loc[i, 'offset'] = row['peak']
+                elif peak_idx == len(symbols) - 1:
+                    df_lead_ann.loc[i, 'offset'] = row['peak']
+                    if symbols[peak_idx-1] == '(':
+                        df_lead_ann.loc[i, 'onset'] = ann.sample[peak_idx-1]
+                    else:
+                        df_lead_ann.loc[i, 'onset'] = row['peak']
+                else:
+                    if symbols[peak_idx-1] == '(':
+                        df_lead_ann.loc[i, 'onset'] = ann.sample[peak_idx-1]
+                    else:
+                        df_lead_ann.loc[i, 'onset'] = row['peak']
+                    if symbols[peak_idx+1] == ')':
+                        df_lead_ann.loc[i, 'offset'] = ann.sample[peak_idx+1]
+                    else:
+                        df_lead_ann.loc[i, 'offset'] = row['peak']
+            # df_lead_ann['onset'] = ann.sample[np.where(symbols=='(')[0]]
+            # df_lead_ann['offset'] = ann.sample[np.where(symbols==')')[0]]
+
+            df_lead_ann['duration'] = df_lead_ann['offset'] - df_lead_ann['onset']
+            
             df_lead_ann.index = symbols[peak_inds]
+
+            for c in ['peak', 'onset', 'offset', 'duration']:
+                df_lead_ann[c] = df_lead_ann[c].astype(int)
+            
             for _, row in df_lead_ann.iterrows():
                 w = ECGWaveForm(
                     name=self._symbol_to_wavename[row.name],
