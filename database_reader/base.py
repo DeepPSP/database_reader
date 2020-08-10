@@ -345,7 +345,7 @@ class PhysioNetDataBase(_DataBase):
             with open(record_list_fp, "r") as f:
                 self.all_records = json.load(f)
         else:
-            print("Please wait patiently to let the reader find all records of all the tranches...")
+            print("Please wait patiently to let the reader find all records of the database from local storage...")
             start = time.time()
             self.all_records = get_record_list_recursive(self.db_dir, self.data_ext)
             print(f"Done in {time.time() - start} seconds!")

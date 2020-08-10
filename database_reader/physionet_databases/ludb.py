@@ -196,7 +196,7 @@ class LUDB(PhysioNetDataBase):
         ann_dict = ED()
 
         # wave delineation annotations
-        _leads = leads or []
+        _leads = leads or self.all_leads
         _leads = [l for l in self.all_leads if l in _leads]  # keep in order
         _ann_ext = [f"atr_{item.lower()}" for item in _leads]
         ann_dict['waves'] = ED({l:[] for l in _leads})
