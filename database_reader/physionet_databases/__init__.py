@@ -4,6 +4,10 @@ facilities for easy reading of `official` databases from physionet
 
 data from `official` physionet databases can be loaded from its server at use,
 or downloaded using `wfdb` easily beforehand
+
+
+About the header (.hea) files:
+https://physionet.org/physiotools/wag/header-5.htm
 """
 
 from .apnea_ecg import *
