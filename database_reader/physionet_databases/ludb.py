@@ -161,6 +161,7 @@ class LUDB(PhysioNetDataBase):
         """
         super().__init__(db_name='ludb', db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
         self.freq = 500
+        self.spacing = 1000 / self.freq
         self.data_ext = "dat"
         self.all_leads = ['I', 'II', 'III', 'aVR', 'aVL', 'aVF', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6',]
         self.beat_ann_ext = [f"atr_{item.lower()}" for item in self.all_leads]
@@ -244,19 +245,19 @@ class LUDB(PhysioNetDataBase):
             # df_lead_ann['onset'] = ann.sample[np.where(symbols=='(')[0]]
             # df_lead_ann['offset'] = ann.sample[np.where(symbols==')')[0]]
 
-            df_lead_ann['duration'] = df_lead_ann['offset'] - df_lead_ann['onset']
+            df_lead_ann['duration'] = (df_lead_ann['offset'] - df_lead_ann['onset']) * self.spacing
             
             df_lead_ann.index = symbols[peak_inds]
 
-            for c in ['peak', 'onset', 'offset', 'duration']:
-                df_lead_ann[c] = df_lead_ann[c].astype(int)
+            for c in ['peak', 'onset', 'offset']:
+                df_lead_ann[c] = df_lead_ann[c].values.astype(int)
             
             for _, row in df_lead_ann.iterrows():
                 w = ECGWaveForm(
                     name=self._symbol_to_wavename[row.name],
-                    onset=row.onset,
-                    offset=row.offset,
-                    peak=row.peak,
+                    onset=int(row.onset),
+                    offset=int(row.offset),
+                    peak=int(row.peak),
                     duration=row.duration,
                 )
                 ann_dict['waves'][l].append(w)
