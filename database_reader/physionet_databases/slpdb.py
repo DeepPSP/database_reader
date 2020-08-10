@@ -119,14 +119,19 @@ class SLPDB(PhysioNetDataBase):
         """
 
 
-    def _ls_rec(self) -> NoReturn:
+    def _ls_rec(self, local:bool=True) -> NoReturn:
         """ finished, checked,
 
         find all records (relative path without file extension),
         and save into `self.all_records` for further use
+
+        Parameters:
+        -----------
+        local: bool, default True,
+            if True, read from local storage, prior to using `wfdb.get_record_list`
         """
         try:
-            super()._ls_rec()
+            super()._ls_rec(local=local)
         except:
             self.all_records = ['slp01a', 'slp01b', 'slp02a', 'slp02b', 'slp03', 'slp04', 'slp14', 'slp16', 'slp32', 'slp37', 'slp41', 'slp45', 'slp48', 'slp59', 'slp60', 'slp61', 'slp66', 'slp67x']
 

@@ -268,14 +268,19 @@ class LTSTDB(PhysioNetDataBase):
         self.urd_eps_with_lead_conditions = lambda note, lead_number: 'urd'+str(lead_number) in note
 
 
-    def _ls_rec(self) -> NoReturn:
+    def _ls_rec(self, local:bool=True) -> NoReturn:
         """ finished, checked,
 
         find all records (relative path without file extension),
         and save into `self.all_records` for further use
+
+        Parameters:
+        -----------
+        local: bool, default True,
+            if True, read from local storage, prior to using `wfdb.get_record_list`
         """
         try:
-            super()._ls_rec()
+            super()._ls_rec(local=local)
         except:
             # the first digit in the record name (2 or 3) indicates the number of ECG signals
             # records obtained from the same subject have names that differ in the last digit only

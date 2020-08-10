@@ -63,14 +63,19 @@ class BIDMC(PhysioNetDataBase):
         self._ls_rec()
 
 
-    def _ls_rec(self) -> NoReturn:
+    def _ls_rec(self, local:bool=True) -> NoReturn:
         """ finished, checked,
 
         find all records (relative path without file extension),
         and save into `self.all_records` for further use
+
+        Parameters:
+        -----------
+        local: bool, default True,
+            if True, read from local storage, prior to using `wfdb.get_record_list`
         """
         try:
-            super()._ls_rec()
+            super()._ls_rec(local=local)
         except:
             self.all_records = ['bidmc01', 'bidmc02', 'bidmc03', 'bidmc04', 'bidmc05', 'bidmc06', 'bidmc07', 'bidmc08', 'bidmc09', 'bidmc10', 'bidmc11', 'bidmc12', 'bidmc13', 'bidmc14', 'bidmc15', 'bidmc16', 'bidmc17', 'bidmc18', 'bidmc19', 'bidmc20', 'bidmc21', 'bidmc22', 'bidmc23', 'bidmc24', 'bidmc25', 'bidmc26', 'bidmc27', 'bidmc28', 'bidmc29', 'bidmc30', 'bidmc31', 'bidmc32', 'bidmc33', 'bidmc34', 'bidmc35', 'bidmc36', 'bidmc37', 'bidmc38', 'bidmc39', 'bidmc40', 'bidmc41', 'bidmc42', 'bidmc43', 'bidmc44', 'bidmc45', 'bidmc46', 'bidmc47', 'bidmc48', 'bidmc49', 'bidmc50', 'bidmc51', 'bidmc52', 'bidmc53']
 

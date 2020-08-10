@@ -4,7 +4,7 @@
 import os, io
 import re
 from datetime import datetime
-from typing import Union, Optional, Any, List, Dict, NoReturn
+from typing import Union, Optional, Any, List, Dict, Tuple, Sequence, NoReturn
 from numbers import Real
 
 import numpy as np

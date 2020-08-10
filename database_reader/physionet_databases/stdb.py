@@ -67,14 +67,19 @@ class STDB(PhysioNetDataBase):
         self.all_leads = ['ECG']
 
 
-    def _ls_rec(self) -> NoReturn:
+    def _ls_rec(self, local:bool=True) -> NoReturn:
         """ finished, checked,
 
         find all records (relative path without file extension),
         and save into `self.all_records` for further use
+
+        Parameters:
+        -----------
+        local: bool, default True,
+            if True, read from local storage, prior to using `wfdb.get_record_list`
         """
         try:
-            super()._ls_rec()
+            super()._ls_rec(local=local)
         except:
             self.all_records = ['300', '301', '302', '303', '304', '305', '306', '307', '308', '309', '310', '311', '312', '313', '314', '315', '316', '317', '318', '319', '320', '321', '322', '323', '324', '325', '326', '327']
 

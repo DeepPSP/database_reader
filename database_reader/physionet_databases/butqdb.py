@@ -65,7 +65,7 @@ class BUTQDB(PhysioNetDataBase):
         self._ls_rec()
 
 
-    def _ls_rec(self) -> NoReturn:
+    def _ls_rec(self, local:bool=True) -> NoReturn:
         """
         """
         raise NotImplementedError
