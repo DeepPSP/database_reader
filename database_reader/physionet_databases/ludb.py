@@ -4,18 +4,19 @@
 import os
 import json
 from datetime import datetime
-from typing import Union, Optional, Any, List, Tuple, NoReturn
+from typing import Union, Optional, Any, List, Tuple, Sequence, NoReturn
 from numbers import Real
 
 import numpy as np
 import pandas as pd
 import wfdb
+from easydict import EasyDict as ED
 
 from database_reader.utils.common import (
     ArrayLike,
     get_record_list_recursive,
 )
-from database_reader.base import PhysioNetDataBase
+from database_reader.base import PhysioNetDataBase, ECGWaveForm
 
 
 __all__ = [
@@ -164,6 +165,8 @@ class LUDB(PhysioNetDataBase):
         self.all_leads = ['I', 'II', 'III', 'aVR', 'aVL', 'aVF', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6',]
         self.beat_ann_ext = [f"atr_{item.lower()}" for item in self.all_leads]
 
+        self._symbol_to_wavename = ED(N='qrs', p='pwave', t='twave')
+
         self._ls_rec()
     
 
@@ -172,6 +175,55 @@ class LUDB(PhysioNetDataBase):
 
         """
         raise NotImplementedError
+
+
+    def load_data(self, rec:str) -> np.ndarray:
+        """
+
+        """
+        raise NotImplementedError
+
+
+    def load_ann(self, rec:str, leads:Optional[Sequence[str]]=None, metadata:bool=False) -> dict:
+        """
+
+        Parameters:
+        -----------
+
+        Returns:
+        --------
+        """
+        ann_dict = ED()
+
+        # wave delineation annotations
+        _leads = leads or []
+        _leads = [l for l in self.all_leads if l in _leads]  # keep in order
+        _ann_ext = [f"atr_{item.lower()}" for item in _leads]
+        ann_dict['waves'] = ED({l:[] for l in _leads})
+        for l, e in zip(_leads, _ann_ext):
+            ann = wfdb.rdann(os.path.join(self.db_dir, rec), extension=e)
+            df_lead_ann = pd.DataFrame()
+            symbols = np.array(ann.symbol)
+            df_lead_ann['onset'] = ann.sample[np.where(symbols=='(')[0]]
+            df_lead_ann['offset'] = ann.sample[np.where(symbols==')')[0]]
+            df_lead_ann['duration'] = df_lead_ann['offset'] - df_lead_ann['onset']
+            peak_inds = np.where(np.isin(symbols, ['p', 'N', 't']))[0]
+            df_lead_ann['peak'] = ann.sample[peak_inds]
+            df_lead_ann.index = symbols[peak_inds]
+            for _, row in df_lead_ann.iterrows():
+                w = ECGWaveForm(
+                    name=self._symbol_to_wavename[row.name],
+                    onset=row.onset,
+                    offset=row.offset,
+                    peak=row.peak,
+                    duration=row.duration,
+                )
+                ann_dict['waves'][l].append(w)
+
+        if metadata:
+            raise NotImplementedError
+        
+        return ann_dict
 
 
     def database_info(self) -> NoReturn:

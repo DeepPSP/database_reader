@@ -15,6 +15,7 @@ import sys
 import pprint
 import logging
 import time
+from collections import namedtuple
 from typing import Union, Optional, Any, List, NoReturn
 from numbers import Real
 
@@ -32,6 +33,7 @@ __all__ = [
     "ImageDataBase",
     "AudioDataBase",
     "OtherDataBase",
+    "ECGWaveForm",
 ]
 
 
@@ -860,3 +862,10 @@ class OtherDataBase(object):
         if 'methods' in _items:
             print("--- helpler - methods ---")
             pp.pprint(methods)
+
+
+
+ECGWaveForm = namedtuple(
+    typename='ECGWaveForm',
+    field_names=['name', 'onset', 'offset', 'peak', 'duration'],
+)
