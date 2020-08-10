@@ -300,7 +300,7 @@ class CINC2020(PhysioNetDataBase):
         return tranche
 
 
-    ef load_data(self, rec:str, leads:Optional[Union[str, List[str]]]=None, data_format='channel_first', backend:str='wfdb', units:str='mV') -> np.ndarray:
+    def load_data(self, rec:str, leads:Optional[Union[str, List[str]]]=None, data_format='channel_first', backend:str='wfdb', units:str='mV') -> np.ndarray:
         """ finished, checked,
 
         load physical (converted from digital) ecg data,
