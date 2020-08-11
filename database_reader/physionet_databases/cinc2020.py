@@ -3,6 +3,7 @@
 """
 import os, io
 import re
+from copy import deepcopy
 from datetime import datetime
 from typing import Union, Optional, Any, List, Dict, Tuple, Sequence, NoReturn
 from numbers import Real
