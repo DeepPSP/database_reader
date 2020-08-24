@@ -8,8 +8,9 @@ subpackages:
     nsrr_databases
     audio_databases
     image_databases
+    audio_databases
     other_databases
-    utils
+    utils (submodule)
 """
 import os, sys
 

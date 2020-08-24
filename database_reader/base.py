@@ -3,8 +3,9 @@
 Base classes for datasets from different sources:
     Physionet
     NSRR
-    Image datasets
-    Other
+    Image databases
+    Audio databases
+    Other databases
 
 Remarks:
 1. for whole-dataset visualizing: http://zzz.bwh.harvard.edu/luna/vignettes/dataplots/
