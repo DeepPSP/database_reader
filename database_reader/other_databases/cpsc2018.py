@@ -430,10 +430,10 @@ class CPSC2018(OtherDataBase):
         --------
         to write
         """
-        if isinstance(disease, str):
-            d = [disease]
+        if isinstance(diseases, str):
+            d = [diseases]
         else:
-            d = disease
+            d = diseases
         assert all([item in cls.diagnosis_abbr_to_full.keys() for item in d])
 
         # AF
