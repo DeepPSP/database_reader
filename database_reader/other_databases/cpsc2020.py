@@ -11,13 +11,13 @@ from easydict import EasyDict as ED
 from typing import Union, Optional, Any, List, Dict, NoReturn
 from numbers import Real
 
-from database_reader.utils.common import (
+from ..utils.common import (
     ArrayLike,
     get_record_list_recursive,
 )
-from database_reader.utils.utils_misc import PVC, SPB
-from database_reader.utils.utils_universal import get_optimal_covering
-from database_reader.base import OtherDataBase
+from ..utils.utils_misc import PVC, SPB
+from ..utils.utils_universal import get_optimal_covering
+from ..base import OtherDataBase
 
 
 __all__ = [

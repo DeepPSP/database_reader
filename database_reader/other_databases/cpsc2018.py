@@ -11,15 +11,15 @@ from datetime import datetime
 from typing import Union, Optional, Any, List, Dict, NoReturn
 from numbers import Real
 
-from database_reader.utils.common import (
+from ..utils.common import (
     ArrayLike,
     get_record_list_recursive,
 )
-from database_reader.utils.utils_misc import (
+from ..utils.utils_misc import (
     AF, I_AVB, LBBB, RBBB, PAC, PVC, STD, STE,
 )
-from database_reader.utils.utils_misc.cinc2020_aux_data import Dx_map
-from database_reader.base import OtherDataBase
+from ..utils.utils_misc.cinc2020_aux_data import Dx_map
+from ..base import OtherDataBase
 
 
 __all__ = [

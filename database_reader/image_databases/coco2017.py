@@ -10,7 +10,7 @@ from PIL import Image
 from typing import Optional
 from easydict import EasyDict as ED
 
-from database_reader.base import ImageDataBase
+from ..base import ImageDataBase
 
 
 __all__ = [

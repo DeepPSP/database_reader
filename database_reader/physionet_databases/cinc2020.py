@@ -14,18 +14,18 @@ import wfdb
 from scipy.io import loadmat
 from easydict import EasyDict as ED
 
-from database_reader.utils.common import (
+from ..utils.common import (
     ArrayLike,
     get_record_list_recursive,
     get_record_list_recursive3,
 )
-from database_reader.utils.utils_misc import ecg_arrhythmia_knowledge as EAK
-from database_reader.utils.utils_misc.cinc2020_aux_data import (
+from ..utils.utils_misc import ecg_arrhythmia_knowledge as EAK
+from ..utils.utils_misc.cinc2020_aux_data import (
     dx_mapping_all,
     dx_mapping_scored, dx_mapping_unscored,
 )
-from database_reader.utils.utils_universal.utils_str import dict_to_str
-from database_reader.base import PhysioNetDataBase
+from ..utils.utils_universal.utils_str import dict_to_str
+from ..base import PhysioNetDataBase
 
 
 __all__ = [

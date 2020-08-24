@@ -7,12 +7,12 @@ import pandas as pd
 from typing import Union, Optional, Any, List, NoReturn
 from numbers import Real
 
-from database_reader.utils.common import (
+from ..utils.common import (
     ArrayLike,
     get_record_list_recursive,
 )
-from database_reader.utils.utils_image import synthesis_img
-from database_reader.base import ImageDataBase
+from ..utils.utils_image import synthesis_img
+from ..base import ImageDataBase
 
 
 __all__ = [

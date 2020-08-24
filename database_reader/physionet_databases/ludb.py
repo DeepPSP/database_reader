@@ -12,11 +12,11 @@ import pandas as pd
 import wfdb
 from easydict import EasyDict as ED
 
-from database_reader.utils.common import (
+from ..utils.common import (
     ArrayLike,
     get_record_list_recursive,
 )
-from database_reader.base import PhysioNetDataBase, ECGWaveForm
+from ..base import PhysioNetDataBase, ECGWaveForm
 
 
 __all__ = [
