@@ -138,6 +138,7 @@ class LUDB(PhysioNetDataBase):
 
     ISSUES:
     -------
+    1. (version 1.0.0) ADC gain might be wrong, either `units` should be μV, or `adc_gain` should be 1000 times larger
 
     Usage:
     ------
@@ -164,7 +165,8 @@ class LUDB(PhysioNetDataBase):
         self.spacing = 1000 / self.freq
         self.data_ext = "dat"
         self.all_leads = ['I', 'II', 'III', 'aVR', 'aVL', 'aVF', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6',]
-        self.beat_ann_ext = [f"atr_{item.lower()}" for item in self.all_leads]
+        self.all_leads_lower = [l.lower() for l in self.all_leads]
+        self.beat_ann_ext = [f"atr_{item}" for item in self.all_leads_lower]
 
         self._all_symbols = ['(', ')', 'N', 'p', 't']
         """
@@ -188,31 +190,85 @@ class LUDB(PhysioNetDataBase):
         raise NotImplementedError
 
 
-    def load_data(self, rec:str) -> np.ndarray:
-        """
+    def load_data(self, rec:str, leads:Optional[Union[str, List[str]]]=None, data_format='channel_first', units:str='mV', freq:Optional[Real]=None) -> np.ndarray:
+        """ finished, checked,
 
+        load physical (converted from digital) ecg data,
+        which is more understandable for humans
+
+        Parameters:
+        -----------
+        rec: str,
+            name of the record
+        leads: str or list of str, optional,
+            the leads to load
+        data_format: str, default 'channel_first',
+            format of the ecg data,
+            'channel_last' (alias 'lead_last'), or
+            'channel_first' (alias 'lead_first', original)
+        units: str, default 'mV',
+            units of the output signal, can also be 'μV', with an alias of 'uV'
+        freq: real number, optional,
+            if not None, the loaded data will be resampled to this frequency
+        
+        Returns:
+        --------
+        data: ndarray,
+            the ecg data
         """
-        raise NotImplementedError
+        assert data_format.lower() in ['channel_first', 'lead_first', 'channel_last', 'lead_last']
+        if not leads:
+            _leads = self.all_leads_lower
+        elif isinstance(leads, str):
+            _leads = [leads.lower()]
+        else:
+            _leads = [l.lower() for l in leads]
+        
+        rec_fp = os.path.join(self.db_dir, rec)
+        wfdb_rec = wfdb.rdrecord(rec_fp, physical=True, channel_names=_leads)
+        # p_signal of 'lead_last' format
+        # ref. ISSUES 1.
+        data = np.asarray(wfdb_rec.p_signal.T / 1000, dtype=np.float64)
+
+        if units.lower() in ['uv', 'μv']:
+            data = data * 1000
+
+        if freq is not None and freq != self.freq:
+            data = resample_poly(data, freq, self.freq, axis=1)
+
+        if data_format.lower() in ['channel_last', 'lead_last']:
+            data = data.T
+
+        return data
 
 
     def load_ann(self, rec:str, leads:Optional[Sequence[str]]=None, metadata:bool=False) -> dict:
         """
 
+        loading the wave delineation, along with metadata if specified
+
         Parameters:
         -----------
+        rec: str,
+            name of the record
+        leads: str or list of str, optional,
+            the leads to load
+        metadata: bool, default False,
+            if True, load metadata from corresponding head file
 
         Returns:
         --------
+        ann_dict: dict,
         """
         ann_dict = ED()
+        rec_fp = os.path.join(self.db_dir, rec)
 
         # wave delineation annotations
-        _leads = leads or self.all_leads
-        _leads = [l for l in self.all_leads if l in _leads]  # keep in order
-        _ann_ext = [f"atr_{item.lower()}" for item in _leads]
+        _leads = leads or self.all_leads_lower
+        _ann_ext = [f"atr_{item}" for item in _leads]
         ann_dict['waves'] = ED({l:[] for l in _leads})
         for l, e in zip(_leads, _ann_ext):
-            ann = wfdb.rdann(os.path.join(self.db_dir, rec), extension=e)
+            ann = wfdb.rdann(rec_fp, extension=e)
             df_lead_ann = pd.DataFrame()
             symbols = np.array(ann.symbol)
             peak_inds = np.where(np.isin(symbols, ['p', 'N', 't']))[0]
@@ -263,9 +319,208 @@ class LUDB(PhysioNetDataBase):
                 ann_dict['waves'][l].append(w)
 
         if metadata:
-            raise NotImplementedError
+            header_dict = self._load_header(rec)
+            ann_dict.update(header_dict)
         
         return ann_dict
+
+
+    def load_diagnoses(self, rec:str) -> List[str]:
+        """ finished, checked,
+
+        load diagnoses of the `rec`
+
+        Parameters:
+        -----------
+        rec: str,
+            name of the record
+
+        Returns:
+        --------
+        diagnoses: list of str,
+        """
+        diagnoses = self._load_header(rec)['diagnoses']
+        return diagnoses
+
+
+    def _load_header(self, rec:str) -> dict:
+        """ finished, checked,
+
+        load header data into a dict
+
+        Parameters:
+        -----------
+        rec: str,
+            name of the record
+
+        Returns:
+        --------
+        header_dict: dict,
+        """
+        header_dict = ED({})
+        header_reader = wfdb.rdheader(rec_fp)
+        header_dict['units'] = header_reader.units
+        header_dict['baseline'] = header_reader.baseline
+        header_dict['adc_gain'] = header_reader.adc_gain
+        header_dict['record_fmt'] = header_reader.fmt
+        try:
+            header_dict['age'] = int([l for l in header_reader.comments if '<age>' in l][0].split(': ')[-1])
+        except:
+            header_dict['age'] = np.nan
+        try:
+            header_dict['sex'] = [l for l in header_reader.comments if '<sex>' in l][0].split(': ')[-1]
+        except:
+            header_dict['sex'] = ''
+        d_start = [idx for idx, l in header_reader.comments if '<diagnoses>' in l][0] + 1
+        header_dict['diagnoses'] = header_reader.comments[d_start:]
+        return header_dict
+
+
+    def plot(self, rec:str, data:Optional[np.ndarray]=None, ticks_granularity:int=0, leads:Optional[Union[str, List[str]]]=None, same_range:bool=False, waves:Optional[ECGWaveForm]=None, **kwargs) -> NoReturn:
+        """ finished, checked, to improve,
+
+        plot the signals of a record or external signals (units in μV),
+        with metadata (freq, labels, tranche, etc.),
+        possibly also along with wave delineations
+
+        Parameters:
+        -----------
+        rec: str,
+            name of the record
+        data: ndarray, optional,
+            12-lead ecg signal to plot,
+            if given, data of `rec` will not be used,
+            this is useful when plotting filtered data
+        ticks_granularity: int, default 0,
+            the granularity to plot axis ticks, the higher the more
+        leads: str or list of str, optional,
+            the leads to plot
+        same_range: bool, default False,
+            if True, forces all leads to have the same y range
+        waves: ECGWaveForm, optional,
+            the waves (p waves, t waves, qrs complexes)
+        kwargs: dict,
+
+        TODO:
+        -----
+        1. slice too long records, and plot separately for each segment
+        2. plot waves using `axvspan`
+
+        NOTE:
+        -----
+        `Locator` of `plt` has default `MAXTICKS` equal to 1000,
+        if not modifying this number, at most 40 seconds of signal could be plotted once
+
+        Contributors: Jeethan, and WEN Hao
+        """
+        if 'plt' not in dir():
+            import matplotlib.pyplot as plt
+            plt.MultipleLocator.MAXTICKS = 3000
+        if leads is None or leads == 'all':
+            _leads = self.all_leads_lower
+        elif isinstance(leads, str):
+            _leads = [leads.lower()]
+        else:
+            _leads = [l.lower() for l in leads]
+            _leads = [l for l in self.all_leads_lower if l in leads]  # keep in order
+
+        # lead_list = self.load_ann(rec)['df_leads']['lead_name'].tolist()
+        # lead_indices = [lead_list.index(l) for l in leads]
+        lead_indices = [self.all_leads_lower.index(l) for l in _leads]
+        if data is None:
+            _data = self.load_data(rec, data_format='channel_first', units='μV')[lead_indices]
+        else:
+            units = self._auto_infer_units(data)
+            print(f"input data is auto detected to have units in {units}")
+            if units.lower() == 'mv':
+                _data = 1000 * data
+            else:
+                _data = data
+        
+        if same_range:
+            y_ranges = np.ones((_data.shape[0],)) * np.max(np.abs(_data)) + 100
+        else:
+            y_ranges = np.max(np.abs(_data), axis=1) + 100
+
+        if not data and not waves:
+            waves = self.load_ann(rec, leads=_leads)['waves']
+
+        if waves:
+            p_waves, qrs, t_waves = [], [], []
+            for w in waves:
+                itv = [w.onset, w.offset]
+                if w.name == self._symbol_to_wavename['p']:
+                    p_waves.append(itv)
+                elif w.name == self._symbol_to_wavename['N']:
+                    qrs.append(itv)
+                elif w.name == self._symbol_to_wavename['t']:
+                    t_waves.append(itv)
+        palette = {'p_waves': 'green', 'qrs': 'red', 't_waves': 'pink',}
+        plot_alpha = 0.4
+
+        diagnoses = self.load_diagnoses(rec)
+
+        nb_leads = len(_leads)
+
+        seg_len = self.freq * 25  # 25 seconds
+        nb_segs = _data.shape[1] // seg_len
+
+        t = np.arange(_data.shape[1]) / self.freq
+        duration = len(t) / self.freq
+        fig_sz_w = int(round(4.8 * duration))
+        fig_sz_h = 6 * y_ranges / 1500
+        fig, axes = plt.subplots(nb_leads, 1, sharex=True, figsize=(fig_sz_w, np.sum(fig_sz_h)))
+        for idx in range(nb_leads):
+            axes[idx].plot(t, _data[idx], label=f'lead - {self.all_leads[lead_indices[idx]]}')
+            axes[idx].axhline(y=0, linestyle='-', linewidth='1.0', color='red')
+            # NOTE that `Locator` has default `MAXTICKS` equal to 1000
+            if ticks_granularity >= 1:
+                axes[idx].xaxis.set_major_locator(plt.MultipleLocator(0.2))
+                axes[idx].yaxis.set_major_locator(plt.MultipleLocator(500))
+                axes[idx].grid(which='major', linestyle='-', linewidth='0.5', color='red')
+            if ticks_granularity >= 2:
+                axes[idx].xaxis.set_minor_locator(plt.MultipleLocator(0.04))
+                axes[idx].yaxis.set_minor_locator(plt.MultipleLocator(100))
+                axes[idx].grid(which='minor', linestyle=':', linewidth='0.5', color='black')
+            # add extra info. to legend
+            # https://stackoverflow.com/questions/16826711/is-it-possible-to-add-a-string-as-a-legend-item-in-matplotlib
+            for d in diagnoses:
+                axes[idx].plot([], [], ' ', label=d)
+            for w in ['p_waves', 'qrs', 't_waves']:
+                for itv in eval(w):
+                    axes[idx].axvspan(itv[0], itv[1], color=palette[w], alpha=plot_alpha)
+            axes[idx].legend(loc='upper left')
+            axes[idx].set_xlim(t[0], t[-1])
+            axes[idx].set_ylim(-y_ranges[idx], y_ranges[idx])
+            axes[idx].set_xlabel('Time [s]')
+            axes[idx].set_ylabel('Voltage [μV]')
+        plt.subplots_adjust(hspace=0.2)
+        plt.show()
+
+
+    def _auto_infer_units(self, data:np.ndarray) -> str:
+        """ finished, checked
+
+        automatically infer the units of `data`,
+        under the assumption that `data` not raw data, with baseline removed
+
+        Parameters:
+        -----------
+        data: ndarray,
+            the data to infer its units
+
+        Returns:
+        --------
+        units: str,
+            units of `data`, 'μV' or 'mV'
+        """
+        _MAX_mV = 20  # 20mV, seldom an ECG device has range larger than this value
+        max_val = np.max(np.abs(data))
+        if max_val > _MAX_mV:
+            units = 'μV'
+        else:
+            units = 'mV'
+        return units
 
 
     def database_info(self) -> NoReturn:
