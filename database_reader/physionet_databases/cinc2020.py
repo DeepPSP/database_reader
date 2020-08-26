@@ -391,12 +391,20 @@ class CINC2020(PhysioNetDataBase):
         """
         assert data_format.lower() in ['channel_first', 'lead_first', 'channel_last', 'lead_last']
         tranche = self._get_tranche(rec)
+        if not leads:
+            _leads = self.all_leads
+        elif isinstance(leads, str):
+            _leads = [leads]
+        else:
+            _leads = leads
         # if tranche in "CD" and freq == 500:  # resample will be done at the end of the function
         #     data = self.load_resampled_data(rec)
         if backend.lower() == 'wfdb':
             rec_fp = os.path.join(self.db_dirs[tranche], rec)
             # p_signal of 'lead_last' format
-            data = np.asarray(wfdb.rdrecord(rec_fp).p_signal.T, dtype=np.float64)
+            wfdb_rec = wfdb.rdrecord(rec_fp, physical=True, channel_names=_leads)
+            data = np.asarray(wfdb_rec.p_signal.T, dtype=np.float64)
+            # lead_units = np.vectorize(lambda s: s.lower())(wfdb_rec.units)
         elif backend.lower() == 'scipy':
             # loadmat of 'lead_first' format
             rec_fp = os.path.join(self.db_dirs[tranche], f'{rec}.{self.rec_ext}')
@@ -405,24 +413,20 @@ class CINC2020(PhysioNetDataBase):
             baselines = header_info['baseline'].values.reshape(data.shape[0], -1)
             adc_gain = header_info['adc_gain'].values.reshape(data.shape[0], -1)
             data = np.asarray(data-baselines, dtype=np.float64) / adc_gain
+            leads_ind = [self.all_leads.index(item) for item in _leads]
+            data = data[leads_ind,:]
+            # lead_units = np.vectorize(lambda s: s.lower())(header_info['df_leads']['adc_units'].values)
         else:
             raise ValueError(f"backend `{backend.lower()}` not supported for loading data")
-
-        if leads and isinstance(leads, str):
-            leads_ind = [self.all_leads.index(leads)]
-            data = data[leads_ind,:]
-        elif leads:
-            leads_ind = [self.all_leads.index(item) for item in leads]
-            data = data[leads_ind,:]
-
-        if data_format.lower() in ['channel_last', 'lead_last']:
-            data = data.T
 
         if units.lower() in ['uv', 'μv']:
             data = data * 1000
 
         if freq is not None and freq != self.freq[tranche]:
-            data = resample_poly(data, freq, self.freq[tranche])
+            data = resample_poly(data, freq, self.freq[tranche], axis=1)
+
+        if data_format.lower() in ['channel_last', 'lead_last']:
+            data = data.T
 
         return data
 
