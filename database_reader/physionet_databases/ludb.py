@@ -151,7 +151,8 @@ class LUDB(PhysioNetDataBase):
     [2] Kalyakulina, A., Yusipov, I., Moskalenko, V., Nikolskiy, A., Kozlov, A., Kosonogov, K., Zolotykh, N., & Ivanchenko, M. (2020). Lobachevsky University Electrocardiography Database (version 1.0.0).
     """
     def __init__(self, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
-        """
+        """ finished, checked,
+        
         Parameters:
         -----------
         db_dir: str,
@@ -243,7 +244,7 @@ class LUDB(PhysioNetDataBase):
 
 
     def load_ann(self, rec:str, leads:Optional[Sequence[str]]=None, metadata:bool=False) -> dict:
-        """
+        """ finished, checked,
 
         loading the wave delineation, along with metadata if specified
 
@@ -265,9 +266,10 @@ class LUDB(PhysioNetDataBase):
 
         # wave delineation annotations
         _leads = leads or self.all_leads_lower
+        _lead_indices = [self.all_leads_lower.index(l) for l in _leads]
         _ann_ext = [f"atr_{item}" for item in _leads]
         ann_dict['waves'] = ED({l:[] for l in _leads})
-        for l, e in zip(_leads, _ann_ext):
+        for l, e in zip(_lead_indices, _ann_ext):
             ann = wfdb.rdann(rec_fp, extension=e)
             df_lead_ann = pd.DataFrame()
             symbols = np.array(ann.symbol)
@@ -316,7 +318,7 @@ class LUDB(PhysioNetDataBase):
                     peak=int(row.peak),
                     duration=row.duration,
                 )
-                ann_dict['waves'][l].append(w)
+                ann_dict['waves'][self.all_leads[l]].append(w)
 
         if metadata:
             header_dict = self._load_header(rec)
@@ -446,16 +448,17 @@ class LUDB(PhysioNetDataBase):
             waves = self.load_ann(rec, leads=_leads)['waves']
 
         if waves:
-            p_waves, qrs, t_waves = [], [], []
+            pwaves, qrs, twaves = [], [], []
             for w in waves:
                 itv = [w.onset, w.offset]
                 if w.name == self._symbol_to_wavename['p']:
-                    p_waves.append(itv)
+                    pwaves.append(itv)
                 elif w.name == self._symbol_to_wavename['N']:
                     qrs.append(itv)
                 elif w.name == self._symbol_to_wavename['t']:
-                    t_waves.append(itv)
-        palette = {'p_waves': 'green', 'qrs': 'red', 't_waves': 'pink',}
+                    twaves.append(itv)
+        
+        palette = {'pwaves': 'green', 'qrs': 'red', 'twaves': 'pink',}
         plot_alpha = 0.4
 
         diagnoses = self.load_diagnoses(rec)
@@ -486,7 +489,7 @@ class LUDB(PhysioNetDataBase):
             # https://stackoverflow.com/questions/16826711/is-it-possible-to-add-a-string-as-a-legend-item-in-matplotlib
             for d in diagnoses:
                 axes[idx].plot([], [], ' ', label=d)
-            for w in ['p_waves', 'qrs', 't_waves']:
+            for w in ['pwaves', 'qrs', 'twaves']:
                 for itv in eval(w):
                     axes[idx].axvspan(itv[0], itv[1], color=palette[w], alpha=plot_alpha)
             axes[idx].legend(loc='upper left')
@@ -525,6 +528,5 @@ class LUDB(PhysioNetDataBase):
 
     def database_info(self) -> NoReturn:
         """
-
         """
         print(self.__doc__)
