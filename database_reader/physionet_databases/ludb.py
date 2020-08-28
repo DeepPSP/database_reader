@@ -427,10 +427,10 @@ class LUDB(PhysioNetDataBase):
             _leads = [l for l in self.all_leads_lower if l in leads]  # keep in order
 
         # lead_list = self.load_ann(rec)['df_leads']['lead_name'].tolist()
-        # lead_indices = [lead_list.index(l) for l in leads]
-        lead_indices = [self.all_leads_lower.index(l) for l in _leads]
+        # _lead_indices = [lead_list.index(l) for l in leads]
+        _lead_indices = [self.all_leads_lower.index(l) for l in _leads]
         if data is None:
-            _data = self.load_data(rec, data_format='channel_first', units='μV')[lead_indices]
+            _data = self.load_data(rec, data_format='channel_first', units='μV')[_lead_indices]
         else:
             units = self._auto_infer_units(data)
             print(f"input data is auto detected to have units in {units}")
@@ -444,19 +444,22 @@ class LUDB(PhysioNetDataBase):
         else:
             y_ranges = np.max(np.abs(_data), axis=1) + 100
 
-        if not data and not waves:
+        if data is None and waves is None:
             waves = self.load_ann(rec, leads=_leads)['waves']
 
-        if waves:
-            pwaves, qrs, twaves = [], [], []
-            for w in waves:
-                itv = [w.onset, w.offset]
-                if w.name == self._symbol_to_wavename['p']:
-                    pwaves.append(itv)
-                elif w.name == self._symbol_to_wavename['N']:
-                    qrs.append(itv)
-                elif w.name == self._symbol_to_wavename['t']:
-                    twaves.append(itv)
+        if waves is not None:
+            pwaves = {self.all_leads[l]:[] for l in _lead_indices}
+            qrs = {self.all_leads[l]:[] for l in _lead_indices}
+            twaves = {self.all_leads[l]:[] for l in _lead_indices}
+            for l, l_w in waves.items():
+                for w in l_w:
+                    itv = [w.onset, w.offset]
+                    if w.name == self._symbol_to_wavename['p']:
+                        pwaves.append(itv)
+                    elif w.name == self._symbol_to_wavename['N']:
+                        qrs.append(itv)
+                    elif w.name == self._symbol_to_wavename['t']:
+                        twaves.append(itv)
         
         palette = {'pwaves': 'green', 'qrs': 'red', 'twaves': 'pink',}
         plot_alpha = 0.4
@@ -474,7 +477,8 @@ class LUDB(PhysioNetDataBase):
         fig_sz_h = 6 * y_ranges / 1500
         fig, axes = plt.subplots(nb_leads, 1, sharex=True, figsize=(fig_sz_w, np.sum(fig_sz_h)))
         for idx in range(nb_leads):
-            axes[idx].plot(t, _data[idx], label=f'lead - {self.all_leads[lead_indices[idx]]}')
+            lead_name = self.all_leads[_lead_indices[idx]]
+            axes[idx].plot(t, _data[idx], label=f'lead - {lead_name}')
             axes[idx].axhline(y=0, linestyle='-', linewidth='1.0', color='red')
             # NOTE that `Locator` has default `MAXTICKS` equal to 1000
             if ticks_granularity >= 1:
@@ -490,7 +494,7 @@ class LUDB(PhysioNetDataBase):
             for d in diagnoses:
                 axes[idx].plot([], [], ' ', label=d)
             for w in ['pwaves', 'qrs', 'twaves']:
-                for itv in eval(w):
+                for itv in eval(f"{w}['{lead_name}']"):
                     axes[idx].axvspan(itv[0], itv[1], color=palette[w], alpha=plot_alpha)
             axes[idx].legend(loc='upper left')
             axes[idx].set_xlim(t[0], t[-1])
