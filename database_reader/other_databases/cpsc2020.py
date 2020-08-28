@@ -93,8 +93,8 @@ class CPSC2020(OtherDataBase):
         self._to_mv = False
 
         self.nb_records = 10
-        self._all_records = ["A{0:02d}".format(i) for i in range(1,1+self.nb_records)]
-        self.all_annotations = ["R{0:02d}".format(i) for i in range(1,1+self.nb_records)]
+        self._all_records = [f"A{i:02d}" for i in range(1,1+self.nb_records)]
+        self.all_annotations = [f"R{i:02d}" for i in range(1,1+self.nb_records)]
         self.all_references = self.all_annotations
         self.rec_dir = os.path.join(self.db_dir, "data")
         self.ann_dir = os.path.join(self.db_dir, "ref")

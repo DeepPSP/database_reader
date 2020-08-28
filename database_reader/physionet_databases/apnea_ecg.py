@@ -163,7 +163,7 @@ class ApneaECG(PhysioNetDataBase):
         """
         """
         if rec.endswith(('r', 'er')):
-            raise ValueError("{} is not a record of ECG signals".format(rec))
+            raise ValueError(f"{rec} is not a record of ECG signals")
         return self.load_data(rec=rec, lead=lead, rec_path=rec_path)
 
 
@@ -171,12 +171,12 @@ class ApneaECG(PhysioNetDataBase):
         """
         """
         if not rec.endswith(('r', 'er')):
-            raise ValueError("{} is not a record of RSP signals".format(rec))
+            raise ValueError(f"{rec} is not a record of RSP signals")
         sig = self.load_data(rec=rec, lead=lead, rec_path=rec_path)
         if channels is not None:
             chns = [channels] if isinstance(channels, str) else list(channels)
             if any([c not in self.rsp_channels for c in chns]):
-                raise ValueError("Invalid channel(s): {}".format([c for c in chns if c not in self.rsp_channels]))
+                raise ValueError(f"Invalid channel(s): {[c for c in chns if c not in self.rsp_channels]}")
         else:
             chns = self.rsp_channels
         sig = {c: sig[:,self.wfdb_rec.sig_name.index(c)] for c in chns}
@@ -241,9 +241,9 @@ class ApneaECG(PhysioNetDataBase):
             apnea_periods = []
         
         if len(apnea_periods) > 0:
-            self.logger.info('apnea period(s) (units in minutes) of record {} is(are): {}'.format(rec, apnea_periods))
+            self.logger.info(f'apnea period(s) (units in minutes) of record {rec} is(are): {apnea_periods}')
         else:
-            self.logger.info('record {} has no apnea period'.format(rec))
+            self.logger.info(f'record {rec} has no apnea period')
 
         if len(apnea_periods) == 0:
             return pd.DataFrame(columns=self.sleep_event_keys)

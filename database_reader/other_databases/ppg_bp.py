@@ -139,7 +139,7 @@ class PPGBP(OtherDataBase):
         ndarray, the ppg data
         """
         verbose = self.verbose if verbose is None else verbose
-        rec_fn = "{}_{}.txt".format(self._all_records[rec_no], seg_no)
+        rec_fn = f"{self._all_records[rec_no]}_{seg_no}.txt"
         data = []
         with open(self.ppg_data_dir+rec_fn, 'r') as f:
             data = f.readlines()

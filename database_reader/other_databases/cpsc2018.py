@@ -213,8 +213,8 @@ class CPSC2018(OtherDataBase):
             the annotations with items: ref. self.ann_items
         """
         if isinstance(rec_no, int):
-            assert rec_no in range(1, self.nb_records+1), "rec_no should be in range(1,{})".format(self.nb_records+1)
-            rec_no = "A{0:04d}".format(rec_no)
+            assert rec_no in range(1, self.nb_records+1), f"rec_no should be in range(1, {self.nb_records+1})"
+            rec_no = f"A{rec_no:04d}"
         ann_fp = os.path.join(self.db_dir, rec_no + self.ann_ext)
         with open(ann_fp, 'r') as f:
             header_data = f.read().splitlines()
@@ -346,13 +346,13 @@ class CPSC2018(OtherDataBase):
         """
         if isinstance(rec_no, str):
             rec_no = int(rec_no[1:])
-        assert rec_no in range(1, self.nb_records+1), "rec_no should be in range(1,{})".format(self.nb_records+1)
+        assert rec_no in range(1, self.nb_records+1), f"rec_no should be in range(1, {self.nb_records+1})"
         recording = self._all_records[rec_no]
         new_file = recording + '.csv'
         output_file = os.path.join(output_dir, new_file)
 
         # Include the filename as the recording number
-        recording_string = '#{}'.format(recording)
+        recording_string = f'#{recording}'
         class_string = ','.join(classes)
         label_string = ','.join(str(i) for i in labels)
         score_string = ','.join(str(i) for i in scores)
@@ -376,7 +376,7 @@ class CPSC2018(OtherDataBase):
         """
         if isinstance(rec_no, str):
             rec_no = int(rec_no[1:])
-        assert rec_no in range(1, self.nb_records+1), "rec_no should be in range(1,{})".format(self.nb_records+1)
+        assert rec_no in range(1, self.nb_records+1), f"rec_no should be in range(1, {self.nb_records+1})"
         if 'plt' not in dir():
             import matplotlib.pyplot as plt
         if leads is None or leads == 'all':

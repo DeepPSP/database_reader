@@ -234,7 +234,7 @@ class SHHS(NSRRDataBase):
 
         # stats
         try:
-            self.rec_with_hrv_ann = ['shhs{}-{}'.format(int(row['visitnumber']),int(row['nsrrid'])) for _,row in self.load_hrv_summary_ann().iterrows()]
+            self.rec_with_hrv_ann = [f"shhs{int(row['visitnumber'])}-{int(row['nsrrid'])}" for _,row in self.load_hrv_summary_ann().iterrows()]
         except:
             self.rec_with_hrv_ann = []
 
@@ -454,7 +454,7 @@ class SHHS(NSRRDataBase):
         elif self.sleep_stage_protocol == "shhs":
             nb_stages = 6
         else:
-            raise ValueError("No stage protocol named {}".format(self.sleep_stage_protocol))
+            raise ValueError(f"No stage protocol named {self.sleep_stage_protocol}")
         
         self.sleep_stage_names = self.all_sleep_stage_names[:nb_stages]
 
@@ -576,7 +576,7 @@ class SHHS(NSRRDataBase):
         for sig in self.all_signals:
             if sig.lower() == channel.lower():
                 return sig
-        raise ValueError("No channel named {}".format(channel))
+        raise ValueError(f"No channel named {channel}")
 
 
     def match_full_rec_path(self, rec:str, rec_path:Optional[str]=None, rec_type:str="psg") -> str:
@@ -604,10 +604,10 @@ class SHHS(NSRRDataBase):
         }
         folder_or_file = {
             "psg": self.psg_data_path,
-            "hrv_summary": os.path.join(self.hrv_ann_path, 'shhs{}-hrv-summary-{}.csv'.format(self.get_visit_number(rec), self.current_version)),
-            "hrv_5min": os.path.join(self.hrv_ann_path, 'shhs{}-hrv-5min-{}.csv'.format(self.get_visit_number(rec), self.current_version)),
-            "eeg_band_summary": os.path.join(self.eeg_ann_path, 'shhs{}-eeg-band-summary-dataset-{}.csv'.format(self.get_visit_number(rec), self.current_version)),
-            "eeg_spectral_summary": os.path.join(self.eeg_ann_path, 'shhs{}-eeg-spectral-summary-dataset-{}.csv'.format(self.get_visit_number(rec), self.current_version)),
+            "hrv_summary": os.path.join(self.hrv_ann_path, f'shhs{self.get_visit_number(rec)}-hrv-summary-{self.current_version}.csv'),
+            "hrv_5min": os.path.join(self.hrv_ann_path, f'shhs{self.get_visit_number(rec)}-hrv-5min-{self.current_version}.csv'),
+            "eeg_band_summary": os.path.join(self.eeg_ann_path, f'shhs{self.get_visit_number(rec)}-eeg-band-summary-dataset-{self.current_version}.csv'),
+            "eeg_spectral_summary": os.path.join(self.eeg_ann_path, f'shhs{self.get_visit_number(rec)}-eeg-spectral-summary-dataset-{self.current_version}.csv'),
             "wave_delineation": self.wave_deli_path,
             "event": self.event_ann_path,
             "event_profusion": self.event_profusion_ann_path
@@ -840,14 +840,14 @@ class SHHS(NSRRDataBase):
         file_path = self.match_full_rec_path(rec, hrv_ann_path, rec_type="hrv_5min")
 
         if not os.path.isfile(file_path):
-            raise FileNotFoundError("Record {} has no HRV annotation (including sleep annotaions). Or the annotation file has not been downloaded yet. Or the path {} is not correct. Please check!".format(rec, file_path))
+            raise FileNotFoundError(f"Record {rec} has no HRV annotation (including sleep annotaions). Or the annotation file has not been downloaded yet. Or the path {file_path} is not correct. Please check!")
 
-        self.logger.info("HRV annotations of record {} will be loaded from the file\n{}".format(rec, file_path))
+        self.logger.info(f"HRV annotations of record {rec} will be loaded from the file\n{file_path}")
 
         df_hrv_ann = pd.read_csv(file_path, engine="python")
         df_hrv_ann = df_hrv_ann[df_hrv_ann['nsrrid']==self.get_nsrrid(rec)].reset_index(drop=True)
 
-        self.logger.info("Record {} has {} HRV annotations, with {} column(s)".format(rec, len(df_hrv_ann), len(self.hrv_ann_detailed_keys)))
+        self.logger.info(f"Record {rec} has {len(df_hrv_ann)} HRV annotations, with {len(self.hrv_ann_detailed_keys)} column(s)")
 
         return df_hrv_ann
 
@@ -873,18 +873,18 @@ class SHHS(NSRRDataBase):
         if source.lower() == 'hrv':
             df_hrv_ann = self.load_hrv_detailed_ann(rec=rec, hrv_ann_path=sleep_ann_path)
             df_sleep_ann = df_hrv_ann[self.sleep_ann_keys_from_hrv].reset_index(drop=True)
-            self.logger.info("record {} has {} sleep annotations from corresponding hrv annotation file, with {} column(s)".format(rec, len(df_sleep_ann), len(self.sleep_ann_keys_from_hrv)))
+            self.logger.info(f"record {rec} has {len(df_sleep_ann)} sleep annotations from corresponding hrv annotation file, with {len(self.sleep_ann_keys_from_hrv)} column(s)")
         elif source.lower() == 'event':
             df_event_ann = self.load_event_ann(rec,event_ann_path=sleep_ann_path,simplify=False)
             _cols = ['EventType','EventConcept','Start','Duration','SignalLocation']
             df_sleep_ann = df_event_ann[_cols]
-            self.logger.info("record {} has {} sleep annotations from corresponding event-nsrr annotation file, with {} column(s)".format(rec, len(df_sleep_ann), len(_cols)))
+            self.logger.info(f"record {rec} has {len(df_sleep_ann)} sleep annotations from corresponding event-nsrr annotation file, with {len(_cols)} column(s)")
         elif source.lower() == 'event_profusion':
             df_event_ann = self.load_event_profusion_ann(rec)
             # temporarily finished
             # latter to make imporvements
             df_sleep_ann = df_event_ann
-            self.logger.info("record {} has {} sleep event annotations from corresponding event-profusion annotation file, with {} column(s)".format(rec, len(df_sleep_ann['df_events']), len(df_sleep_ann['df_events'].columns)))
+            self.logger.info(f"record {rec} has {len(df_sleep_ann['df_events'])} sleep event annotations from corresponding event-profusion annotation file, with {len(df_sleep_ann['df_events'].columns)} column(s)")
         return df_sleep_ann
 
 
@@ -966,8 +966,8 @@ class SHHS(NSRRDataBase):
             df_sleep_stage_ann['sleep_stage_name'] = df_sleep_stage_ann['sleep_stage'].apply(lambda a: self.sleep_stage_names[a])
         
         if source.lower() != 'event_profusion':
-            self.logger.info("record {} has {} raw (epoch_len = 5min) sleep stage annotations, with {} column(s)".format(rec, len(df_tmp), len(self.sleep_stage_ann_keys_from_hrv)))
-            self.logger.info("after being transformed (epoch_len = 30sec), record {} has {} sleep stage annotations, with {} column(s)".format(rec, len(df_sleep_stage_ann), len(self.sleep_stage_keys)))
+            self.logger.info(f"record {rec} has {len(df_tmp)} raw (epoch_len = 5min) sleep stage annotations, with {len(self.sleep_stage_ann_keys_from_hrv)} column(s)")
+            self.logger.info(f"after being transformed (epoch_len = 30sec), record {rec} has {len(df_sleep_stage_ann)} sleep stage annotations, with {len(self.sleep_stage_keys)} column(s)")
 
         return df_sleep_stage_ann
 
@@ -1002,11 +1002,11 @@ class SHHS(NSRRDataBase):
         _et = []
         if source.lower() != 'hrv':
             if event_types is None or len(event_types) == 0:
-                raise ValueError("When `source` is '{}', please specify legal `event_types`!".format(source))
+                raise ValueError(f"When `source` is '{source}', please specify legal `event_types`!")
             else:
                 _et = [s.lower() for s in event_types]
 
-        self.logger.info('for record {}, _et (event_types) = {}'.format(rec, _et))
+        self.logger.info(f'for record {rec}, _et (event_types) = {_et}')
 
         if source.lower() == 'hrv':
             df_sleep_ann = df_sleep_ann[self.sleep_event_ann_keys_from_hrv].reset_index(drop=True)
@@ -1022,8 +1022,8 @@ class SHHS(NSRRDataBase):
             df_sleep_event_ann['event_duration'] = df_sleep_event_ann.apply(lambda row: row['event_end']-row['event_start'], axis=1)
             df_sleep_event_ann = df_sleep_event_ann[self.sleep_event_keys]
 
-            self.logger.info("record {} has {} raw (epoch_len = 5min) sleep event annotations from hrv, with {} column(s)".format(rec, len(df_sleep_ann), len(self.sleep_event_ann_keys_from_hrv)))
-            self.logger.info("after being transformed, record {} has {} sleep event(s)".format(rec, len(df_sleep_event_ann)))
+            self.logger.info(f"record {rec} has {len(df_sleep_ann)} raw (epoch_len = 5min) sleep event annotations from hrv, with {len(self.sleep_event_ann_keys_from_hrv)} column(s)")
+            self.logger.info(f"after being transformed, record {rec} has {len(df_sleep_event_ann)} sleep event(s)")
         elif source.lower() == 'event':
             _cols = set()
             if 'respiratory' in _et:
@@ -1044,7 +1044,7 @@ class SHHS(NSRRDataBase):
                 _cols = (_cols | set(self.long_event_names_from_event[3:4]))
             _cols = list(_cols)
 
-            print("for record {}, _cols = {}".format(rec, _cols))
+            print(f"for record {rec}, _cols = {_cols}")
 
             df_sleep_event_ann = df_sleep_ann[df_sleep_ann['EventConcept'].isin(_cols)].reset_index(drop=True)
             df_sleep_event_ann = df_sleep_event_ann.rename({'EventConcept':'event_name', 'Start':'event_start', 'Duration':'event_duration'}, axis=1)
@@ -1072,7 +1072,7 @@ class SHHS(NSRRDataBase):
                 _cols = (_cols | set(self.event_names_from_event_profusion[3:4]))
             _cols = list(_cols)
 
-            print("for record {}, _cols = {}".format(rec, _cols))
+            print(f"for record {rec}, _cols = {_cols}")
 
             df_sleep_event_ann = df_sleep_ann[df_sleep_ann['Name'].isin(_cols)].reset_index(drop=True)
             df_sleep_event_ann = df_sleep_event_ann.rename({'Name':'event_name', 'Start':'event_start', 'Duration':'event_duration'}, axis=1)
@@ -1105,7 +1105,7 @@ class SHHS(NSRRDataBase):
         """
         event_types = ['apnea'] if apnea_types is None else apnea_types
         if source not in ['event', 'event_profusion']:
-            raise ValueError("source {} contains no apnea annotations".format(source))
+            raise ValueError(f"source {source} contains no apnea annotations")
         df_apnea_ann = self.load_sleep_event_ann(
             rec=rec,
             source=source,
@@ -1135,7 +1135,7 @@ class SHHS(NSRRDataBase):
         file_path = self.match_full_rec_path(rec, wave_deli_path, rec_type="wave_delineation")
 
         if not os.path.isfile(file_path):
-            raise FileNotFoundError("The annotation file of wave delineation of record {} has not been downloaded yet. Or the path {} is not correct. Please check!".format(rec, file_path))
+            raise FileNotFoundError(f"The annotation file of wave delineation of record {rec} has not been downloaded yet. Or the path {file_path} is not correct. Please check!")
 
         df_wave_delineation = pd.read_csv(file_path,engine="python")
         df_wave_delineation = df_wave_delineation[self.wave_deli_keys].reset_index(drop=True)
@@ -1274,7 +1274,7 @@ class SHHS(NSRRDataBase):
 
         """
         if abnormal_type is not None and abnormal_type not in ["VE", "SVE"]:
-            raise ValueError("No abnormal type of {} in wave delineation annotation files".format(abnormal_type))
+            raise ValueError(f"No abnormal type of {abnormal_type} in wave delineation annotation files")
 
         df_rpeaks_with_type_info = self.load_wave_delineation(rec, wave_deli_path)[['Type', 'rpointadj']]
 

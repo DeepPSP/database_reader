@@ -321,7 +321,7 @@ class SleepAccel(OtherDataBase):
         # ax_ct.legend(loc='best')
         plt.show()
         df_stats = df_ct.merge(df_lb, on='sec')
-        self.logger.info("for subject {}, len(df_stats) = {}".format(subject_id, len(df_stats)))
+        self.logger.info(f"for subject {subject_id}, len(df_stats) = {len(df_stats)}")
         return df_lb, df_ct, df_rsmpl, df_stats
 
 
@@ -337,7 +337,7 @@ class SleepAccel(OtherDataBase):
         """
         acc_data = df_mt[['sec','x','y','z']].values
         acc_data[:,0] = np.vectorize(lambda t:round(1000*t))(acc_data[:,0])
-        self.logger.info("acc_data.shape = {}".format(acc_data.shape))
+        self.logger.info(f"acc_data.shape = {acc_data.shape}")
         x_rsmpl = resample_irregular_timeseries(acc_data[:,[0,1]], output_fs=output_fs, return_with_time=True, method='interp1d', options={})
         y_rsmpl = resample_irregular_timeseries(acc_data[:,[0,2]], output_fs=output_fs, return_with_time=True, method='interp1d', options={})
         z_rsmpl = resample_irregular_timeseries(acc_data[:,[0,3]], output_fs=output_fs, return_with_time=True, method='interp1d', options={})

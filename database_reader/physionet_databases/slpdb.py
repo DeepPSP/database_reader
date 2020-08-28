@@ -92,7 +92,7 @@ class SLPDB(PhysioNetDataBase):
         elif self.sleep_stage_protocol == "simplified":
             self.stage_names = ['W', 'R', 'N1', 'N2']
         else:
-            raise ValueError("No stage protocol named {}".format(self.sleep_stage_protocol))
+            raise ValueError(f"No stage protocol named {self.sleep_stage_protocol}")
         self._to_simplified_states = {'W':0, 'MT':0, 'M':0, 'R':1, '1':2, '2':2, '3':3, '4':3}
         """
         0   --- awake

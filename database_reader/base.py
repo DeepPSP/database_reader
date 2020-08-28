@@ -84,9 +84,9 @@ class _DataBase(object):
             prefix (for each line) of the logger, and its file name
         """
         _prefix = prefix+"-" if prefix else ""
-        self.logger = logging.getLogger('{}-{}-logger'.format(_prefix, self.db_name))
-        log_filepath = os.path.join(self.working_dir, "{}{}.log".format(_prefix, self.db_name))
-        print("log file path is set {}".format(log_filepath))
+        self.logger = logging.getLogger(f'{_prefix}-{self.db_name}-logger')
+        log_filepath = os.path.join(self.working_dir, f"{_prefix}{self.db_name}.log")
+        print(f"log file path is set {log_filepath}")
 
         c_handler = logging.StreamHandler(sys.stdout)
         f_handler = logging.FileHandler(log_filepath)
@@ -541,9 +541,9 @@ class PhysioNetDataBase(_DataBase):
             for a in all_annotations:
                 if k in a.keys() or '('+k in a.keys():
                     try:
-                        print("{0} stands for {1}".format(k.split('(')[1], a[k]))
+                        print(f"{k.split('(')[1]} stands for {a[k]}")
                     except:
-                        print("{0} stands for {1}".format(k, a['('+k]))
+                        print(f"{k} stands for {a['('+k]}")
 
 
 class NSRRDataBase(_DataBase):
