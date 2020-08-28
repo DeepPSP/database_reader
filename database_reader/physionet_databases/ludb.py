@@ -360,6 +360,7 @@ class LUDB(PhysioNetDataBase):
         header_dict: dict,
         """
         header_dict = ED({})
+        rec_fp = os.path.join(self.db_dir, rec)
         header_reader = wfdb.rdheader(rec_fp)
         header_dict['units'] = header_reader.units
         header_dict['baseline'] = header_reader.baseline
@@ -373,7 +374,7 @@ class LUDB(PhysioNetDataBase):
             header_dict['sex'] = [l for l in header_reader.comments if '<sex>' in l][0].split(': ')[-1]
         except:
             header_dict['sex'] = ''
-        d_start = [idx for idx, l in header_reader.comments if '<diagnoses>' in l][0] + 1
+        d_start = [idx for idx, l in enumerate(header_reader.comments) if '<diagnoses>' in l][0] + 1
         header_dict['diagnoses'] = header_reader.comments[d_start:]
         return header_dict
 
@@ -455,13 +456,13 @@ class LUDB(PhysioNetDataBase):
                 for w in l_w:
                     itv = [w.onset, w.offset]
                     if w.name == self._symbol_to_wavename['p']:
-                        pwaves.append(itv)
+                        pwaves[l].append(itv)
                     elif w.name == self._symbol_to_wavename['N']:
-                        qrs.append(itv)
+                        qrs[l].append(itv)
                     elif w.name == self._symbol_to_wavename['t']:
-                        twaves.append(itv)
+                        twaves[l].append(itv)
         
-        palette = {'pwaves': 'green', 'qrs': 'red', 'twaves': 'pink',}
+        palette = {'pwaves': 'green', 'qrs': 'red', 'twaves': 'yellow',}
         plot_alpha = 0.4
 
         diagnoses = self.load_diagnoses(rec)
@@ -495,7 +496,10 @@ class LUDB(PhysioNetDataBase):
                 axes[idx].plot([], [], ' ', label=d)
             for w in ['pwaves', 'qrs', 'twaves']:
                 for itv in eval(f"{w}['{lead_name}']"):
-                    axes[idx].axvspan(itv[0], itv[1], color=palette[w], alpha=plot_alpha)
+                    axes[idx].axvspan(
+                        itv[0]/self.freq, itv[1]/self.freq,
+                        color=palette[w], alpha=plot_alpha,
+                    )
             axes[idx].legend(loc='upper left')
             axes[idx].set_xlim(t[0], t[-1])
             axes[idx].set_ylim(-y_ranges[idx], y_ranges[idx])
