@@ -268,7 +268,7 @@ class LUDB(PhysioNetDataBase):
         _leads = leads or self.all_leads_lower
         _lead_indices = [self.all_leads_lower.index(l) for l in _leads]
         _ann_ext = [f"atr_{item}" for item in _leads]
-        ann_dict['waves'] = ED({l:[] for l in _leads})
+        ann_dict['waves'] = ED({self.all_leads[l]:[] for l in _lead_indices})
         for l, e in zip(_lead_indices, _ann_ext):
             ann = wfdb.rdann(rec_fp, extension=e)
             df_lead_ann = pd.DataFrame()
