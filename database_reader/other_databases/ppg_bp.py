@@ -74,7 +74,7 @@ class PPGBP(OtherDataBase):
         self.form_paths()
 
         self.freq = 1000
-        self.all_records = sorted(list(set([fn.split('_')[0] for fn in os.listdir(self.ppg_data_dir)])), key=lambda r:int(r))
+        self._all_records = sorted(list(set([fn.split('_')[0] for fn in os.listdir(self.ppg_data_dir)])), key=lambda r:int(r))
         self.rec_ext = '.txt'
 
         self.ann_items = [
@@ -104,7 +104,7 @@ class PPGBP(OtherDataBase):
         Returns:
         int, the `subject_id` corr. to `rec_no`
         """
-        return int(self.all_records[rec_no])
+        return int(self._all_records[rec_no])
     
 
     def database_info(self, detailed:bool=False) -> NoReturn:
@@ -139,7 +139,7 @@ class PPGBP(OtherDataBase):
         ndarray, the ppg data
         """
         verbose = self.verbose if verbose is None else verbose
-        rec_fn = "{}_{}.txt".format(self.all_records[rec_no], seg_no)
+        rec_fn = "{}_{}.txt".format(self._all_records[rec_no], seg_no)
         data = []
         with open(self.ppg_data_dir+rec_fn, 'r') as f:
             data = f.readlines()
@@ -174,7 +174,7 @@ class PPGBP(OtherDataBase):
         if rec_no is None:
             return df_ann
         
-        df_ann = df_ann[df_ann['subject_ID']==int(self.all_records[rec_no])].reset_index(drop=True)
+        df_ann = df_ann[df_ann['subject_ID']==int(self._all_records[rec_no])].reset_index(drop=True)
         return df_ann
 
 

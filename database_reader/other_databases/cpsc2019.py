@@ -62,7 +62,7 @@ class CPSC2019(OtherDataBase):
         self.freq = 500
         self.spacing = 1000 / self.freq
 
-        self.all_records = []
+        self._all_records = []
 
 
     def get_subject_id(self, rec_no:int) -> int:

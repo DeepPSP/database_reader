@@ -93,7 +93,7 @@ class CPSC2020(OtherDataBase):
         self._to_mv = False
 
         self.nb_records = 10
-        self.all_records = ["A{0:02d}".format(i) for i in range(1,1+self.nb_records)]
+        self._all_records = ["A{0:02d}".format(i) for i in range(1,1+self.nb_records)]
         self.all_annotations = ["R{0:02d}".format(i) for i in range(1,1+self.nb_records)]
         self.all_references = self.all_annotations
         self.rec_dir = os.path.join(self.db_dir, "data")
@@ -212,7 +212,7 @@ class CPSC2020(OtherDataBase):
             assert rec in range(1, self.nb_records+1), f"rec should be in range(1,{self.nb_records+1})"
             ann_name = self.all_annotations[rec-1]
         elif isinstance(rec, str):
-            assert rec in self.all_annotations+self.all_records, f"rec should be one of {self.all_records} or one of {self.all_annotations}"
+            assert rec in self.all_annotations+self._all_records, f"rec should be one of {self._all_records} or one of {self.all_annotations}"
             ann_name = rec.replace("A", "R")
         return ann_name
 
@@ -222,9 +222,9 @@ class CPSC2020(OtherDataBase):
         """
         if isinstance(rec, int):
             assert rec in range(1, self.nb_records+1), f"rec should be in range(1,{self.nb_records+1})"
-            rec_name = self.all_records[rec-1]
+            rec_name = self._all_records[rec-1]
         elif isinstance(rec, str):
-            assert rec in self.all_records, f"rec should be one of {self.all_records}"
+            assert rec in self._all_records, f"rec should be one of {self._all_records}"
             rec_name = rec
         return rec_name
 
@@ -288,7 +288,7 @@ class CPSC2020(OtherDataBase):
                 test_records += random.sample(self.subgroups[k], 1)
         else:
             raise ValueError("test data ratio too high")
-        train_records = [r for r in self.all_records if r not in test_records]
+        train_records = [r for r in self._all_records if r not in test_records]
         
         split_res = ED({
             "train": train_records,

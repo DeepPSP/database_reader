@@ -78,8 +78,8 @@ class ApneaECG(PhysioNetDataBase):
 
         self._ls_rec()
         
-        self.ecg_records = [r for r in self.all_records if 'r' not in r]
-        self.rsp_records = [r for r in self.all_records if 'r' in r and 'er' not in r]
+        self.ecg_records = [r for r in self._all_records if 'r' not in r]
+        self.rsp_records = [r for r in self._all_records if 'r' in r and 'er' not in r]
         self.rsp_channels = ['Resp C', 'Resp A', 'Resp N', 'SpO2']
         self.learning_set = [r for r in self.ecg_records if 'x' not in r]
         self.test_set = [r for r in self.ecg_records if 'x' in r]
@@ -97,7 +97,7 @@ class ApneaECG(PhysioNetDataBase):
         """ finished, checked,
 
         find all records (relative path without file extension),
-        and save into `self.all_records` for further use
+        and save into `self._all_records` for further use
 
         Parameters:
         -----------
@@ -107,7 +107,7 @@ class ApneaECG(PhysioNetDataBase):
         try:
             super()._ls_rec(local=local)
         except:
-            self.all_records = ['a01', 'a01er', 'a01r', 'a02', 'a02er', 'a02r', 'a03', 'a03er', 'a03r', 'a04', 'a04er', 'a04r', 'a05', 'a06', 'a07', 'a08', 'a09', 'a10', 'a11', 'a12', 'a13', 'a14', 'a15', 'a16', 'a17', 'a18', 'a19', 'a20', 'b01', 'b01er', 'b01r', 'b02', 'b03', 'b04', 'b05', 'c01', 'c01er', 'c01r', 'c02', 'c02er', 'c02r', 'c03', 'c03er', 'c03r', 'c04', 'c05', 'c06', 'c07', 'c08', 'c09', 'c10', 'x01', 'x02', 'x03', 'x04', 'x05', 'x06', 'x07', 'x08', 'x09', 'x10', 'x11', 'x12', 'x13', 'x14', 'x15', 'x16', 'x17', 'x18', 'x19', 'x20', 'x21', 'x22', 'x23', 'x24', 'x25', 'x26', 'x27', 'x28', 'x29', 'x30', 'x31', 'x32', 'x33', 'x34', 'x35']
+            self._all_records = ['a01', 'a01er', 'a01r', 'a02', 'a02er', 'a02r', 'a03', 'a03er', 'a03r', 'a04', 'a04er', 'a04r', 'a05', 'a06', 'a07', 'a08', 'a09', 'a10', 'a11', 'a12', 'a13', 'a14', 'a15', 'a16', 'a17', 'a18', 'a19', 'a20', 'b01', 'b01er', 'b01r', 'b02', 'b03', 'b04', 'b05', 'c01', 'c01er', 'c01r', 'c02', 'c02er', 'c02r', 'c03', 'c03er', 'c03r', 'c04', 'c05', 'c06', 'c07', 'c08', 'c09', 'c10', 'x01', 'x02', 'x03', 'x04', 'x05', 'x06', 'x07', 'x08', 'x09', 'x10', 'x11', 'x12', 'x13', 'x14', 'x15', 'x16', 'x17', 'x18', 'x19', 'x20', 'x21', 'x22', 'x23', 'x24', 'x25', 'x26', 'x27', 'x28', 'x29', 'x30', 'x31', 'x32', 'x33', 'x34', 'x35']
 
 
     def get_subject_id(self, rec:str) -> int:

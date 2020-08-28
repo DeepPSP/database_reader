@@ -67,6 +67,7 @@ class _DataBase(object):
         self.header_ext = "hea"
         self.verbose = verbose
         self.logger = None
+        self._all_records = None
         self._set_logger(prefix=type(self).__name__)
 
     def _ls_rec(self) -> NoReturn:
@@ -114,6 +115,14 @@ class _DataBase(object):
         self.logger.addHandler(c_handler)
         self.logger.addHandler(f_handler)
 
+    @property
+    def all_records(self):
+        """
+        """
+        if self._all_records is None:
+            self._ls_rec()
+        return self._all_records
+
     def train_test_split(self):
         """
         """
@@ -153,7 +162,7 @@ class PhysioNetDataBase(_DataBase):
         for those with multiple signal sources like PSG, self.freq is default to the frequency of ECG if ECG applicable
         """
         self.freq = None
-        self.all_records = None
+        self._all_records = None
 
         self.wfdb_rec = None
         self.wfdb_ann = None
@@ -317,7 +326,7 @@ class PhysioNetDataBase(_DataBase):
         """ finished, checked,
 
         find all records (relative path without file extension),
-        and save into `self.all_records` for further use
+        and save into `self._all_records` for further use
 
         Parameters:
         -----------
@@ -331,7 +340,7 @@ class PhysioNetDataBase(_DataBase):
             self._ls_rec_local()
             return
         try:
-            self.all_records = wfdb.get_record_list(db_name or self.db_name)
+            self._all_records = wfdb.get_record_list(db_name or self.db_name)
         except:
             self._ls_rec_local()
             
@@ -344,14 +353,14 @@ class PhysioNetDataBase(_DataBase):
         record_list_fp = os.path.join(self.db_dir, "record_list.json")
         if os.path.isfile(record_list_fp):
             with open(record_list_fp, "r") as f:
-                self.all_records = json.load(f)
+                self._all_records = json.load(f)
         else:
             print("Please wait patiently to let the reader find all records of the database from local storage...")
             start = time.time()
-            self.all_records = get_record_list_recursive(self.db_dir, self.data_ext)
+            self._all_records = get_record_list_recursive(self.db_dir, self.data_ext)
             print(f"Done in {time.time() - start} seconds!")
             with open(record_list_fp, "w") as f:
-                json.dump(self.all_records, f)
+                json.dump(self._all_records, f)
 
 
     def get_subject_id(self, rec:str) -> int:
@@ -562,7 +571,7 @@ class NSRRDataBase(_DataBase):
         super().__init__(db_name=db_name, db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
         # self._set_logger(prefix="NSRR")
         self.freq = None
-        self.all_records = None
+        self._all_records = None
         self.device_id = None  # maybe data are imported into impala db, to facilitate analyzing
         self.file_opened = None
         
@@ -809,7 +818,7 @@ class OtherDataBase(object):
         # self._set_logger(prefix=None)
 
         self.freq = None
-        self.all_records = None
+        self._all_records = None
         self.device_id = None  # maybe data are imported into impala db, to facilitate analyzing
         
         self.kwargs = kwargs

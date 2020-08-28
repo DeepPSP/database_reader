@@ -91,7 +91,7 @@ class CINC2018(PhysioNetDataBase):
         self.test_dir = os.path.join(self.db_dir, 'test')
         self.training_records = []
         self.test_records = []
-        self.all_records = []
+        self._all_records = []
 
 
     def get_subject_id(self, rec) -> int:

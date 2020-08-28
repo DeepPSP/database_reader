@@ -93,7 +93,7 @@ class CPSC2018(OtherDataBase):
         self.spacing = 1000 / self.freq
         self.rec_ext = '.mat'
         self.ann_ext = '.hea'
-        self.all_records = [os.path.splitext(os.path.basename(item))[0] for item in glob.glob(os.path.join(db_dir, '*'+self.rec_ext))]
+        self._all_records = [os.path.splitext(os.path.basename(item))[0] for item in glob.glob(os.path.join(db_dir, '*'+self.rec_ext))]
         self.nb_records = 6877
         self.all_leads = ['I', 'II', 'III', 'aVR', 'aVL', 'aVF', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6',]
         self.all_diagnosis = ['N', 'AF', 'I-AVB', 'LBBB', 'RBBB', 'PAC', 'PVC', 'STD', 'STE',]
@@ -347,7 +347,7 @@ class CPSC2018(OtherDataBase):
         if isinstance(rec_no, str):
             rec_no = int(rec_no[1:])
         assert rec_no in range(1, self.nb_records+1), "rec_no should be in range(1,{})".format(self.nb_records+1)
-        recording = self.all_records[rec_no]
+        recording = self._all_records[rec_no]
         new_file = recording + '.csv'
         output_file = os.path.join(output_dir, new_file)
 

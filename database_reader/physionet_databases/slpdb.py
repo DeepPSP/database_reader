@@ -123,7 +123,7 @@ class SLPDB(PhysioNetDataBase):
         """ finished, checked,
 
         find all records (relative path without file extension),
-        and save into `self.all_records` for further use
+        and save into `self._all_records` for further use
 
         Parameters:
         -----------
@@ -133,7 +133,7 @@ class SLPDB(PhysioNetDataBase):
         try:
             super()._ls_rec(local=local)
         except:
-            self.all_records = ['slp01a', 'slp01b', 'slp02a', 'slp02b', 'slp03', 'slp04', 'slp14', 'slp16', 'slp32', 'slp37', 'slp41', 'slp45', 'slp48', 'slp59', 'slp60', 'slp61', 'slp66', 'slp67x']
+            self._all_records = ['slp01a', 'slp01b', 'slp02a', 'slp02b', 'slp03', 'slp04', 'slp14', 'slp16', 'slp32', 'slp37', 'slp41', 'slp45', 'slp48', 'slp59', 'slp60', 'slp61', 'slp66', 'slp67x']
 
     
     def get_subject_id(self, rec) -> int:

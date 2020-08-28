@@ -321,7 +321,7 @@ class CINC2020(PhysioNetDataBase):
             print("Please wait several minutes patiently to let the reader list records for each diagnosis...")
             start = time.time()
             self._diagnoses_records_list = {d: [] for d in df_weights_abbr.columns.values.tolist()}
-            for tranche, l_rec in self.all_records.items():
+            for tranche, l_rec in self._all_records.items():
                 for rec in l_rec:
                     ann = self.load_ann(rec)
                     ld = ann["diagnosis_scored"]['diagnosis_abbr']

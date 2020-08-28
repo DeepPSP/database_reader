@@ -71,7 +71,7 @@ class STDB(PhysioNetDataBase):
         """ finished, checked,
 
         find all records (relative path without file extension),
-        and save into `self.all_records` for further use
+        and save into `self._all_records` for further use
 
         Parameters:
         -----------
@@ -81,7 +81,7 @@ class STDB(PhysioNetDataBase):
         try:
             super()._ls_rec(local=local)
         except:
-            self.all_records = ['300', '301', '302', '303', '304', '305', '306', '307', '308', '309', '310', '311', '312', '313', '314', '315', '316', '317', '318', '319', '320', '321', '322', '323', '324', '325', '326', '327']
+            self._all_records = ['300', '301', '302', '303', '304', '305', '306', '307', '308', '309', '310', '311', '312', '313', '314', '315', '316', '317', '318', '319', '320', '321', '322', '323', '324', '325', '326', '327']
 
 
     def get_subject_id(self, rec) -> int:
