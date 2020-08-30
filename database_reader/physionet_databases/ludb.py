@@ -380,8 +380,7 @@ class LUDB(PhysioNetDataBase):
         return masks
 
 
-    @staticmethod
-    def from_masks(masks:np.ndarray, mask_format:str="channel_first", leads:Optional[Sequence[str]]=None, class_map:Optional[Dict[str, int]]=None, freq:Optional[Real]=None) -> Dict[str, List[ECGWaveForm]]:
+    def from_masks(self, masks:np.ndarray, mask_format:str="channel_first", leads:Optional[Sequence[str]]=None, class_map:Optional[Dict[str, int]]=None, freq:Optional[Real]=None) -> Dict[str, List[ECGWaveForm]]:
         """
 
         convert masks into lists of waveforms
@@ -422,7 +421,7 @@ class LUDB(PhysioNetDataBase):
         if leads is not None:
             _leads = self._normalize_leads(leads, standard_ordering=False, lower_cases=False)
         else:
-            _leads = [f"lead_{idx}" for idx in range(_masks.shape[0])]
+            _leads = [f"lead_{idx+1}" for idx in range(_masks.shape[0])]
         assert len(_leads) == _masks.shape[0]
 
         _class_map = ED(class_map) if class_map is not None else self.class_map
@@ -441,14 +440,16 @@ class LUDB(PhysioNetDataBase):
                     continue
                 np.where(np.diff(current_wave_inds)>1)
                 split_inds = np.where(np.diff(current_wave_inds)>1)[0].tolist()
-                split_inds = [0] + split_inds + [len(current_wave_inds)]
-                for i in range(len(split_inds)-1):
-                    itv_start = current_wave_inds[split_inds[i]]
-                    itv_end = current_wave_inds[split_inds[i+1]-1]+1
+                split_inds = sorted(split_inds+[i+1 for i in split_inds])
+                split_inds = [0] + split_inds + [len(current_wave_inds)-1]
+                for i in range(len(split_inds)//2):
+                    itv_start = current_wave_inds[split_inds[2*i]]
+                    itv_end = current_wave_inds[split_inds[2*i+1]]+1
                     w = ECGWaveForm(
                         name=wave_name,
                         onset=itv_start,
                         offset=itv_end,
+                        peak=np.nan,
                         duration=1000*(itv_end-itv_start)/_freq,  # ms
                     )
                     waves[lead_name].append(w)
