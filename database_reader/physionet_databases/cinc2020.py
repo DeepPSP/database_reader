@@ -142,6 +142,7 @@ class CINC2020(PhysioNetDataBase):
     1. reading the .hea files, baselines of all records are 0, however it is not the case if one plot the signal
     2. about half of the LAD records satisfy the '2-lead' criteria, but fail for the '3-lead' criteria, which means that their axis is (-30°, 0°) which is not truely LAD
     3. (Aug. 15th) tranche F, the Georgia subset, has ADC gain 4880 which might be too high. Thus obtained voltages are too low. 1000 might be a suitable (correct) value of ADC gain for this tranche just as the other tranches.
+    4. "E04603", "E06072" has exceptionally large values at rpeaks, reading (`load_data`) these two records using `wfdb` would bring in `nan` values
 
     Usage:
     ------
@@ -237,6 +238,11 @@ class CINC2020(PhysioNetDataBase):
             'supraventricular premature beats': 'premature atrial contraction',
             'ventricular premature beats': 'premature ventricular contractions',
         }
+
+        self.value_correction_factor = ED({tranche:1 for tranche in self.db_tranches})
+        self.value_correction_factor.F = 4.88  # ref. ISSUES 3
+
+        self.exceptional_records = ["E04603", "E06072"]  # ref. ISSUES 4
 
 
     def get_subject_id(self, rec:str) -> int:
@@ -361,7 +367,67 @@ class CINC2020(PhysioNetDataBase):
         return tranche
 
 
-    def load_data(self, rec:str, leads:Optional[Union[str, List[str]]]=None, data_format='channel_first', backend:str='wfdb', units:str='mV', freq:Optional[Real]=None) -> np.ndarray:
+    def get_data_filepath(self, rec:str, with_ext:bool=True) -> str:
+        """ finished, checked,
+
+        get the absolute file path of the data file of `rec`
+
+        Parameters:
+        -----------
+        rec: str,
+            name of the record
+        with_ext: bool, default True,
+            if True, the returned file path comes with file extension,
+            otherwise without file extension,
+            which is useful for `wfdb` functions
+
+        Returns:
+        --------
+        fp: str,
+            absolute file path of the data file of the record
+        """
+        tranche = self._get_tranche(rec)
+        fp = os.path.join(self.db_dirs[tranche], f'{rec}.{self.rec_ext}')
+        if not with_ext:
+            fp = os.path.splitext(fp)[0]
+        return fp
+
+    
+    def get_header_filepath(self, rec:str, with_ext:bool=True) -> str:
+        """ finished, checked,
+
+        get the absolute file path of the header file of `rec`
+
+        Parameters:
+        -----------
+        rec: str,
+            name of the record
+        with_ext: bool, default True,
+            if True, the returned file path comes with file extension,
+            otherwise without file extension,
+            which is useful for `wfdb` functions
+
+        Returns:
+        --------
+        fp: str,
+            absolute file path of the header file of the record
+        """
+        tranche = self._get_tranche(rec)
+        fp = os.path.join(self.db_dirs[tranche], f'{rec}.{self.ann_ext}')
+        if not with_ext:
+            fp = os.path.splitext(fp)[0]
+        return fp
+
+    
+    def get_ann_filepath(self, rec:str, with_ext:bool=True) -> str:
+        """ finished, checked,
+        alias for `get_header_filepath`
+        """
+        fp = self.get_header_filepath(rec, with_ext=with_ext)
+        return fp
+
+
+    def load_data(self, rec:str, leads:Optional[Union[str, List[str]]]=None, data_format:str='channel_first', backend:str='wfdb', units:str='mV', freq:Optional[Real]=None) -> np.ndarray:
         """ finished, checked,
 
         load physical (converted from digital) ecg data,
@@ -376,7 +442,7 @@ class CINC2020(PhysioNetDataBase):
         data_format: str, default 'channel_first',
             format of the ecg data,
             'channel_last' (alias 'lead_last'), or
-            'channel_first' (alias 'lead_first', original)
+            'channel_first' (alias 'lead_first')
         backend: str, default 'wfdb',
             the backend data reader, can also be 'scipy'
         units: str, default 'mV',
@@ -400,24 +466,27 @@ class CINC2020(PhysioNetDataBase):
         # if tranche in "CD" and freq == 500:  # resample will be done at the end of the function
         #     data = self.load_resampled_data(rec)
         if backend.lower() == 'wfdb':
-            rec_fp = os.path.join(self.db_dirs[tranche], rec)
+            rec_fp = self.get_data_filepath(rec, with_ext=False)
             # p_signal of 'lead_last' format
             wfdb_rec = wfdb.rdrecord(rec_fp, physical=True, channel_names=_leads)
-            data = np.asarray(wfdb_rec.p_signal.T, dtype=np.float64)
+            data = np.asarray(wfdb_rec.p_signal.T)
             # lead_units = np.vectorize(lambda s: s.lower())(wfdb_rec.units)
         elif backend.lower() == 'scipy':
             # loadmat of 'lead_first' format
-            rec_fp = os.path.join(self.db_dirs[tranche], f'{rec}.{self.rec_ext}')
+            rec_fp = self.get_data_filepath(rec, with_ext=True)
             data = loadmat(rec_fp)['val']
             header_info = self.load_ann(rec, raw=False)['df_leads']
             baselines = header_info['baseline'].values.reshape(data.shape[0], -1)
             adc_gain = header_info['adc_gain'].values.reshape(data.shape[0], -1)
-            data = np.asarray(data-baselines, dtype=np.float64) / adc_gain
+            data = np.asarray(data-baselines) / adc_gain
             leads_ind = [self.all_leads.index(item) for item in _leads]
             data = data[leads_ind,:]
             # lead_units = np.vectorize(lambda s: s.lower())(header_info['df_leads']['adc_units'].values)
         else:
             raise ValueError(f"backend `{backend.lower()}` not supported for loading data")
+        
+        # ref. ISSUES 3, for multiplying `value_correction_factor`
+        data = data * self.value_correction_factor[tranche]
 
         if units.lower() in ['uv', 'μv']:
             data = data * 1000
@@ -452,7 +521,7 @@ class CINC2020(PhysioNetDataBase):
             the annotations with items: ref. `self.ann_items`
         """
         tranche = self._get_tranche(rec)
-        ann_fp = os.path.join(self.db_dirs[tranche], f'{rec}.{self.ann_ext}')
+        ann_fp = self.get_ann_filepath(rec, with_ext=True)
         with open(ann_fp, 'r') as f:
             header_data = f.read().splitlines()
         
@@ -461,7 +530,7 @@ class CINC2020(PhysioNetDataBase):
             return ann_dict
 
         if backend.lower() == 'wfdb':
-            ann_dict = self._load_ann_wfdb(ann_fp, header_data)
+            ann_dict = self._load_ann_wfdb(rec, header_data)
         elif backend.lower() == 'naive':
             ann_dict = self._load_ann_naive(header_data)
         else:
@@ -469,13 +538,13 @@ class CINC2020(PhysioNetDataBase):
         return ann_dict
 
 
-    def _load_ann_wfdb(self, ann_fp:str, header_data:List[str]) -> dict:
+    def _load_ann_wfdb(self, rec:str, header_data:List[str]) -> dict:
         """ finished, checked,
 
         Parameters:
         -----------
-        ann_fp: str,
-            path to the annotation (header) file, without file extension
+        rec: str,
+            name of the record
         header_data: list of str,
             list of lines read directly from a header file,
             complementary to data read using `wfdb.rdheader` if applicable,
@@ -486,7 +555,8 @@ class CINC2020(PhysioNetDataBase):
         ann_dict, dict,
             the annotations with items: ref. `self.ann_items`
         """
-        header_reader = wfdb.rdheader(os.path.splitext(ann_fp)[0], pb_dir=None, rd_segments=False)
+        header_fp = self.get_header_filepath(rec, with_ext=False)
+        header_reader = wfdb.rdheader(header_fp, pb_dir=None, rd_segments=False)
         ann_dict = {}
         ann_dict['rec_name'], ann_dict['nb_leads'], ann_dict['freq'], ann_dict['nb_samples'], ann_dict['datetime'], daytime = header_data[0].split(' ')
 
@@ -800,7 +870,8 @@ class CINC2020(PhysioNetDataBase):
         rec: str,
             name of the record
         data: ndarray, optional,
-            12-lead ecg signal to plot,
+            (12-lead) ecg signal to plot,
+            should be of the format "channel_first", and compatible with `leads`
             if given, data of `rec` will not be used,
             this is useful when plotting filtered data
         ticks_granularity: int, default 0,
@@ -842,12 +913,16 @@ class CINC2020(PhysioNetDataBase):
             import matplotlib.pyplot as plt
             plt.MultipleLocator.MAXTICKS = 3000
         if leads is None or leads == 'all':
-            leads = self.all_leads
-        assert all([l in self.all_leads for l in leads])
+            _leads = self.all_leads
+        elif isinstance(leads, str):
+            _leads = [leads]
+        else:
+            _leads = leads
+        assert all([l in self.all_leads for l in _leads])
 
         # lead_list = self.load_ann(rec)['df_leads']['lead_name'].tolist()
-        # lead_indices = [lead_list.index(l) for l in leads]
-        lead_indices = [self.all_leads.index(l) for l in leads]
+        # lead_indices = [lead_list.index(l) for l in _leads]
+        lead_indices = [self.all_leads.index(l) for l in _leads]
         if data is None:
             _data = self.load_data(rec, data_format='channel_first', units='μV')[lead_indices]
         else:
@@ -857,6 +932,8 @@ class CINC2020(PhysioNetDataBase):
                 _data = 1000 * data
             else:
                 _data = data
+            assert _data.shape[0] == len(_leads), \
+                f"number of leads from data of shape ({_data.shape[0]}) does not match the length ({len(_leads)}) of `leads`"
         
         if same_range:
             y_ranges = np.ones((_data.shape[0],)) * np.max(np.abs(_data)) + 100
@@ -910,7 +987,7 @@ class CINC2020(PhysioNetDataBase):
         diag_scored = self.get_labels(rec, scored_only=True, fmt='a')
         diag_all = self.get_labels(rec, scored_only=False, fmt='a')
 
-        nb_leads = len(leads)
+        nb_leads = len(_leads)
 
         seg_len = self.freq[tranche] * 25  # 25 seconds
         nb_segs = _data.shape[1] // seg_len
@@ -919,12 +996,11 @@ class CINC2020(PhysioNetDataBase):
         duration = len(t) / self.freq[tranche]
         fig_sz_w = int(round(4.8 * duration))
         fig_sz_h = 6 * y_ranges / 1500
-        nl = "\n"
         fig, axes = plt.subplots(nb_leads, 1, sharex=True, figsize=(fig_sz_w, np.sum(fig_sz_h)))
+        if nb_leads == 1:
+            axes = [axes]
         for idx in range(nb_leads):
-            # axes[idx].plot(t, _data[idx], label='lead - ' + leads[idx] + '\n' + 'labels - ' + ",".join(diag_scored))
-            # axes[idx].plot(t, _data[idx], label=f'lead - {leads[idx]}{nl}labels_s - {",".join(diag_scored)}{nl}labels_a - {",".join(diag_all)}')
-            axes[idx].plot(t, _data[idx], label=f'lead - {leads[idx]}')
+            axes[idx].plot(t, _data[idx], label=f'lead - {_leads[idx]}')
             axes[idx].axhline(y=0, linestyle='-', linewidth='1.0', color='red')
             # NOTE that `Locator` has default `MAXTICKS` equal to 1000
             if ticks_granularity >= 1:
@@ -979,7 +1055,7 @@ class CINC2020(PhysioNetDataBase):
 
 
     def get_tranche_class_distribution(self, tranches:Sequence[str], scored_only:bool=True) -> Dict[str, int]:
-        """
+        """ finished, checked,
 
         Parameters:
         -----------
@@ -1030,7 +1106,7 @@ class CINC2020(PhysioNetDataBase):
                 print("*"*110)
 
 
-    def load_resampled_data(self, rec:str, siglen:Optional[int]=None) -> np.ndarray:
+    def load_resampled_data(self, rec:str, data_format:str='channel_first', siglen:Optional[int]=None) -> np.ndarray:
         """ finished, checked,
 
         resample the data of `rec` to 500Hz,
@@ -1040,6 +1116,10 @@ class CINC2020(PhysioNetDataBase):
         -----------
         rec: str,
             name of the record
+        data_format: str, default 'channel_first',
+            format of the ecg data,
+            'channel_last' (alias 'lead_last'), or
+            'channel_first' (alias 'lead_first')
         siglen: int, optional,
             signal length, units in number of samples,
             if set, signal with length longer will be sliced to the length of `siglen`
@@ -1061,11 +1141,46 @@ class CINC2020(PhysioNetDataBase):
             if self.freq[tranche] != 500:
                 data = resample_poly(data, 500, self.freq[tranche], axis=1)
             if siglen is not None and data.shape[1] >= siglen:
-                slice_start = (data.shape[1] - siglen)//2
-                slice_end = (data.shape[1] - siglen)//2
-                data = data[..., slice_start:slice_end]
-            np.save(rec_fp, data)
+                # slice_start = (data.shape[1] - siglen)//2
+                # slice_end = slice_start + siglen
+                # data = data[..., slice_start:slice_end]
+                data = ensure_siglen(data, siglen=siglen, fmt='channel_first')
+                np.save(rec_fp, data)
+            elif siglen is None:
+                np.save(rec_fp, data)
         else:
             # print(f"loading from local file...")
             data = np.load(rec_fp)
+        if data_format.lower() in ['channel_last', 'lead_last']:
+            data = data.T
         return data
+
+
+    def load_raw_data(self, rec:str, backend:str='scipy') -> np.ndarray:
+        """ finished, checked,
+
+        load raw data from corresponding files with no further processing,
+        in order to facilitate feeding data into the `run_12ECG_classifier` function
+
+        Parameters:
+        -----------
+        rec: str,
+            name of the record
+        backend: str, default 'scipy',
+            the backend data reader, can also be 'wfdb',
+            note that 'scipy' provides data in the format of 'lead_first',
+            while 'wfdb' provides data in the format of 'lead_last',
+
+        Returns:
+        --------
+
+        """
+        tranche = self._get_tranche(rec)
+        if backend.lower() == 'wfdb':
+            rec_fp = self.get_data_filepath(rec, with_ext=False)
+            wfdb_rec = wfdb.rdrecord(rec_fp, physical=False)
+            raw_data = np.asarray(wfdb_rec.d_signal)
+        elif backend.lower() == 'scipy':
+            rec_fp = self.get_data_filepath(rec, with_ext=True)
+            raw_data = loadmat(rec_fp)['val']
+        return raw_data
