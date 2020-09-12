@@ -30,6 +30,7 @@ from ..utils.utils_misc.cinc2020_aux_data import (
     dx_mapping_all, dx_mapping_scored, dx_mapping_unscored,
     normalize_class, abbr_to_snomed_ct_code,
     df_weights_abbr,
+    equiv_class_dict,
 )
 from ..utils.utils_universal.utils_str import dict_to_str
 from ..base import PhysioNetDataBase
@@ -98,11 +99,11 @@ class CINC2020(PhysioNetDataBase):
     using for example the following code:
     >>> db_dir = "/media/cfs/wenhao71/data/cinc2020_data/"
     >>> working_dir = "./working_dir"
-    >>> data_gen = CINC2020Reader(db_dir=db_dir,working_dir=working_dir)
+    >>> dr = CINC2020Reader(db_dir=db_dir,working_dir=working_dir)
     >>> set_leads = []
-    >>> for tranche, l_rec in data_gen.all_records.items():
+    >>> for tranche, l_rec in dr.all_records.items():
     ...     for rec in l_rec:
-    ...         ann = data_gen.load_ann(rec)
+    ...         ann = dr.load_ann(rec)
     ...         leads = ann['df_leads']['lead_name'].values.tolist()
     ...     if leads not in set_leads:
     ...         set_leads.append(leads)
@@ -122,12 +123,12 @@ class CINC2020(PhysioNetDataBase):
     8. on Aug. 1, 2020, adc gain (including 'resolution', 'ADC'? in .hea files) of datasets INCART, PTB, and PTB-xl (tranches C, D, E) are corrected. After correction, (the .tar files of) the 3 datasets are all put in a "WFDB" subfolder. In order to keep the structures consistant, they are moved into "Training_StPetersburg", "Training_PTB", "WFDB" as previously. Using the following code, one can check the adc_gain and baselines of each tranche:
     >>> db_dir = "/media/cfs/wenhao71/data/cinc2020_data/"
     >>> working_dir = "./working_dir"
-    >>> data_gen = CINC2020(db_dir=db_dir,working_dir=working_dir)
+    >>> dr = CINC2020(db_dir=db_dir,working_dir=working_dir)
     >>> resolution = {tranche: set() for tranche in "ABCDEF"}
     >>> baseline = {tranche: set() for tranche in "ABCDEF"}
-    >>> for tranche, l_rec in data_gen.all_records.items():
+    >>> for tranche, l_rec in dr.all_records.items():
     ...     for rec in l_rec:
-    ...         ann = data_gen.load_ann(rec)
+    ...         ann = dr.load_ann(rec)
     ...         resolution[tranche] = resolution[tranche].union(set(ann['df_leads']['adc_gain']))
     ...         baseline[tranche] = baseline[tranche].union(set(ann['df_leads']['baseline']))
     >>> print(resolution, baseline)
@@ -142,7 +143,9 @@ class CINC2020(PhysioNetDataBase):
     1. reading the .hea files, baselines of all records are 0, however it is not the case if one plot the signal
     2. about half of the LAD records satisfy the '2-lead' criteria, but fail for the '3-lead' criteria, which means that their axis is (-30°, 0°) which is not truely LAD
     3. (Aug. 15th) tranche F, the Georgia subset, has ADC gain 4880 which might be too high. Thus obtained voltages are too low. 1000 might be a suitable (correct) value of ADC gain for this tranche just as the other tranches.
-    4. "E04603", "E06072" has exceptionally large values at rpeaks, reading (`load_data`) these two records using `wfdb` would bring in `nan` values
+    4. "E04603" (all leads), "E06072" (chest leads, epecially V1-V3), "E06909" (lead V2), "E07675" (lead V3), "E07941" (lead V6), "E08321" (lead V6) has exceptionally large values at rpeaks, reading (`load_data`) these two records using `wfdb` would bring in `nan` values. One can check using the following code
+    >>> rec = "E04603"
+    >>> dr.plot(rec, dr.load_data(rec, backend="scipy", units='uv'))
 
     Usage:
     ------
@@ -179,37 +182,6 @@ class CINC2020(PhysioNetDataBase):
         self.ann_ext = 'hea'
 
         self.db_tranches = list("ABCDEF")
-        self.rec_prefix = ED({
-            "A": "A", "B": "Q", "C": "I", "D": "S", "E": "HR", "F": "E",
-        })
-
-        self.db_dir_base = db_dir
-        # self.db_dirs = ED({
-        #     "A": os.path.join(self.db_dir_base, "Training_WFDB"),
-        #     "B": os.path.join(self.db_dir_base, "Training_2"),
-        #     "C": os.path.join(self.db_dir_base, "Training_StPetersburg"),
-        #     "D": os.path.join(self.db_dir_base, "Training_PTB"),
-        #     "E": os.path.join(self.db_dir_base, "WFDB"),
-        #     "F": os.path.join(self.db_dir_base, "Training_E", "WFDB"),
-        # })
-        self.db_dirs = ED({tranche:"" for tranche in self.db_tranches})
-        self._all_records = None
-        self._ls_rec()  # loads file system structures into self.db_dirs and self._all_records
-
-        self._diagnoses_records_list = None
-        self._ls_diagnoses_records()
-
-        self.rec_prefix = ED({
-            "A": "A", "B": "Q", "C": "I", "D": "S", "E": "HR", "F": "E",
-        })
-        """
-        prefixes can be obtained using the following code:
-        >>> pfs = ED({k:set() for k in "ABCDEF"})
-        >>> for k, p in db_dir.items():
-        ...     af = os.listdir(p)
-        ...     for fn in af:
-        ...         pfs[k].add("".join(re.findall(r"[A-Z]", os.path.splitext(fn)[0])))
-        """
         self.tranche_names = ED({
             "A": "CPSC",
             "B": "CPSC-Extra",
@@ -218,6 +190,18 @@ class CINC2020(PhysioNetDataBase):
             "E": "PTB-XL",
             "F": "Georgia",
         })
+        self.rec_prefix = ED({
+            "A": "A", "B": "Q", "C": "I", "D": "S", "E": "HR", "F": "E",
+        })
+
+        self.db_dir_base = db_dir
+        self.db_dirs = ED({tranche:"" for tranche in self.db_tranches})
+        self._all_records = None
+        self._ls_rec()  # loads file system structures into self.db_dirs and self._all_records
+
+        self._diagnoses_records_list = None
+        self._ls_diagnoses_records()
+
         self.freq = {
             "A": 500, "B": 500, "C": 257, "D": 1000, "E": 500, "F": 500,
         }
@@ -231,18 +215,12 @@ class CINC2020(PhysioNetDataBase):
             'diagnosis','df_leads',
             'medical_prescription','history','symptom_or_surgery',
         ]
-        self.label_trans_dict = {
-            'CRBBB': 'RBBB', 'SVPB': 'PAC', 'VPB': 'PVC',
-            '713427006': '59118001', '63593006': '284470004', '17338001': '427172004',
-            'complete right bundle branch block': 'right bundle branch block',
-            'supraventricular premature beats': 'premature atrial contraction',
-            'ventricular premature beats': 'premature ventricular contractions',
-        }
+        self.label_trans_dict = equiv_class_dict.copy()
 
         self.value_correction_factor = ED({tranche:1 for tranche in self.db_tranches})
         self.value_correction_factor.F = 4.88  # ref. ISSUES 3
 
-        self.exceptional_records = ["E04603", "E06072"]  # ref. ISSUES 4
+        self.exceptional_records = ["E04603", "E06072", "E06909", "E07675", "E07941", "E08321"]  # ref. ISSUES 4
 
 
     def get_subject_id(self, rec:str) -> int:
@@ -336,6 +314,7 @@ class CINC2020(PhysioNetDataBase):
             print(f"Done in {time.time() - start} seconds!")
             with open(dr_fp, "w") as f:
                 json.dump(self._diagnoses_records_list, f)
+        self._all_records = ED(self._all_records)
 
 
     @property
@@ -827,7 +806,7 @@ class CINC2020(PhysioNetDataBase):
 
 
     def save_challenge_predictions(self, rec:str, output_dir:str, scores:List[Real], labels:List[int], classes:List[str]) -> NoReturn:
-        """ finished, checked, 
+        """ NOT finished, NOT checked, need updating, 
         
         TODO: update for the official phase
 
@@ -1030,7 +1009,7 @@ class CINC2020(PhysioNetDataBase):
 
 
     def _auto_infer_units(self, data:np.ndarray) -> str:
-        """ finished, checked
+        """ finished, checked,
 
         automatically infer the units of `data`,
         under the assumption that `data` not raw data, with baseline removed
@@ -1173,7 +1152,9 @@ class CINC2020(PhysioNetDataBase):
 
         Returns:
         --------
-
+        raw_data: ndarray,
+            raw data (d_signal) loaded from corresponding data file,
+            without subtracting baseline nor dividing adc gain
         """
         tranche = self._get_tranche(rec)
         if backend.lower() == 'wfdb':
@@ -1184,3 +1165,24 @@ class CINC2020(PhysioNetDataBase):
             rec_fp = self.get_data_filepath(rec, with_ext=True)
             raw_data = loadmat(rec_fp)['val']
         return raw_data
+
+
+    def _check_nan(self, tranches:Union[str, Sequence[str]]) -> NoReturn:
+        """ finished, checked,
+
+        check if records from `tranches` has nan values
+
+        accessing data using `p_signal` of `wfdb` would produce nan values,
+        if exceptionally large values are encountered,
+        this could help detect abnormal records as well
+
+        Parameters:
+        -----------
+        tranches: str or sequence of str,
+            tranches to check
+        """
+        for t in tranches:
+            for rec in self.all_records[t]:
+                data = self.load_data(rec)
+                if np.isnan(data).any():
+                    print(f"record {rec} from tranche {t} has nan values")
