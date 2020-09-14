@@ -19,17 +19,17 @@ from ..base import PhysioNetDataBase
 
 
 __all__ = [
-    "LTAFDB",
+    "AFDB",
 ]
 
 
-class AFTDB(PhysioNetDataBase):
+class AFDB(PhysioNetDataBase):
     """ NOT Finished,
 
-    Long Term AF Database
+    MIT-BIH Atrial Fibrillation Database
 
-    ABOUT ltafdb:
-    -------------
+    ABOUT afdb:
+    -----------
 
     NOTE:
     -----
@@ -43,8 +43,8 @@ class AFTDB(PhysioNetDataBase):
 
     References:
     -----------
-    [1] https://physionet.org/content/ltafdb/1.0.0/
-    [2] Petrutiu S, Sahakian AV, Swiryn S. Abrupt changes in fibrillatory wave characteristics at the termination of paroxysmal atrial fibrillation in humans. Europace 9:466-470 (2007).
+    [1] https://physionet.org/content/afdb/1.0.0/
+    [2] Moody GB, Mark RG. A new method for detecting atrial fibrillation using R-R intervals. Computers in Cardiology. 10:227-230 (1983).
     """
     def __init__(self, db_dir:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
@@ -57,7 +57,7 @@ class AFTDB(PhysioNetDataBase):
             working directory, to store intermediate files and log file
         verbose: int, default 2,
         """
-        super().__init__(db_name='ltftdb', db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
+        super().__init__(db_name='afdb', db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
         # self.freq = 100
         # self.data_ext = "dat"
         # self.ann_ext = "apn"

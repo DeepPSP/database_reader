@@ -24,7 +24,7 @@ __all__ = [
 
 
 class AFTDB(PhysioNetDataBase):
-    """ Finished, to be improved,
+    """ NOT Finished,
 
     AF Termination Challenge Database
 
