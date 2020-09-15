@@ -381,7 +381,7 @@ class LUDB(PhysioNetDataBase):
 
 
     def from_masks(self, masks:np.ndarray, mask_format:str="channel_first", leads:Optional[Sequence[str]]=None, class_map:Optional[Dict[str, int]]=None, freq:Optional[Real]=None) -> Dict[str, List[ECGWaveForm]]:
-        """
+        """ finished, checked,
 
         convert masks into lists of waveforms
 
@@ -645,7 +645,7 @@ class LUDB(PhysioNetDataBase):
 
 
     def _auto_infer_units(self, data:np.ndarray) -> str:
-        """ finished, checked
+        """ finished, checked,
 
         automatically infer the units of `data`,
         under the assumption that `data` not raw data, with baseline removed

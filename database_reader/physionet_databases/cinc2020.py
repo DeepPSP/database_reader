@@ -284,7 +284,7 @@ class CINC2020(PhysioNetDataBase):
 
     @property
     def all_records(self):
-        """ finished, checked
+        """ finished, checked,
         """
         if self._all_records is None:
             self._ls_rec()
@@ -319,7 +319,7 @@ class CINC2020(PhysioNetDataBase):
 
     @property
     def diagnoses_records_list(self):
-        """ finished, checked
+        """ finished, checked,
         """
         if self._diagnoses_records_list is None:
             self._ls_diagnoses_records()

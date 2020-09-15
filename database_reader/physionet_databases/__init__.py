@@ -10,6 +10,8 @@ About the header (.hea) files:
 https://physionet.org/physiotools/wag/header-5.htm
 """
 
+from .afdb import *
+from .aftdb import *
 from .apnea_ecg import *
 from .bidmc import *
 from .butqdb import *
@@ -17,6 +19,7 @@ from .capslpdb import *
 from .cinc2018 import *
 from .cinc2020 import *
 from .edb import *
+from .ltafdb import *
 from .ltstdb import *
 from .ludb import *
 from .mimic3 import *

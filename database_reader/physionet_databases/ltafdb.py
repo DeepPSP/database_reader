@@ -4,7 +4,7 @@
 import os
 import json
 from datetime import datetime
-from typing import Union, Optional, Any, List, Tuple, NoReturn
+from typing import Union, Optional, Any, List, Tuple, Dict, Sequence, NoReturn
 from numbers import Real
 
 import numpy as np
@@ -47,7 +47,8 @@ class AFTDB(PhysioNetDataBase):
     [2] Petrutiu S, Sahakian AV, Swiryn S. Abrupt changes in fibrillatory wave characteristics at the termination of paroxysmal atrial fibrillation in humans. Europace 9:466-470 (2007).
     """
     def __init__(self, db_dir:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
-        """
+        """ NOT finished,
+
         Parameters:
         -----------
         db_dir: str, optional,
@@ -64,4 +65,35 @@ class AFTDB(PhysioNetDataBase):
 
         self._ls_rec()
 
+        raise NotImplementedError
+
+
+    def load_ann(self, rec:str):
+        """ NOT finished,
+
+        load annotations (header) stored in the .hea files
+        
+        Parameters:
+        -----------
+        rec: str,
+            name of the record
+        
+        Returns:
+        --------
+        ann,
+        """
+        # fp = os.path.join(self.db_dir, rec)
+        # wfdb_ann = wfdb.rdann(fp, extension=self.ann_ext)
+        # header = wfdb.rdheader(fp)
+        # ann = ED({k:[] for k in self.class_map.keys()})
+        # critical_points = wfdb_ann.sample.tolist() + [header.sig_len]
+        # for idx, rhythm in enumerate(wfdb_ann.aux_note):
+        #     ann[rhythm.replace("(", "")].append([critical_points[idx], critical_points[idx+1]])
+        # if fmt.lower() == "mask":
+        #     tmp = ann.copy()
+        #     ann = np.full(shape=(header.sig_len,), fill_value=self.class_map.N, dtype=int)
+        #     for rhythm, l_itv in tmp.items():
+        #         for itv in l_itv:
+        #             ann[itv[0]: itv[1]] = self.class_map[rhythm]
+        # return ann
         raise NotImplementedError
