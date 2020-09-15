@@ -4,12 +4,13 @@
 import os
 import json
 from datetime import datetime
-from typing import Union, Optional, Any, List, Tuple, NoReturn
+from typing import Union, Optional, Any, List, Tuple, Dict, Sequence, NoReturn
 from numbers import Real
 
 import numpy as np
 import pandas as pd
 import wfdb
+from easydict import EasyDict as ED
 
 from ..utils.common import (
     ArrayLike,
@@ -24,7 +25,7 @@ __all__ = [
 
 
 class AFDB(PhysioNetDataBase):
-    """ NOT Finished,
+    """ partly finished, checked, to improve,
 
     MIT-BIH Atrial Fibrillation Database
 
@@ -49,7 +50,7 @@ class AFDB(PhysioNetDataBase):
 
     Usage:
     ------
-    1. 
+    1. AF detection
 
     References:
     -----------
@@ -57,7 +58,8 @@ class AFDB(PhysioNetDataBase):
     [2] Moody GB, Mark RG. A new method for detecting atrial fibrillation using R-R intervals. Computers in Cardiology. 10:227-230 (1983).
     """
     def __init__(self, db_dir:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
-        """
+        """ finished, checked,
+
         Parameters:
         -----------
         db_dir: str, optional,
@@ -74,7 +76,15 @@ class AFDB(PhysioNetDataBase):
         self.auto_beat_ann_ext = "qrs"
         self.manual_beat_ann_ext = "qrsc"
 
+        self.all_leads = ["ECG1", "ECG2"]
+
         self._ls_rec()
+        self.special_records = ["00735", "03665"]
+        self.qrsc_records = get_record_list_recursive(self.db_dir, self.manual_beat_ann_ext)
+
+        self.class_map = ED(
+            AFIB=1, AFL=2, J=3, N=0  # an extra isoelectric
+        )
 
 
     def get_subject_id(self, rec:str) -> int:
@@ -95,31 +105,14 @@ class AFDB(PhysioNetDataBase):
 
     @property
     def all_records(self):
-        """ finished, checked
+        """ finished, checked,
         """
         if self._all_records is None:
             self._ls_rec()
         return self._all_records
 
 
-    def _ls_diagnoses_records(self) -> NoReturn:
-        """ finished, checked,
-
-        list all the records for all diagnoses
-        """
-        raise NotImplementedError
-
-
-    @property
-    def diagnoses_records_list(self):
-        """ finished, checked
-        """
-        if self._diagnoses_records_list is None:
-            self._ls_diagnoses_records()
-        return self._diagnoses_records_list
-
-
-    def load_data(self, rec:str, leads:Optional[Union[str, List[str]]]=None, data_format:str='channel_first', backend:str='wfdb', units:str='mV', freq:Optional[Real]=None) -> np.ndarray:
+    def load_data(self, rec:str, leads:Optional[Union[str, List[str]]]=None, data_format:str='channel_first', units:str='mV', freq:Optional[Real]=None) -> np.ndarray:
         """ finished, checked,
 
         load physical (converted from digital) ecg data,
@@ -135,8 +128,6 @@ class AFDB(PhysioNetDataBase):
             format of the ecg data,
             'channel_last' (alias 'lead_last'), or
             'channel_first' (alias 'lead_first')
-        backend: str, default 'wfdb',
-            the backend data reader, can also be 'scipy'
         units: str, default 'mV',
             units of the output signal, can also be 'μV', with an alias of 'uV'
         freq: real number, optional,
@@ -147,10 +138,25 @@ class AFDB(PhysioNetDataBase):
         data: ndarray,
             the ecg data
         """
-        raise NotImplementedError
+        fp = os.path.join(self.db_dir, rec)
+        if not leads:
+            _leads = self.all_leads
+        elif isinstance(leads, str):
+            _leads = [leads]
+        else:
+            _leads = leads
+        # p_signal in the format of 'lead_last'
+        data = wfdb.rdrecord(fp, physical=True, channel_names=_leads).p_signal
+        if units.lower() in ['μV', 'uV']:
+            data = 1000 * data
+        if freq is not None and freq != self.freq:
+            data = resample_poly(data, freq, self.freq, axis=0)
+        if data_format.lower() in ['channel_first', 'lead_first']:
+            data = data.T
+        return data
 
     
-    def load_ann(self, rec:str, raw:bool=False, backend:str="wfdb") -> Union[dict,str]:
+    def load_ann(self, rec:str, fmt:str="interval") -> Union[Dict[str, list], np.ndarray]:
         """ finished, checked,
 
         load annotations (header) stored in the .hea files
@@ -159,29 +165,59 @@ class AFDB(PhysioNetDataBase):
         -----------
         rec: str,
             name of the record
-        raw: bool, default False,
-            if True, the raw annotations without parsing will be returned
-        backend: str, default "wfdb", case insensitive,
-            if is "wfdb", `wfdb.rdheader` will be used to load the annotations;
-            if is "naive", annotations will be parsed from the lines read from the header files
+        fmt: str, default "interval", case insensitive,
+            format of returned annotation, can also be "mask"
         
         Returns:
         --------
-        ann_dict, dict or str,
-            the annotations with items: ref. `self.ann_items`
+        ann, dict or ndarray,
+            the annotations in the format of intervals, or in the format of mask
         """
-        raise NotImplementedError
+        fp = os.path.join(self.db_dir, rec)
+        wfdb_ann = wfdb.rdann(fp, extension=self.ann_ext)
+        header = wfdb.rdheader(fp)
+        ann = ED({k:[] for k in self.class_map.keys()})
+        critical_points = wfdb_ann.sample.tolist() + [header.sig_len]
+        for idx, rhythm in enumerate(wfdb_ann.aux_note):
+            ann[rhythm.replace("(", "")].append([critical_points[idx], critical_points[idx+1]])
+        if fmt.lower() == "mask":
+            tmp = ann.copy()
+            ann = np.full(shape=(header.sig_len,), fill_value=self.class_map.N, dtype=int)
+            for rhythm, l_itv in tmp.items():
+                for itv in l_itv:
+                    ann[itv[0]: itv[1]] = self.class_map[rhythm]
+        return ann
 
 
-    def load_header(self, rec:str, raw:bool=False) -> Union[dict,str]:
+    def load_beat_ann(self, rec:str, use_manual:bool=True) -> np.ndarray:
+        """ finished, checked,
+
+        load annotations (header) stored in the .hea files
+        
+        Parameters:
+        -----------
+        rec: str,
+            name of the record
+        use_manual: bool, default True,
+            use manually annotated beat annotations (qrs),
+            instead of those generated by algorithms
+        
+        Returns:
+        --------
+        ann, ndarray,
+            locations (indices) of the qrs complexes
         """
-        alias for `load_ann`, as annotations are also stored in header files
-        """
-        raise NotImplementedError
+        fp = os.path.join(self.db_dir, rec)
+        if use_manual and rec in self.qrsc_records:
+            ann = wfdb.rdann(fp, extension=self.manual_beat_ann_ext)
+        else:
+            ann = wfdb.rdann(fp, extension=self.auto_beat_ann_ext)
+        ann = ann.sample
+        return ann
 
 
     def plot(self, rec:str, data:Optional[np.ndarray]=None, ticks_granularity:int=0, leads:Optional[Union[str, List[str]]]=None, same_range:bool=False, waves:Optional[Dict[str, Sequence[int]]]=None, **kwargs) -> NoReturn:
-        """ finished, checked, to improve,
+        """ NOT finished,
 
         plot the signals of a record or external signals (units in μV),
         with metadata (freq, labels, tranche, etc.),
@@ -247,31 +283,3 @@ class AFDB(PhysioNetDataBase):
         else:
             units = 'mV'
         return units
-
-
-    @staticmethod
-    def get_arrhythmia_knowledge(arrhythmias:Union[str,List[str]], **kwargs) -> NoReturn:
-        """ finished, checked,
-
-        knowledge about ECG features of specific arrhythmias,
-
-        Parameters:
-        -----------
-        arrhythmias: str, or list of str,
-            the arrhythmia(s) to check, in abbreviations or in SNOMED CT Code
-        """
-        if isinstance(arrhythmias, str):
-            d = [normalize_class(arrhythmias)]
-        else:
-            d = [normalize_class(c) for c in arrhythmias]
-        # pp = pprint.PrettyPrinter(indent=4)
-        # unsupported = [item for item in d if item not in dx_mapping_all['Abbreviation']]
-        unsupported = [item for item in d if item not in dx_mapping_scored['Abbreviation'].values]
-        assert len(unsupported) == 0, \
-            f"`{unsupported}` {'is' if len(unsupported)==1 else 'are'} not supported!"
-        for idx, item in enumerate(d):
-            # pp.pprint(eval(f"EAK.{item}"))
-            print(dict_to_str(eval(f"EAK.{item}")))
-            if idx < len(d)-1:
-                print("*"*110)
-
