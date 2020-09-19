@@ -22,7 +22,7 @@ __all__ = [
 
 
 class CINC2018(PhysioNetDataBase):
-    """ NOT Finished
+    """ NOT Finished,
 
     You Snooze You Win - The PhysioNet Computing in Cardiology Challenge 2018
 
@@ -94,15 +94,27 @@ class CINC2018(PhysioNetDataBase):
         self._all_records = []
 
 
-    def get_subject_id(self, rec) -> int:
-        """
+    def get_subject_id(self, rec:str) -> int:
+        """ finished, checked,
 
+        Parameters:
+        -----------
+        rec: str,
+            name of the record
+
+        Returns:
+        --------
+        pid: int,
+            the `subject_id` corr. to `rec`
         """
         head = '2018'
         mid = rec[2:4]
         tail = rec[-4:]
         pid = int(head+mid+tail)
         return pid
+
+
+    # def load_data(self,)
 
 
     def database_info(self) -> NoReturn:

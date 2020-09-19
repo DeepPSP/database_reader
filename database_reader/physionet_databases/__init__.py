@@ -5,7 +5,6 @@ facilities for easy reading of `official` databases from physionet
 data from `official` physionet databases can be loaded from its server at use,
 or downloaded using `wfdb` easily beforehand
 
-
 About the header (.hea) files:
 https://physionet.org/physiotools/wag/header-5.htm
 """
@@ -16,6 +15,7 @@ from .apnea_ecg import *
 from .bidmc import *
 from .butqdb import *
 from .capslpdb import *
+from .cinc2017 import *
 from .cinc2018 import *
 from .cinc2020 import *
 from .edb import *
