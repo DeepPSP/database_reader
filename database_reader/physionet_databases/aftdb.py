@@ -85,7 +85,7 @@ class AFTDB(PhysioNetDataBase):
 
 
     @property
-    def all_records(self):
+    def all_records(self) -> List[str]:
         """ NOT finished,
         """
         if self._all_records is None:
