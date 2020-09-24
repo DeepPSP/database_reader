@@ -29,7 +29,16 @@ class CINC2017(PhysioNetDataBase):
 
     ABOUT CINC2017:
     ---------------
-    1. 
+    1. training set contains 8,528 single lead ECG recordings lasting from 9 s to just over 60 s, and the test set contains 3,658 ECG recordings of similar lengths
+    2. records are of frequency 300 Hz and have been band pass filtered
+    3. data distribution:
+        Type	        	                    Time length (s)
+                        # recording     Mean	SD	    Max	    Median	Min
+        Normal	        5154	        31.9	10.0	61.0	30	    9.0
+        AF              771             31.6	12.5	60	    30	    10.0
+        Other rhythm	2557	        34.1	11.8	60.9	30	    9.1
+        Noisy	        46	            27.1	9.0	    60	    30	    10.2
+        Total	        8528	        32.5	10.9	61.0	30	    9.0
 
     NOTE:
     -----
@@ -56,7 +65,10 @@ class CINC2017(PhysioNetDataBase):
         verbose: int, default 2,
         """
         super().__init__(db_name='CINC2017', db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
-        raise NotImplementedError
+        self.freq = 300
+        self.rec_ext = 'mat'
+        self.ann_ext = 'hea'
+        self._ls_rec()
 
 
     def get_subject_id(self, rec) -> int:

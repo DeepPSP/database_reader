@@ -171,13 +171,8 @@ class CINC2020(PhysioNetDataBase):
         verbose: int, default 2,
             print and log verbosity
         """
-        self.db_name = 'CINC2020'
-        self.working_dir = working_dir or os.getcwd()
-        os.makedirs(self.working_dir, exist_ok=True)
-        self.verbose = verbose
-        self.logger = None
-        self._set_logger(prefix=self.db_name)
-
+        super().__init__(db_name='CINC2020', db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
+        
         self.rec_ext = 'mat'
         self.ann_ext = 'hea'
 
