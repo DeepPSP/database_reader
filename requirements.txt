@@ -10,3 +10,6 @@ librosa
 praat-parselmouth
 opencv-contrib-python
 easydict
+
+# ipympl
+# ipywidgets
