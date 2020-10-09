@@ -2,12 +2,13 @@
 """
 """
 import os
+import json
+from typing import Optional
+
+import cv2
 import numpy as np
 import pandas as pd
-import json
-import cv2
 from PIL import Image
-from typing import Optional
 from easydict import EasyDict as ED
 
 from ..base import ImageDataBase

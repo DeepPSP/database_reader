@@ -2,15 +2,15 @@
 """
 docstring, to write
 """
-
 import os
+from datetime import datetime
+from typing import Union, Optional, Any, List, Dict, Iterable, Sequence, NoReturn
+from numbers import Real
+
 import numpy as np
 import pandas as pd
 import xmltodict as xtd
 from pyedflib import EdfReader
-from datetime import datetime
-from typing import Union, Optional, Any, List, Dict, Iterable, Sequence, NoReturn
-from numbers import Real
 
 from ..utils.common import (
     ArrayLike,

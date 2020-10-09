@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 import os
+from typing import Union, Optional, Any, List, NoReturn
+
 import numpy as np
 import pandas as pd
-from typing import Union, Optional, Any, List, NoReturn
 
 from ..utils.common import (
     ArrayLike,
