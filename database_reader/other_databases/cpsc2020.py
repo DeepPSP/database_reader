@@ -129,9 +129,9 @@ class CPSC2020(OtherDataBase):
         self.ann_ext = '.mat'
 
         self.nb_records = 10
-        self.all_records = [f"A{i:02d}" for i in range(1,1+self.nb_records)]
-        self.all_annotations = [f"R{i:02d}" for i in range(1,1+self.nb_records)]
-        self.all_references = self.all_annotations
+        self._all_records = [f"A{i:02d}" for i in range(1,1+self.nb_records)]
+        self._all_annotations = [f"R{i:02d}" for i in range(1,1+self.nb_records)]
+        # self.all_references = self.all_annotations
         self.rec_dir = os.path.join(self.db_dir, "data")
         self.ann_dir = os.path.join(self.db_dir, "ref")
         self.data_dir = self.rec_dir
@@ -158,6 +158,25 @@ class CPSC2020(OtherDataBase):
         os.makedirs(self.feature_dir, exist_ok=True)
         self.beat_ann_dir = os.path.join(self.db_dir, "beat_ann")
         os.makedirs(self.beat_ann_dir, exist_ok=True)
+
+
+    @property
+    def all_records(self):
+        """
+        """
+        return self._all_records
+
+    @property
+    def all_annotations(self):
+        """
+        """
+        return self._all_annotations
+
+    @property
+    def all_references(self):
+        """
+        """
+        return self._all_annotations
 
 
     def get_subject_id(self, rec:Union[int,str]) -> int:

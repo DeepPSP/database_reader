@@ -67,13 +67,32 @@ class CPSC2019(OtherDataBase):
         self.ann_ext = '.mat'
 
         self.nb_records = 2000
-        self.all_records = [f"data_{i:05d}" for i in range(1,1+self.nb_records)]
-        self.all_annotations = [f"R_{i:05d}" for i in range(1,1+self.nb_records)]
-        self.all_references = self.all_annotations
+        self._all_records = [f"data_{i:05d}" for i in range(1,1+self.nb_records)]
+        self._all_annotations = [f"R_{i:05d}" for i in range(1,1+self.nb_records)]
+        # self.all_references = self.all_annotations
         self.rec_dir = os.path.join(self.db_dir, "data")
         self.ann_dir = os.path.join(self.db_dir, "ref")
         self.data_dir = self.rec_dir
         self.ref_dir = self.ann_dir
+
+
+    @property
+    def all_records(self):
+        """
+        """
+        return self._all_records
+
+    @property
+    def all_annotations(self):
+        """
+        """
+        return self._all_annotations
+
+    @property
+    def all_references(self):
+        """
+        """
+        return self._all_annotations
 
 
     def get_subject_id(self, rec_no:int) -> int:
