@@ -14,6 +14,7 @@ from numbers import Real
 from ..utils.common import (
     ArrayLike,
     get_record_list_recursive,
+    DEFAULT_FIG_SIZE_PER_SEC,
 )
 from ..utils.utils_misc import (
     AF, I_AVB, LBBB, RBBB, PAC, PVC, STD, STE,
@@ -394,7 +395,7 @@ class CPSC2018(OtherDataBase):
 
         t = np.arange(data.shape[1]) / self.freq
         duration = len(t) / self.freq
-        fig_sz_w = int(round(4.8 * duration))
+        fig_sz_w = int(round(DEFAULT_FIG_SIZE_PER_SEC * duration))
         fig_sz_h = 6 * y_ranges / 1500
         fig, axes = plt.subplots(nb_leads, 1, sharex=True, figsize=(fig_sz_w, np.sum(fig_sz_h)))
         for idx in range(nb_leads):

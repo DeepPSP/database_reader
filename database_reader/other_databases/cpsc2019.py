@@ -11,6 +11,7 @@ from numbers import Real
 from ..utils.common import (
     ArrayLike,
     get_record_list_recursive,
+    DEFAULT_FIG_SIZE_PER_SEC,
 )
 from ..base import OtherDataBase
 
@@ -199,7 +200,7 @@ class CPSC2019(OtherDataBase):
         ann = self.load_ann(rec)
         secs = np.linspace(0, duration, len(data))
 
-        fig_sz_w = int(4.8 * duration)
+        fig_sz_w = int(DEFAULT_FIG_SIZE_PER_SEC * duration)
         y_range = np.max(np.abs(data))
         fig_sz_h = 6 * y_range / 1500
         fig, ax = plt.subplots(figsize=(fig_sz_w, fig_sz_h))
