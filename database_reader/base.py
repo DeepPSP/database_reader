@@ -746,7 +746,7 @@ class ImageDataBase(_DataBase):
             pp.pprint(methods)
 
 
-class AudioDataBase(object):
+class AudioDataBase(_DataBase):
     """
 
     """
@@ -792,7 +792,7 @@ class AudioDataBase(object):
             pp.pprint(methods)
 
 
-class OtherDataBase(object):
+class OtherDataBase(_DataBase):
     """
 
     """
