@@ -171,11 +171,18 @@ class CPSC2019(OtherDataBase):
         ann: dict,
             with items "SPB_indices" and "PVC_indices", which record the indices of SPBs and PVCs
         """
-        fp = os.path.join(self.data_dir, f"{self._get_rec_name(rec)}{self.ann_ext}")
+        fp = os.path.join(self.data_dir, f"{self._get_ann_name(rec)}{self.ann_ext}")
         ann = loadmat(fp)["R_peak"]
         if not keep_dim:
             ann = ann.flatten()
         return ann
+
+
+    def load_rpeaks(self, rec:Union[int,str], keep_dim:bool=True) -> Dict[str, np.ndarray]:
+        """
+        alias of `self.load_ann`
+        """
+        return self.load_ann(rec=rec, keep_dim=keep_dim)
 
 
     def _get_rec_name(self, rec:Union[int,str]) -> str:
@@ -199,6 +206,25 @@ class CPSC2019(OtherDataBase):
             assert rec in self.all_records, f"rec {rec} not found"
             rec_name = rec
         return rec_name
+
+
+    def _get_ann_name(self, rec:Union[int,str]) -> str:
+        """ finished, checked,
+
+        Parameters:
+        -----------
+        rec: int or str,
+            number of the record, NOTE that rec_no starts from 1,
+            or the record name
+
+        Returns:
+        --------
+        ann_name: str,
+            filename of annotations of the record `rec`
+        """
+        rec_name = self._get_rec_name(rec)
+        ann_name = rec_name.replace("data", "R")
+        return ann_name
 
 
     def plot(self, rec:Union[int,str], ticks_granularity:int=0) -> NoReturn:
