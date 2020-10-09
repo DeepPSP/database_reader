@@ -129,8 +129,8 @@ class CPSC2020(OtherDataBase):
         self.ann_ext = '.mat'
 
         self.nb_records = 10
-        self.all_records = ["A{0:02d}".format(i) for i in range(1,1+self.nb_records)]
-        self.all_annotations = ["R{0:02d}".format(i) for i in range(1,1+self.nb_records)]
+        self.all_records = [f"A{i:02d}" for i in range(1,1+self.nb_records)]
+        self.all_annotations = [f"R{i:02d}" for i in range(1,1+self.nb_records)]
         self.all_references = self.all_annotations
         self.rec_dir = os.path.join(self.db_dir, "data")
         self.ann_dir = os.path.join(self.db_dir, "ref")
@@ -533,10 +533,10 @@ class CPSC2020(OtherDataBase):
             filename of the annotation file
         """
         if isinstance(rec, int):
-            assert rec in range(1, self.nb_records+1), "rec should be in range(1,{})".format(self.nb_records+1)
+            assert rec in range(1, self.nb_records+1), f"rec should be in range(1,{self.nb_records+1})"
             ann_name = self.all_annotations[rec-1]
         elif isinstance(rec, str):
-            assert rec in self.all_annotations+self.all_records, "rec should be one of {} or one of {}".format(self.all_records, self.all_annotations)
+            assert rec in self.all_annotations+self.all_records, f"rec should be one of {self.all_records} or one of {self.all_annotations}"
             ann_name = rec.replace("A", "R")
         return ann_name
 
@@ -556,10 +556,10 @@ class CPSC2020(OtherDataBase):
             filename of the record
         """
         if isinstance(rec, int):
-            assert rec in range(1, self.nb_records+1), "rec should be in range(1,{})".format(self.nb_records+1)
+            assert rec in range(1, self.nb_records+1), f"rec should be in range(1,{self.nb_records+1})"
             rec_name = self.all_records[rec-1]
         elif isinstance(rec, str):
-            assert rec in self.all_records, "rec should be one of {}".format(self.all_records)
+            assert rec in self.all_records, f"rec should be one of {self.all_records}"
             rec_name = rec
         return rec_name
 
@@ -772,6 +772,9 @@ class CPSC2020(OtherDataBase):
         rec: int or str,
             number of the record, NOTE that rec_no starts from 1,
             or the record name
+        ticks_granularity: int, default 0,
+            granularity of ticks,
+            0 (no ticks) --> 1 (major ticks) --> 2 (major + minor ticks)
         sampfrom: int, optional,
             start index of the data to plot
         sampto: int, optional,
