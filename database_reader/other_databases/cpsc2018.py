@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 from scipy.io import loadmat
 from datetime import datetime
-from typing import Union, Optional, Any, List, Dict, NoReturn
+from typing import Union, Optional, Any, List, Dict, Tuple, NoReturn
 from numbers import Real
 
 from ..utils.common import (
@@ -17,9 +17,12 @@ from ..utils.common import (
     DEFAULT_FIG_SIZE_PER_SEC,
 )
 from ..utils.utils_misc import (
-    AF, I_AVB, LBBB, RBBB, PAC, PVC, STD, STE,
+    AF, IAVB, LBBB, RBBB, PAC, PVC, STD, STE,
 )
-from ..utils.utils_misc.cinc2020_aux_data import Dx_map
+from ..utils.utils_misc.cinc2020_aux_data import (
+    dx_mapping_all, dx_mapping_scored, dx_mapping_unscored,
+    normalize_class, abbr_to_snomed_ct_code,
+)
 from ..base import OtherDataBase
 
 
@@ -222,6 +225,7 @@ class CPSC2018(OtherDataBase):
 
         ann_dict = {}
         ann_dict['rec_name'], ann_dict['nb_leads'], ann_dict['freq'], ann_dict['nb_samples'], ann_dict['datetime'], daytime = header_data[0].split(' ')
+
         ann_dict['nb_leads'] = int(ann_dict['nb_leads'])
         ann_dict['freq'] = int(ann_dict['freq'])
         ann_dict['nb_samples'] = int(ann_dict['nb_samples'])
@@ -230,31 +234,103 @@ class CPSC2018(OtherDataBase):
             ann_dict['age'] = int([l for l in header_data if l.startswith('#Age')][0].split(": ")[-1])
         except:
             ann_dict['age'] = np.nan
-        ann_dict['sex'] = [l for l in header_data if l.startswith('#Sex')][0].split(": ")[-1]
-        ann_dict['diagnosis_Dx'] = [l for l in header_data if l.startswith('#Dx')][0].split(": ")[-1].split(",")
         try:
-            ann_dict['diagnosis_Dx'] = [int(item) for item in ann_dict['diagnosis_Dx']]
-            ann_dict['diagnosis'] = Dx_map[Dx_map['SNOMED code'].isin(ann_dict['diagnosis_Dx'])]['Abbreviation'].tolist()
-        except:  # the old version, the Dx's are abbreviations
-            ann_dict['diagnosis'] = ann_dict['diagnosis_Dx']
-        if not keep_original:
-            for idx, d in enumerate(ann_dict['diagnosis']):
-                if d in ['Normal', 'SNR']:
-                    ann_dict['diagnosis'] = ['N']
-        ann_dict['medical_prescription'] = [l for l in header_data if l.startswith('#Rx')][0].split(": ")[-1]
-        ann_dict['history'] = [l for l in header_data if l.startswith('#Hx')][0].split(": ")[-1]
-        ann_dict['symptom_or_surgery'] = [l for l in header_data if l.startswith('#Sx')][0].split(": ")[-1]
-        df_leads = pd.read_csv(io.StringIO('\n'.join(header_data[1:13])), delim_whitespace=True, header=None)
-        df_leads.columns = ['filename', 'res+offset', 'resolution(mV)', 'ADC', 'baseline', 'first_value', 'checksum', 'redundant', 'lead_name']
-        df_leads['resolution(bits)'] = df_leads['res+offset'].apply(lambda s: s.split('+')[0])
-        df_leads['offset'] = df_leads['res+offset'].apply(lambda s: s.split('+')[1])
-        df_leads = df_leads[['filename', 'resolution(bits)', 'offset', 'resolution(mV)', 'ADC', 'baseline', 'first_value', 'checksum', 'lead_name']]
-        df_leads['resolution(mV)'] = df_leads['resolution(mV)'].apply(lambda s: s.split('/')[0])
-        for k in ['resolution(bits)', 'offset', 'resolution(mV)', 'ADC', 'baseline', 'first_value', 'checksum']:
-            df_leads[k] = df_leads[k].apply(lambda s: int(s))
-        ann_dict['df_leads'] = df_leads
+            ann_dict['sex'] = [l for l in header_data if l.startswith('#Sex')][0].split(": ")[-1]
+        except:
+            ann_dict['sex'] = 'Unknown'
+        try:
+            ann_dict['medical_prescription'] = [l for l in header_data if l.startswith('#Rx')][0].split(": ")[-1]
+        except:
+            ann_dict['medical_prescription'] = 'Unknown'
+        try:
+            ann_dict['history'] = [l for l in header_data if l.startswith('#Hx')][0].split(": ")[-1]
+        except:
+            ann_dict['history'] = 'Unknown'
+        try:
+            ann_dict['symptom_or_surgery'] = [l for l in header_data if l.startswith('#Sx')][0].split(": ")[-1]
+        except:
+            ann_dict['symptom_or_surgery'] = 'Unknown'
 
-        return ann_dict
+        l_Dx = [l for l in header_data if l.startswith('#Dx')][0].split(": ")[-1].split(",")
+        ann_dict['diagnosis'], ann_dict['diagnosis_scored'] = self._parse_diagnosis(l_Dx)
+
+        ann_dict['df_leads'] = self._parse_leads(header_data[1:13])
+
+
+    def _parse_diagnosis(self, l_Dx:List[str]) -> Tuple[dict, dict]:
+        """ finished, checked,
+
+        Parameters:
+        -----------
+        l_Dx: list of str,
+            raw information of diagnosis, read from a header file
+
+        Returns:
+        --------
+        diag_dict:, dict,
+            diagnosis, including SNOMED CT Codes, fullnames and abbreviations of each diagnosis
+        diag_scored_dict: dict,
+            the scored items in `diag_dict`
+        """
+        diag_dict, diag_scored_dict = {}, {}
+        try:
+            diag_dict['diagnosis_code'] = [item for item in l_Dx]
+            # selection = dx_mapping_all['SNOMED CT Code'].isin(diag_dict['diagnosis_code'])
+            # diag_dict['diagnosis_abbr'] = dx_mapping_all[selection]['Abbreviation'].tolist()
+            # diag_dict['diagnosis_fullname'] = dx_mapping_all[selection]['Dx'].tolist()
+            diag_dict['diagnosis_abbr'] = \
+                [ dx_mapping_all[dx_mapping_all['SNOMED CT Code']==dc]['Abbreviation'].values[0] \
+                    for dc in diag_dict['diagnosis_code'] ]
+            diag_dict['diagnosis_fullname'] = \
+                [ dx_mapping_all[dx_mapping_all['SNOMED CT Code']==dc]['Dx'].values[0] \
+                    for dc in diag_dict['diagnosis_code'] ]
+            scored_indices = np.isin(diag_dict['diagnosis_code'], dx_mapping_scored['SNOMED CT Code'].values)
+            diag_scored_dict['diagnosis_code'] = \
+                [ item for idx, item in enumerate(diag_dict['diagnosis_code']) \
+                    if scored_indices[idx] ]
+            diag_scored_dict['diagnosis_abbr'] = \
+                [ item for idx, item in enumerate(diag_dict['diagnosis_abbr']) \
+                    if scored_indices[idx] ]
+            diag_scored_dict['diagnosis_fullname'] = \
+                [ item for idx, item in enumerate(diag_dict['diagnosis_fullname']) \
+                    if scored_indices[idx] ]
+        except:  # the old version, the Dx's are abbreviations
+            diag_dict['diagnosis_abbr'] = diag_dict['diagnosis_code']
+            selection = dx_mapping_all['Abbreviation'].isin(diag_dict['diagnosis_abbr'])
+            diag_dict['diagnosis_fullname'] = dx_mapping_all[selection]['Dx'].tolist()
+        # if not keep_original:
+        #     for idx, d in enumerate(ann_dict['diagnosis_abbr']):
+        #         if d in ['Normal', 'NSR']:
+        #             ann_dict['diagnosis_abbr'] = ['N']
+        return diag_dict, diag_scored_dict
+
+
+    def _parse_leads(self, l_leads_data:List[str]) -> pd.DataFrame:
+        """ finished, checked,
+
+        Parameters:
+        -----------
+        l_leads_data: list of str,
+            raw information of each lead, read from a header file
+
+        Returns:
+        --------
+        df_leads: DataFrame,
+            infomation of each leads in the format of DataFrame
+        """
+        df_leads = pd.read_csv(io.StringIO('\n'.join(l_leads_data)), delim_whitespace=True, header=None)
+        df_leads.columns = ['filename', 'fmt+byte_offset', 'adc_gain+units', 'adc_res', 'adc_zero', 'init_value', 'checksum', 'block_size', 'lead_name',]
+        df_leads['fmt'] = df_leads['fmt+byte_offset'].apply(lambda s: s.split('+')[0])
+        df_leads['byte_offset'] = df_leads['fmt+byte_offset'].apply(lambda s: s.split('+')[1])
+        df_leads['adc_gain'] = df_leads['adc_gain+units'].apply(lambda s: s.split('/')[0])
+        df_leads['adc_units'] = df_leads['adc_gain+units'].apply(lambda s: s.split('/')[1])
+        for k in ['byte_offset', 'adc_gain', 'adc_res', 'adc_zero', 'init_value', 'checksum',]:
+            df_leads[k] = df_leads[k].apply(lambda s: int(s))
+        df_leads['baseline'] = df_leads['adc_zero']
+        df_leads = df_leads[['filename', 'fmt', 'byte_offset', 'adc_gain', 'adc_units', 'adc_res', 'adc_zero', 'baseline', 'init_value', 'checksum', 'block_size', 'lead_name']]
+        df_leads.index = df_leads['lead_name']
+        df_leads.index.name = None
+        return df_leads
 
 
     def get_labels(self, rec_no:Union[int,str], keep_original:bool=False) -> List[str]:
