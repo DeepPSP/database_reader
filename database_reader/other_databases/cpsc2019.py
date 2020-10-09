@@ -134,7 +134,7 @@ class CPSC2019(OtherDataBase):
 
     
     def load_data(self, rec:Union[int,str], units:str='mV', keep_dim:bool=True) -> np.ndarray:
-        """ finished, not checked,
+        """ finished, checked,
 
         Parameters:
         -----------
@@ -158,7 +158,7 @@ class CPSC2019(OtherDataBase):
 
 
     def load_ann(self, rec:Union[int,str], keep_dim:bool=True) -> Dict[str, np.ndarray]:
-        """ finished, not checked,
+        """ finished, checked,
 
         Parameters:
         -----------
@@ -171,7 +171,7 @@ class CPSC2019(OtherDataBase):
         ann: dict,
             with items "SPB_indices" and "PVC_indices", which record the indices of SPBs and PVCs
         """
-        fp = os.path.join(self.data_dir, f"{self._get_ann_name(rec)}{self.ann_ext}")
+        fp = os.path.join(self.ann_dir, f"{self._get_ann_name(rec)}{self.ann_ext}")
         ann = loadmat(fp)["R_peak"]
         if not keep_dim:
             ann = ann.flatten()
@@ -228,7 +228,7 @@ class CPSC2019(OtherDataBase):
 
 
     def plot(self, rec:Union[int,str], ticks_granularity:int=0) -> NoReturn:
-        """ finished, not checked,
+        """ finished, checked,
 
         Parameters:
         -----------
@@ -243,9 +243,9 @@ class CPSC2019(OtherDataBase):
             import matplotlib.pyplot as plt
 
         data = self.load_data(rec, units='uv', keep_dim=False)
-        duration = len(data) / self.fs
-        ann = self.load_ann(rec)
+        duration = len(data) / self.freq
         secs = np.linspace(0, duration, len(data))
+        rpeak_secs = self.load_rpeaks(rec, keep_dim=False) / self.freq
 
         fig_sz_w = int(DEFAULT_FIG_SIZE_PER_SEC * duration)
         y_range = np.max(np.abs(data))
@@ -261,6 +261,8 @@ class CPSC2019(OtherDataBase):
             ax.xaxis.set_minor_locator(plt.MultipleLocator(0.04))
             ax.yaxis.set_minor_locator(plt.MultipleLocator(100))
             ax.grid(which='minor', linestyle=':', linewidth='0.5', color='black')
+        for r in rpeak_secs:
+            ax.axvspan(r-0.01, r+0.01, color='green', alpha=0.7)
         ax.set_xlim(secs[0], secs[-1])
         ax.set_ylim(-y_range, y_range)
         ax.set_xlabel('Time [s]')
