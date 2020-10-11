@@ -785,7 +785,7 @@ class CPSC2020(OtherDataBase):
 
     
     def plot(self, rec:Union[int,str], ticks_granularity:int=0, sampfrom:Optional[int]=None, sampto:Optional[int]=None) -> NoReturn:
-        """ not finished, not checked,
+        """ finished, checked,
 
         Parameters:
         -----------
@@ -802,6 +802,9 @@ class CPSC2020(OtherDataBase):
         """
         if 'plt' not in dir():
             import matplotlib.pyplot as plt
+        import matplotlib.patches as mpatches
+
+        patches = {}
 
         data = self.load_data(rec, units='uv', sampfrom=sampfrom, sampto=sampto, keep_dim=False)
         ann = self.load_ann(rec, sampfrom=sampfrom, sampto=sampto)
@@ -832,13 +835,15 @@ class CPSC2020(OtherDataBase):
                 ax.yaxis.set_minor_locator(plt.MultipleLocator(100))
                 ax.grid(which='minor', linestyle=':', linewidth='0.5', color='black')
             seg_spb = np.where( (spb_indices>=idx*line_len) & (spb_indices<(idx+1)*line_len) )[0]
-            print(f"spb_indices = {spb_indices}, seg_spb = {seg_spb}")
+            # print(f"spb_indices = {spb_indices}, seg_spb = {seg_spb}")
             if len(seg_spb) > 0:
                 seg_spb = spb_indices[seg_spb] / self.fs
+                patches["SPB"] = mpatches.Patch(color=self.palette["spb"], label="SPB")
             seg_pvc = np.where( (pvc_indices>=idx*line_len) & (pvc_indices<(idx+1)*line_len) )[0]
-            print(f"pvc_indices = {pvc_indices}, seg_pvc = {seg_pvc}")
+            # print(f"pvc_indices = {pvc_indices}, seg_pvc = {seg_pvc}")
             if len(seg_pvc) > 0:
                 seg_pvc = pvc_indices[seg_pvc] / self.fs
+                patches["PVC"] = mpatches.Patch(color=self.palette["pvc"], label="PVC")
             for t in seg_spb:
                 ax.axvspan(
                     max(secs[0], t-0.05), min(secs[-1], t+0.05),
@@ -849,6 +854,12 @@ class CPSC2020(OtherDataBase):
                     max(secs[0], t-0.05), min(secs[-1], t+0.05),
                     color=self.palette["pvc"], alpha=0.5
                 )
+            if len(patches) > 0:
+                ax.legend(
+                    handles=[v for _,v in patches.items()],
+                    loc="lower left",
+                    prop={"size": 16}
+                )
             ax.set_xlim(secs[0], secs[-1])
             ax.set_ylim(-y_range, y_range)
             ax.set_xlabel('Time [s]')
@@ -857,7 +868,7 @@ class CPSC2020(OtherDataBase):
 
 
 def _ann_to_beat_ann_epoch_v1(rpeaks:np.ndarray, ann:Dict[str, np.ndarray], bias_thr:Real) -> dict:
-    """ finished, checked
+    """ finished, checked,
 
     the naive method to label beat types using annotations provided by the dataset
     
