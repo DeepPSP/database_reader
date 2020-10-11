@@ -145,7 +145,7 @@ class CPSC2020(OtherDataBase):
             "VS": ["A04", "A07"],
         })
 
-        self.palette = {"spb": "black", "pvc": "red",}
+        self.palette = {"spb": "green", "pvc": "red",}
 
         # NOTE:
         # the ordering of `self.allowed_preproc` and `self.allowed_features`
@@ -793,7 +793,7 @@ class CPSC2020(OtherDataBase):
             number of the record, NOTE that rec_no starts from 1,
             or the record name
         ticks_granularity: int, default 0,
-            granularity of ticks,
+            the granularity to plot axis ticks, the higher the more,
             0 (no ticks) --> 1 (major ticks) --> 2 (major + minor ticks)
         sampfrom: int, optional,
             start index of the data to plot
@@ -808,10 +808,9 @@ class CPSC2020(OtherDataBase):
         sf, st = (sampfrom or 0), (sampto or len(data))
         spb_indices = ann["SPB_indices"]
         pvc_indices = ann["PVC_indices"]
-        spb_indices = spb_indices[(sf < spb_indices) & (spb_indices < st)] - sf
-        pvc_indices = pvc_indices[(sf < pvc_indices) & (pvc_indices < st)] - sf
+        spb_indices = spb_indices - sf
+        pvc_indices = pvc_indices - sf
 
-        default_fig_sz = 120
         line_len = self.fs * 25  # 25 seconds
         nb_lines = math.ceil(len(data)/line_len)
 
@@ -819,7 +818,7 @@ class CPSC2020(OtherDataBase):
             seg = data[idx*line_len: (idx+1)*line_len]
             secs = (np.arange(len(seg)) + idx*line_len) / self.fs
             fig_sz_w = int(round(4.8 * len(seg) / self.fs))
-            y_range = np.max(np.abs(seg))
+            y_range = np.max(np.abs(seg)) + 100
             fig_sz_h = 6 * y_range / 1500
             fig, ax = plt.subplots(figsize=(fig_sz_w, fig_sz_h))
             ax.plot(secs, seg, c='black')
@@ -832,6 +831,24 @@ class CPSC2020(OtherDataBase):
                 ax.xaxis.set_minor_locator(plt.MultipleLocator(0.04))
                 ax.yaxis.set_minor_locator(plt.MultipleLocator(100))
                 ax.grid(which='minor', linestyle=':', linewidth='0.5', color='black')
+            seg_spb = np.where( (spb_indices>=idx*line_len) & (spb_indices<(idx+1)*line_len) )[0]
+            print(f"spb_indices = {spb_indices}, seg_spb = {seg_spb}")
+            if len(seg_spb) > 0:
+                seg_spb = spb_indices[seg_spb] / self.fs
+            seg_pvc = np.where( (pvc_indices>=idx*line_len) & (pvc_indices<(idx+1)*line_len) )[0]
+            print(f"pvc_indices = {pvc_indices}, seg_pvc = {seg_pvc}")
+            if len(seg_pvc) > 0:
+                seg_pvc = pvc_indices[seg_pvc] / self.fs
+            for t in seg_spb:
+                ax.axvspan(
+                    max(secs[0], t-0.05), min(secs[-1], t+0.05),
+                    color=self.palette["spb"], alpha=0.5
+                )
+            for t in seg_pvc:
+                ax.axvspan(
+                    max(secs[0], t-0.05), min(secs[-1], t+0.05),
+                    color=self.palette["pvc"], alpha=0.5
+                )
             ax.set_xlim(secs[0], secs[-1])
             ax.set_ylim(-y_range, y_range)
             ax.set_xlabel('Time [s]')

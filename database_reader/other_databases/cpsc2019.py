@@ -236,7 +236,7 @@ class CPSC2019(OtherDataBase):
             number of the record, NOTE that rec_no starts from 1,
             or the record name
         ticks_granularity: int, default 0,
-            granularity of ticks,
+            the granularity to plot axis ticks, the higher the more,
             0 (no ticks) --> 1 (major ticks) --> 2 (major + minor ticks)
         """
         if 'plt' not in dir():
