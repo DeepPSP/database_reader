@@ -61,6 +61,22 @@ class CPSC2020(OtherDataBase):
         V:  A02, A08
         S:  A09, A10
         VS: A04, A07
+    2. as premature beats and atrial fibrillation can co-exists
+    (via the following code, and data from CINC2020),
+    the situation becomes more complicated.
+    >>> from utils.scoring_aux_data import dx_cooccurrence_all
+    >>> dx_cooccurrence_all.loc["AF", ["PAC","PVC","SVPB","VPB"]]
+    ... PAC     20
+    ... PVC     19
+    ... SVPB     4
+    ... VPB     20
+    ... Name: AF, dtype: int64
+    this could also be seen from this dataset, via the following code as an example:
+    >>> from data_reader import CPSC2020Reader as CR
+    >>> db_dir = '/media/cfs/wenhao71/data/CPSC2020/TrainingSet/'
+    >>> dr = CR(db_dir)
+    >>> rec = dr.all_records[1]
+    >>> dr.plot(rec, sampfrom=0, sampto=4000, ticks_granularity=2)
 
     ISSUES:
     -------
