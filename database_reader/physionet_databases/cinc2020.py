@@ -1004,31 +1004,6 @@ class CINC2020(PhysioNetDataBase):
         plt.show()
 
 
-    def _auto_infer_units(self, data:np.ndarray) -> str:
-        """ finished, checked,
-
-        automatically infer the units of `data`,
-        under the assumption that `data` not raw data, with baseline removed
-
-        Parameters:
-        -----------
-        data: ndarray,
-            the data to infer its units
-
-        Returns:
-        --------
-        units: str,
-            units of `data`, 'μV' or 'mV'
-        """
-        _MAX_mV = 20  # 20mV, seldom an ECG device has range larger than this value
-        max_val = np.max(np.abs(data))
-        if max_val > _MAX_mV:
-            units = 'μV'
-        else:
-            units = 'mV'
-        return units
-
-
     def get_tranche_class_distribution(self, tranches:Sequence[str], scored_only:bool=True) -> Dict[str, int]:
         """ finished, checked,
 

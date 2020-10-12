@@ -75,6 +75,35 @@ class _DataBase(object):
         """
         raise NotImplementedError
 
+    def _auto_infer_units(self, sig:np.ndarray, sig_type:str="ECG") -> str:
+        """ finished, checked,
+
+        automatically infer the units of `data`,
+        under the assumption that `data` not raw data, with baseline removed
+
+        Parameters:
+        -----------
+        sig: ndarray,
+            the signal to infer its units
+        sig_type: str, default "ECG", case insensitive,
+            type of the signal
+
+        Returns:
+        --------
+        units: str,
+            units of `data`, 'μV' or 'mV'
+        """
+        if sig_type.lower() == "ecg":
+            _MAX_mV = 20  # 20mV, seldom an ECG device has range larger than this value
+            max_val = np.max(np.abs(data))
+            if max_val > _MAX_mV:
+                units = 'μV'
+            else:
+                units = 'mV'
+        else:
+            raise NotImplementedError(f"not implemented for {sig_type}")
+        return units
+
     def _set_logger(self, prefix:Optional[str]=None) -> NoReturn:
         """
 
