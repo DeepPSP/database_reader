@@ -15,6 +15,7 @@ from easydict import EasyDict as ED
 from ..utils.common import (
     ArrayLike,
     get_record_list_recursive,
+    DEFAULT_FIG_SIZE_PER_SEC,
 )
 from ..utils.utils_misc import PVC, SPB
 from ..utils.utils_universal import get_optimal_covering
@@ -800,7 +801,7 @@ class CPSC2020(OtherDataBase):
         return premature_intervals
 
     
-    def plot(self, rec:Union[int,str], ticks_granularity:int=0, sampfrom:Optional[int]=None, sampto:Optional[int]=None) -> NoReturn:
+    def plot(self, rec:Union[int,str], data:Optional[np.ndarray]=None, ticks_granularity:int=0, sampfrom:Optional[int]=None, sampto:Optional[int]=None) -> NoReturn:
         """ finished, checked,
 
         Parameters:
@@ -808,6 +809,10 @@ class CPSC2020(OtherDataBase):
         rec: int or str,
             number of the record, NOTE that rec_no starts from 1,
             or the record name
+        data: ndarray, optional,
+            ecg signal to plot,
+            if given, data of `rec` will not be used,
+            this is useful when plotting filtered data
         ticks_granularity: int, default 0,
             the granularity to plot axis ticks, the higher the more,
             0 (no ticks) --> 1 (major ticks) --> 2 (major + minor ticks)
@@ -822,21 +827,31 @@ class CPSC2020(OtherDataBase):
 
         patches = {}
 
-        data = self.load_data(rec, units='uv', sampfrom=sampfrom, sampto=sampto, keep_dim=False)
+        if data is None:
+            _data = self.load_data(
+                rec, units="μV", sampfrom=sampfrom, sampto=sampto, keep_dim=False
+            )
+        else:
+            units = self._auto_infer_units(data)
+            if units == "mV":
+                _data = data * 1000
+            elif units == "μV":
+                _data = data.copy()
+
         ann = self.load_ann(rec, sampfrom=sampfrom, sampto=sampto)
-        sf, st = (sampfrom or 0), (sampto or len(data))
+        sf, st = (sampfrom or 0), (sampto or len(_data))
         spb_indices = ann["SPB_indices"]
         pvc_indices = ann["PVC_indices"]
         spb_indices = spb_indices - sf
         pvc_indices = pvc_indices - sf
 
         line_len = self.fs * 25  # 25 seconds
-        nb_lines = math.ceil(len(data)/line_len)
+        nb_lines = math.ceil(len(_data)/line_len)
 
         for idx in range(nb_lines):
-            seg = data[idx*line_len: (idx+1)*line_len]
+            seg = _data[idx*line_len: (idx+1)*line_len]
             secs = (np.arange(len(seg)) + idx*line_len) / self.fs
-            fig_sz_w = int(round(4.8 * len(seg) / self.fs))
+            fig_sz_w = int(round(DEFAULT_FIG_SIZE_PER_SEC * len(seg) / self.fs))
             y_range = np.max(np.abs(seg)) + 100
             fig_sz_h = 6 * y_range / 1500
             fig, ax = plt.subplots(figsize=(fig_sz_w, fig_sz_h))
