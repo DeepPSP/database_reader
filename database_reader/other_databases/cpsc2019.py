@@ -40,6 +40,24 @@ class CPSC2019(OtherDataBase):
 
     ISSUES:
     -------
+    1. there're 13 records with unusual large values (> 20 mV):
+        data_00098, data_00167, data_00173, data_00223, data_00224, data_00245, data_00813,
+        data_00814, data_00815, data_00833, data_00841, data_00949, data_00950
+    >>> for rec in dr.all_records:
+    >>>     data = dr.load_data(rec)
+    >>>     if np.max(data) > 20:
+    >>>         print(f"{rec} has max value ({np.max(data)} mV) > 20 mV")
+    ... data_00173 has max value (32.72031811111111 mV) > 20 mV
+    ... data_00223 has max value (32.75516713333333 mV) > 20 mV
+    ... data_00224 has max value (32.7519272 mV) > 20 mV
+    ... data_00245 has max value (32.75305293939394 mV) > 20 mV
+    ... data_00813 has max value (32.75865595876289 mV) > 20 mV
+    ... data_00814 has max value (32.75865595876289 mV) > 20 mV
+    ... data_00815 has max value (32.75558282474227 mV) > 20 mV
+    ... data_00833 has max value (32.76330123809524 mV) > 20 mV
+    ... data_00841 has max value (32.727626558139534 mV) > 20 mV
+    ... data_00949 has max value (32.75699667692308 mV) > 20 mV
+    ... data_00950 has max value (32.769551661538465 mV) > 20 mV
 
     Usage:
     ------
@@ -227,7 +245,7 @@ class CPSC2019(OtherDataBase):
         return ann_name
 
 
-    def plot(self, rec:Union[int,str], ticks_granularity:int=0) -> NoReturn:
+    def plot(self, rec:Union[int,str], data:Optional[np.ndarray]=None, ticks_granularity:int=0) -> NoReturn:
         """ finished, checked,
 
         Parameters:
@@ -235,6 +253,10 @@ class CPSC2019(OtherDataBase):
         rec: int or str,
             number of the record, NOTE that rec_no starts from 1,
             or the record name
+        data: ndarray, optional,
+            ecg signal to plot,
+            if given, data of `rec` will not be used,
+            this is useful when plotting filtered data
         ticks_granularity: int, default 0,
             the granularity to plot axis ticks, the higher the more,
             0 (no ticks) --> 1 (major ticks) --> 2 (major + minor ticks)
@@ -242,16 +264,24 @@ class CPSC2019(OtherDataBase):
         if 'plt' not in dir():
             import matplotlib.pyplot as plt
 
-        data = self.load_data(rec, units='uv', keep_dim=False)
-        duration = len(data) / self.freq
-        secs = np.linspace(0, duration, len(data))
+        if data is None:
+            _data = self.load_data(rec, units="μV", keep_dim=False)
+        else:
+            units = self._auto_infer_units(data)
+            if units == "mV":
+                _data = data * 1000
+            elif units == "μV":
+                _data = data.copy()
+
+        duration = len(_data) / self.freq
+        secs = np.linspace(0, duration, len(_data))
         rpeak_secs = self.load_rpeaks(rec, keep_dim=False) / self.freq
 
         fig_sz_w = int(DEFAULT_FIG_SIZE_PER_SEC * duration)
-        y_range = np.max(np.abs(data))
+        y_range = np.max(np.abs(_data))
         fig_sz_h = 6 * y_range / 1500
         fig, ax = plt.subplots(figsize=(fig_sz_w, fig_sz_h))
-        ax.plot(secs, data, c='black')
+        ax.plot(secs, ——data, c='black')
         ax.axhline(y=0, linestyle='-', linewidth='1.0', color='red')
         if ticks_granularity >= 1:
             ax.xaxis.set_major_locator(plt.MultipleLocator(0.2))
