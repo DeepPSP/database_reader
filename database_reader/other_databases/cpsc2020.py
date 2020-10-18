@@ -165,19 +165,6 @@ class CPSC2020(OtherDataBase):
 
         self.palette = {"spb": "green", "pvc": "red",}
 
-        # NOTE:
-        # the ordering of `self.allowed_preproc` and `self.allowed_features`
-        self.allowed_preproc = ['baseline', 'bandpass',]
-        self.preprocess_dir = os.path.join(self.db_dir, "preprocessed")
-        os.makedirs(self.preprocess_dir, exist_ok=True)
-        self.rpeaks_dir = os.path.join(self.db_dir, "rpeaks")
-        os.makedirs(self.rpeaks_dir, exist_ok=True)
-        self.allowed_features = ['wavelet', 'rr', 'morph',]
-        self.feature_dir = os.path.join(self.db_dir, "features")
-        os.makedirs(self.feature_dir, exist_ok=True)
-        self.beat_ann_dir = os.path.join(self.db_dir, "beat_ann")
-        os.makedirs(self.beat_ann_dir, exist_ok=True)
-
 
     @property
     def all_records(self):
@@ -235,7 +222,7 @@ class CPSC2020(OtherDataBase):
             print(self.__doc__)
 
 
-    def load_data(self, rec:Union[int,str], units:str='mV', sampfrom:Optional[int]=None, sampto:Optional[int]=None, keep_dim:bool=True, preproc:Optional[List[str]]=None, **kwargs) -> np.ndarray:
+    def load_data(self, rec:Union[int,str], units:str='mV', sampfrom:Optional[int]=None, sampto:Optional[int]=None, keep_dim:bool=True) -> np.ndarray:
         """ finished, checked,
 
         Parameters:
@@ -251,23 +238,14 @@ class CPSC2020(OtherDataBase):
             end index of the data to be loaded
         keep_dim: bool, default True,
             whether or not to flatten the data of shape (n,1)
-        preproc: list of str,
-            type of preprocesses performed to the original raw data,
-            should be sublist of `self.allowed_preproc`,
-            if empty, the original raw data will be loaded
         
         Returns:
         --------
         data: ndarray,
             the ecg data
         """
-        preproc = self._normalize_preprocess_names(preproc, False)
         rec_name = self._get_rec_name(rec)
-        if preproc:
-            rec_name = f"{rec_name}-{self._get_rec_suffix(preproc)}"
-            rec_fp = os.path.join(self.preprocess_dir, f"{rec_name}{self.rec_ext}")
-        else:
-            rec_fp = os.path.join(self.data_dir, f"{rec_name}{self.rec_ext}")
+        rec_fp = os.path.join(self.data_dir, f"{rec_name}{self.rec_ext}")
         data = loadmat(rec_fp)['ecg']
         if units.lower() in ['uv', 'μv']:
             data = (1000 * data).astype(int)
@@ -276,47 +254,6 @@ class CPSC2020(OtherDataBase):
         if not keep_dim:
             data = data.flatten()
         return data
-
-
-    def load_rpeaks(self, rec:Union[int,str], sampfrom:Optional[int]=None, sampto:Optional[int]=None, keep_dim:bool=True, preproc:Optional[List[str]]=None, augment:bool=False) -> np.ndarray:
-        """ finished, checked,
-
-        Parameters:
-        -----------
-        rec: int or str,
-            number of the record, NOTE that rec_no starts from 1,
-            or the record name
-        sampfrom: int, optional,
-            start index of the data to be loaded
-        sampto: int, optional,
-            end index of the data to be loaded
-        keep_dim: bool, default True,
-            whether or not to flatten the data of shape (n,1)
-        preproc: list of str, optional
-            preprocesses performed when detecting the rpeaks,
-            should be sublist of `self.allowed_preproc`
-        augment: bool, default False,
-            rpeaks detected by algorithm is augmented using the annotations or not
-        
-        Returns:
-        --------
-        rpeaks: ndarray,
-            the indices of rpeaks
-        """
-        preproc = self._normalize_preprocess_names(preproc, True)
-        rec_name = self._get_rec_name(rec)
-        rec_name = f"{rec_name}-{self._get_rec_suffix(preproc)}"
-        if augment:
-            rec_name = rec_name + "-augment"
-            rpeaks_fp = os.path.join(self.beat_ann_dir, f"{rec_name}{self.rec_ext}")
-        else:
-            rpeaks_fp = os.path.join(self.rpeaks_dir, f"{rec_name}{self.rec_ext}")
-        rpeaks = loadmat(rpeaks_fp)['rpeaks'].flatten().astype(int)
-        sf, st = (sampfrom or 0), (sampto or np.inf)
-        rpeaks = rpeaks[np.where( (rpeaks>=sf) & (rpeaks<st) )[0]]
-        if keep_dim:
-            rpeaks = np.atleast_2d(rpeaks).T
-        return rpeaks
 
 
     def load_ann(self, rec:Union[int,str], sampfrom:Optional[int]=None, sampto:Optional[int]=None) -> Dict[str, np.ndarray]:
@@ -355,205 +292,6 @@ class CPSC2020(OtherDataBase):
             "PVC_indices": pvc_indices,
         }
         return ann
-
-
-    def load_beat_ann(self, rec:Union[int,str], sampfrom:Optional[int]=None, sampto:Optional[int]=None, preproc:Optional[List[str]]=None, augment:bool=True, return_aux_data:bool=False, force_recompute:bool=False) -> Union[np.ndarray, Dict[str,np.ndarray]]:
-        """ finished, checked,
-
-        Parameters:
-        -----------
-        rec: int or str,
-            number of the record, NOTE that rec_no starts from 1,
-            or the record name
-        sampfrom: int, optional,
-            start index of the data to be loaded
-        sampto: int, optional,
-            end index of the data to be loaded
-        preproc: list of str,
-            type of preprocesses performed before detecting rpeaks,
-            should be sublist of `self.allowed_preproc`
-        augment: bool, default True,
-            rpeaks detected by algorithm is augmented using the annotations or not
-        return_aux_data: bool, default False,
-            whether or not return auxiliary data, including
-                - the augmented rpeaks
-                - the beat_ann mapped to int annotations via `self.label_map`
-        force_recompute: bool, default False,
-            force recompute, regardless of the existing precomputed feature files
-        
-        Returns:
-        --------
-        beat_ann: ndarray, or dict,
-            annotation (one of 'N', 'S', 'V') for each beat,
-            or together with auxiliary data as a dict
-        """
-        preproc = self._normalize_preprocess_names(preproc, True)
-        rec_name = f"{self._get_rec_name(rec)}-{self._get_rec_suffix(preproc)}"
-        if augment:
-            rec_name = rec_name + "-augment"
-        fp = os.path.join(self.beat_ann_dir, f"{rec_name}{self.ann_ext}")
-        if not force_recompute and os.path.isfile(fp):
-            print("try loading precomputed beat_ann...")
-            beat_ann = loadmat(fp)
-            for k in beat_ann.keys():
-                if not k.startswith("__"):
-                    beat_ann[k] = beat_ann[k].flatten()
-            if not return_aux_data:
-                beat_ann = beat_ann["beat_ann"]
-            print("precomputed beat_ann loaded successfully")
-        else:
-            print("recompute beat_ann")
-            rpeaks = self.load_rpeaks(
-                rec,
-                sampfrom=sampfrom, sampto=sampto,
-                keep_dim=False,
-                preproc=preproc,
-                augment=False,
-            )
-            ann = self.load_ann(rec, sampfrom, sampto)
-            beat_ann = self._ann_to_beat_ann(
-                rec=rec,
-                rpeaks=rpeaks,
-                ann=ann,
-                preproc=preproc,
-                bias_thr=0.1 * self.fs,
-                augment=augment,
-                return_aux_data=return_aux_data,
-                save=True
-            )
-        return beat_ann
-
-
-    def _ann_to_beat_ann(self, rec:Union[int,str], rpeaks:np.ndarray, ann:Dict[str, np.ndarray], preproc:List[str], bias_thr:Real, augment:bool=True, return_aux_data:bool=False, save:bool=False) -> Union[np.ndarray, Dict[str,np.ndarray]]:
-        """ finished, checked,
-
-        Parameters:
-        -----------
-        rec: int or str,
-            number of the record, NOTE that rec_no starts from 1,
-            or the record name
-        rpeaks: ndarray,
-            rpeaks for forming beats
-        ann: dict,
-            with items (ndarray) "SPB_indices" and "PVC_indices",
-            which record the indices of SPBs and PVCs
-        preproc: list of str,
-            type of preprocesses performed before detecting rpeaks,
-            should be sublist of `self.allowed_preproc`
-        bias_thr: real number,
-            tolerance for using annotations (PVC, SPB indices provided by the dataset),
-            to label the type of beats given by `rpeaks`
-        augment: bool, default True,
-            `rpeaks` is augmented using the annotations or not
-        return_aux_data: bool, default False,
-            whether or not return auxiliary data, including
-                - the augmented rpeaks
-                - the beat_ann mapped to int annotations via `self.label_map`
-        save: bool, default False,
-            save the outcome beat annotations (along with 'augmented' rpeaks) to file or not
-        
-        Returns:
-        --------
-        beat_ann: ndarray, or dict,
-            annotation (one of 'N', 'S', 'V') for each beat,
-            or together with auxiliary data as a dict
-
-        NOTE:
-        -----
-        the 'rpeaks' and 'beat_ann_int' saved in the .mat file is of shape (1,n), rather than (n,)
-        """
-        one_hour = self.fs*3600
-        split_indices = [0]
-        for i in range(1, int(rpeaks[-1]+bias_thr)//one_hour):
-            split_indices.append(len(np.where(rpeaks<i*one_hour)[0])+1)
-        if len(split_indices) == 1 or split_indices[-1] < len(rpeaks): # tail
-            split_indices.append(len(rpeaks))
-
-        epoch_params = []
-        for idx in range(len(split_indices)-1):
-            p = {}
-            p['rpeaks'] = rpeaks[split_indices[idx]:split_indices[idx+1]]
-            p['ann'] = {
-                k: v[np.where( (v>=p['rpeaks'][0]-bias_thr-1) & (v<p['rpeaks'][-1]+bias_thr+1) )[0]] for k, v in ann.items()
-            }
-            # if idx == 0:
-            #     p['prev_r'] = -1
-            # else:
-            #     p['prev_r'] = rpeaks[split_indices[idx]-1]
-            # if idx == len(split_indices)-2:
-            #     p['next_r'] = np.inf
-            # else:
-            #     p['next_r'] = rpeaks[split_indices[idx+1]]
-            epoch_params.append(p)
-
-        if augment:
-            epoch_func = _ann_to_beat_ann_epoch_v3
-        else:
-            epoch_func = _ann_to_beat_ann_epoch_v1
-        cpu_num = max(1, mp.cpu_count()-3)
-        with mp.Pool(processes=cpu_num) as pool:
-            result = pool.starmap(
-                func=epoch_func,
-                iterable=[
-                    (
-                        item['rpeaks'],
-                        item['ann'],
-                        bias_thr,
-                        # item['prev_r'],
-                        # item['next_r'],
-                    )\
-                        for item in epoch_params
-                ],
-            )
-        ann_matched = {
-            k: np.concatenate([item['ann_matched'][k] for item in result]) \
-                for k in ann.keys()
-        }
-        ann_not_matched = {
-            k: [a for a in v if a not in ann_matched[k]] for k, v in ann.items()
-        }
-        # print(f"rec = {rec}, ann_not_matched = {ann_not_matched}")
-        beat_ann = np.concatenate([item['beat_ann'] for item in result]).astype('<U1')
-
-        augmented_rpeaks = np.concatenate((rpeaks, np.array(ann_not_matched['SPB_indices']), np.array(ann_not_matched['PVC_indices'])))
-        beat_ann = np.concatenate((beat_ann, np.array(['S' for _ in ann_not_matched['SPB_indices']], dtype='<U1'), np.array(['V' for _ in ann_not_matched['PVC_indices']], dtype='<U1')))
-        sorted_indices = np.argsort(augmented_rpeaks)
-        augmented_rpeaks = augmented_rpeaks[sorted_indices].astype(int)
-        beat_ann = beat_ann[sorted_indices].astype('<U1')
-
-        # NOTE: features will only be extracted at 'valid' rpeaks
-        beat_winL, beat_winR = 250 * self.fs // 1000, 250 * self.fs // 1000
-        raw_sig = self.load_data(rec, keep_dim=False, preproc=None)
-        valid_indices = np.where( (augmented_rpeaks>=beat_winL) & (augmented_rpeaks<len(raw_sig)-beat_winR) )[0]
-        augmented_rpeaks = augmented_rpeaks[valid_indices]
-        beat_ann = beat_ann[valid_indices]
-
-        # list_addition = lambda a,b: a+b
-        # beat_ann = reduce(list_addition, result)
-
-        # beat_ann = ["N" for _ in range(len(rpeaks))]
-        # for idx, r in enumerate(rpeaks):
-        #     if any([-beat_winL <= r-p < beat_winR for p in ann['SPB_indices']]):
-        #         beat_ann[idx] = 'S'
-        #     elif any([-beat_winL <= r-p < beat_winR for p in ann['PVC_indices']]):
-        #         beat_ann[idx] = 'V'
-        
-        preproc = self._normalize_preprocess_names(preproc, True)
-        rec_name = f"{self._get_rec_name(rec)}-{self._get_rec_suffix(preproc)}"
-        if augment:
-            rec_name = rec_name + "-augment"
-        fp = os.path.join(self.beat_ann_dir, f"{rec_name}{self.ann_ext}")
-        to_save_mdict = {
-            "rpeaks": augmented_rpeaks.astype(int),
-            "beat_ann": beat_ann,
-            "beat_ann_int": np.vectorize(lambda a:self.label_map[a])(beat_ann)
-        }
-        savemat(fp, to_save_mdict, format='5')
-
-        if return_aux_data:
-            beat_ann = to_save_mdict
-
-        return beat_ann
 
 
     def _get_ann_name(self, rec:Union[int,str]) -> str:
@@ -601,53 +339,6 @@ class CPSC2020(OtherDataBase):
             rec_name = rec
         return rec_name
 
-
-    def _get_rec_suffix(self, operations:List[str]) -> str:
-        """ finished, checked,
-
-        Parameters:
-        -----------
-        operations: list of str,
-            names of operations to perform (or has performed),
-            should be sublist of `self.allowed_preproc` or `self.allowed_features`
-
-        Returns:
-        --------
-        suffix: str,
-            suffix of the filename of the preprocessed ecg signal, or the features
-        """
-        suffix = '-'.join(sorted([item.lower() for item in operations]))
-        return suffix
-
-
-    def _normalize_preprocess_names(self, preproc:List[str], ensure_nonempty:bool) -> List[str]:
-        """
-
-        to transform all preproc into lower case,
-        and keep them in a specific ordering 
-        
-        Parameters:
-        -----------
-        preproc: list of str,
-            list of preprocesses types,
-            should be sublist of `self.allowd_features`
-        ensure_nonempty: bool,
-            if True, when the passed `preproc` is empty,
-            `self.allowed_preproc` will be returned
-
-        Returns:
-        --------
-        _p: list of str,
-            'normalized' list of preprocess types
-        """
-        _p = [item.lower() for item in preproc] if preproc else []
-        if ensure_nonempty:
-            _p = _p or self.allowed_preproc
-        # ensure ordering
-        _p = [item for item in self.allowed_preproc if item in _p]
-        # assert all([item in self.allowed_preproc for item in _p])
-        return _p
-
     
     def train_test_split_rec(self, test_rec_num:int=2) -> Dict[str, List[str]]:
         """ finished, checked,
@@ -684,77 +375,6 @@ class CPSC2020(OtherDataBase):
         })
         
         return split_res
-
-
-    def train_test_split_data(self, test_rec_num:int, features:List[str], preproc:Optional[List[str]], augment:bool=True, int_labels:bool=True) -> Tuple[np.ndarray,np.ndarray,np.ndarray,np.ndarray,np.ndarray,np.ndarray]:
-        """ finished, checked,
-
-        split the data (and the annotations) into train set and test set
-
-        Parameters:
-        -----------
-        test_rec_num: int,
-            number of records for the test set
-        features: list of str,
-            list of feature types used for producing the training data,
-            should be sublist of `self.allowd_features`
-        preproc: list of str,
-            list of preprocesses types performed on the raw data,
-            should be sublist of `self.allowd_preproc`
-        augment: bool, default True,
-            features are computed using augmented rpeaks or not
-        int_labels: bool, default True,
-            use the 'beat_ann_int', which is mapped into int via `label_map`
-
-        Returns:
-        --------
-        x_train, y_train, y_indices_train, x_test, y_test, y_indices_test: ndarray,
-        """
-        features = self._normalize_feature_names(features, True)
-        preproc = self._normalize_preprocess_names(preproc, True)
-        split_rec = self.train_test_split_rec(test_rec_num)
-        x = ED({"train": np.array([],dtype=float), "test": np.array([],dtype=float)})
-        if int_labels:
-            y = ED({"train": np.array([],dtype=int), "test": np.array([],dtype=int)})
-        else:
-            y = ED({"train": np.array([],dtype='<U1'), "test": np.array([],dtype='<U1')})
-        y_indices = ED({"train": np.array([],dtype=int), "test": np.array([],dtype=int)})
-        for subset in ["train", "test"]:
-            for rec in split_rec[subset]:
-                ecg_sig = self.load_data(rec, keep_dim=False, preproc=preproc)
-                feature_mat = self.load_features(
-                    rec,
-                    features=features,
-                    preproc=preproc,
-                    augment=augment,
-                    force_recompute=False
-                )
-                beat_ann = self.load_beat_ann(
-                    rec,
-                    preproc=preproc,
-                    augment=augment,
-                    return_aux_data=True,
-                    force_recompute=False
-                )
-                # NOTE: the following has been moved to the function `_ann_to_beat_ann`
-                # valid_indices = np.where( (beat_ann["rpeaks"].ravel()>=beat_winL) & (beat_ann["rpeaks"].ravel()<len(ecg_sig)-beat_winR) )[0]
-                # feature_mat = feature_mat[valid_indices]
-                # beat_ann["beat_ann"] = beat_ann["beat_ann"][valid_indices]
-                if len(x[subset]):
-                    x[subset] = np.concatenate((x[subset], feature_mat), axis=0)
-                else:
-                    x[subset] = feature_mat.copy()
-                if int_labels:
-                    y[subset] = np.append(y[subset], beat_ann["beat_ann_int"].astype(int))
-                else:
-                    y[subset] = np.append(y[subset], beat_ann["beat_ann"])
-                y_indices[subset] = np.append(y_indices[subset], beat_ann["rpeaks"]).astype(int)
-            # post process: drop invalid (nan, inf, etc.)
-            invalid_indices = list(set(np.where(~np.isfinite(x[subset]))[0]))
-            x[subset] = np.delete(x[subset], invalid_indices, axis=0)
-            y[subset] = np.delete(y[subset], invalid_indices)
-            y_indices[subset] = np.delete(y_indices[subset], invalid_indices)
-        return x["train"], y["train"], y_indices["train"], x["test"], y["test"], y_indices["test"]
 
 
     def locate_premature_beats(self, rec:Union[int,str], premature_type:Optional[str]=None, window:int=10000, sampfrom:Optional[int]=None, sampto:Optional[int]=None) -> List[List[int]]:
