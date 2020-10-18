@@ -58,6 +58,11 @@ class CPSC2019(OtherDataBase):
     ... data_00841 has max value (32.727626558139534 mV) > 20 mV
     ... data_00949 has max value (32.75699667692308 mV) > 20 mV
     ... data_00950 has max value (32.769551661538465 mV) > 20 mV
+    2. rpeak references (annotations) loaded from files has dtype = uint16,
+    which would produce unexpected large positive values when subtracting values larger than it,
+    rather than the correct negative value.
+    This might cause confusion in computing metrics when using annotations subtracting
+    (instead of being subtracted by) predictions.
 
     Usage:
     ------
@@ -183,6 +188,8 @@ class CPSC2019(OtherDataBase):
         rec: int or str,
             number of the record, NOTE that rec_no starts from 1,
             or the record name
+        keep_dim: bool, default True,
+            whether or not to flatten the data of shape (n,1)
         
         Returns:
         --------
@@ -190,7 +197,7 @@ class CPSC2019(OtherDataBase):
             with items "SPB_indices" and "PVC_indices", which record the indices of SPBs and PVCs
         """
         fp = os.path.join(self.ann_dir, f"{self._get_ann_name(rec)}{self.ann_ext}")
-        ann = loadmat(fp)["R_peak"]
+        ann = loadmat(fp)["R_peak"].astype(int)
         if not keep_dim:
             ann = ann.flatten()
         return ann
