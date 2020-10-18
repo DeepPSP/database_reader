@@ -24,6 +24,7 @@ from ..base import OtherDataBase
 
 __all__ = [
     "CPSC2020",
+    "compute_metrics",
 ]
 
 
@@ -1045,4 +1046,84 @@ def _ann_to_beat_ann_epoch_v3(rpeaks:np.ndarray, ann:Dict[str, np.ndarray], bias
             ann_matched["SPB_indices"].append(ann["SPB_indices"][np.argmin(dist_to_spb)])
     ann_matched = {k: np.array(v) for k,v in ann_matched.items()}
     retval = dict(ann_matched=ann_matched, beat_ann=beat_ann)
+    return retval
+
+
+
+def compute_metrics(sbp_true:List[np.ndarray], pvc_true:List[np.ndarray], sbp_pred:List[np.ndarray], pvc_pred:List[np.ndarray], verbose:int=0) -> Union[Tuple[int],dict]:
+    """ finished, checked,
+
+    Score Function for all (test) records
+
+    Parameters:
+    -----------
+    sbp_true, pvc_true, sbp_pred, pvc_pred: list of ndarray,
+    verbose: int
+
+    Returns:
+    --------
+    retval: tuple or dict,
+        tuple of (negative) scores for each ectopic beat type (SBP, PVC), or
+        dict of more scoring details, including
+        - total_loss: sum of loss of each ectopic beat type (PVC and SPB)
+        - true_positive: number of true positives of each ectopic beat type
+        - false_positive: number of false positives of each ectopic beat type
+        - false_negative: number of false negatives of each ectopic beat type
+    """
+    s_score = np.zeros([len(sbp_true), ], dtype=int)
+    v_score = np.zeros([len(sbp_true), ], dtype=int)
+    ## Scoring ##
+    for i, (s_ref, v_ref, s_pos, v_pos) in enumerate(zip(sbp_true, pvc_true, sbp_pred, pvc_pred)):
+        s_tp = 0
+        s_fp = 0
+        s_fn = 0
+        v_tp = 0
+        v_fp = 0
+        v_fn = 0
+        # SBP
+        if s_ref.size == 0:
+            s_fp = len(s_pos)
+        else:
+            for m, ans in enumerate(s_ref):
+                s_pos_cand = np.where(abs(s_pos-ans) <= BaseCfg.bias_thr)[0]
+                if s_pos_cand.size == 0:
+                    s_fn += 1
+                else:
+                    s_tp += 1
+                    s_fp += len(s_pos_cand) - 1
+        # PVC
+        if v_ref.size == 0:
+            v_fp = len(v_pos)
+        else:
+            for m, ans in enumerate(v_ref):
+                v_pos_cand = np.where(abs(v_pos-ans) <= BaseCfg.bias_thr)[0]
+                if v_pos_cand.size == 0:
+                    v_fn += 1
+                else:
+                    v_tp += 1
+                    v_fp += len(v_pos_cand) - 1
+        # calculate the score
+        s_score[i] = s_fp * (-1) + s_fn * (-5)
+        v_score[i] = v_fp * (-1) + v_fn * (-5)
+
+        if verbose >= 1:
+            print(f"for the {i}-th record")
+            print(f"s_tp = {s_tp}, s_fp = {s_fp}, s_fn = {s_fn}")
+            print(f"v_tp = {v_tp}, v_fp = {v_fp}, s_fn = {v_fn}")
+            print(f"s_score[{i}] = {s_score[i]}, v_score[{i}] = {v_score[i]}")
+
+    Score1 = np.sum(s_score)
+    Score2 = np.sum(v_score)
+
+    if verbose >= 1:
+        retval = ED(
+            total_loss=-(Score1+Score2),
+            class_loss={'S':-Score1, 'V':-Score2},
+            true_positive={'S':s_tp, 'V':v_tp},
+            false_positive={'S':s_fp, 'V':v_fp},
+            false_negative={'S':s_fn, 'V':v_fn},
+        )
+    else:
+        retval = Score1, Score2
+
     return retval

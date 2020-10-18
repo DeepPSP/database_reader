@@ -29,6 +29,7 @@ from ..base import OtherDataBase
 
 __all__ = [
     "CPSC2018",
+    "compute_metrics",
 ]
 
 
@@ -515,3 +516,10 @@ class CPSC2018(OtherDataBase):
         assert all([item in cls.diagnosis_abbr_to_full.keys() for item in d])
 
         # AF
+
+
+
+def compute_metrics():
+    """
+    """
+    raise NotImplementedError

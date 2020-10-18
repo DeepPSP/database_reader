@@ -3,7 +3,7 @@
 """
 import os
 from datetime import datetime
-from typing import Union, Optional, Any, List, Dict, NoReturn
+from typing import Union, Optional, Any, List, Dict, Sequence, NoReturn
 from numbers import Real
 
 import numpy as np
@@ -20,6 +20,7 @@ from ..base import OtherDataBase
 
 __all__ = [
     "CPSC2019",
+    "compute_metrics",
 ]
 
 
@@ -63,6 +64,9 @@ class CPSC2019(OtherDataBase):
     rather than the correct negative value.
     This might cause confusion in computing metrics when using annotations subtracting
     (instead of being subtracted by) predictions.
+    3. official scoring function has errors, 
+    which would falsely omit the interval between the 0-th and the 1-st ref rpeaks,
+    thus potentially missing false positive
 
     Usage:
     ------
@@ -305,3 +309,77 @@ class CPSC2019(OtherDataBase):
         ax.set_xlabel('Time [s]')
         ax.set_ylabel('Voltage [μV]')
         plt.show()
+
+
+
+def compute_metrics(rpeaks_truth:Sequence[Union[np.ndarray,Sequence[int]]], rpeaks_pred:Sequence[Union[np.ndarray,Sequence[int]]], fs:Real, thr:float=0.075, verbose:int=0) -> float:
+    """ finished, checked,
+
+    metric (scoring) function modified from the official one, with errors fixed
+
+    Parameters:
+    -----------
+    rpeaks_truth: sequence,
+        sequence of ground truths of rpeaks locations from multiple records
+    rpeaks_pred: sequence,
+        predictions of ground truths of rpeaks locations for multiple records
+    fs: real number,
+        sampling frequency of ECG signal
+    thr: float, default 0.075,
+        threshold for a prediction to be truth positive,
+        with units in seconds,
+    verbose: int, default 0,
+        print verbosity
+
+    Returns:
+    --------
+    rec_acc: float,
+        accuracy of predictions
+    """
+    assert len(rpeaks_truth) == len(rpeaks_pred), \
+        f"number of records does not match, truth indicates {len(rpeaks_truth)}, while pred indicates {len(rpeaks_pred)}"
+    n_records = len(rpeaks_truth)
+    record_flags = np.ones((len(rpeaks_truth),), dtype=float)
+    thr_ = thr * fs
+    if verbose >= 1:
+        print(f"number of records = {n_records}")
+        print(f"threshold in number of sample points = {thr_}")
+    for idx, (truth_arr, pred_arr) in enumerate(zip(rpeaks_truth, rpeaks_pred)):
+        false_negative = 0
+        false_positive = 0
+        true_positive = 0
+        extended_truth_arr = np.concatenate((truth_arr.astype(int), [int(9.5*fs)]))
+        for j, t_ind in enumerate(extended_truth_arr[:-1]):
+            next_t_ind = extended_truth_arr[j+1]
+            loc = np.where(np.abs(pred_arr - t_ind) <= thr_)[0]
+            if j == 0:
+                err = np.where((pred_arr >= 0.5*fs + thr_) & (pred_arr <= t_ind - thr_))[0]
+            else:
+                err = np.array([], dtype=int)
+            err = np.append(
+                err,
+                np.where((pred_arr >= t_ind+thr_) & (pred_arr <= next_t_ind-thr_))[0]
+            )
+
+            false_positive += len(err)
+            if len(loc) >= 1:
+                true_positive += 1
+                false_positive += len(loc) - 1
+            elif len(loc) == 0:
+                false_negative += 1
+
+        if false_negative + false_positive > 1:
+            record_flags[idx] = 0
+        elif false_negative == 1 and false_positive == 0:
+            record_flags[idx] = 0.3
+        elif false_negative == 0 and false_positive == 1:
+            record_flags[idx] = 0.7
+
+        if verbose >= 2:
+            print(f"for the {idx}-th record,\ntrue positive = {true_positive}\nfalse positive = {false_positive}\nfalse negative = {false_negative}")
+
+    rec_acc = round(np.sum(record_flags) / n_records, 4)
+    print(f'QRS_acc: {rec_acc}')
+    print('Scoring complete.')
+
+    return rec_acc
