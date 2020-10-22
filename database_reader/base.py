@@ -78,8 +78,8 @@ class _DataBase(object):
     def _auto_infer_units(self, sig:np.ndarray, sig_type:str="ECG") -> str:
         """ finished, checked,
 
-        automatically infer the units of `data`,
-        under the assumption that `data` not raw data, with baseline removed
+        automatically infer the units of `sig`,
+        under the assumption that `sig` not being raw signal, with baseline removed
 
         Parameters:
         -----------
@@ -91,11 +91,11 @@ class _DataBase(object):
         Returns:
         --------
         units: str,
-            units of `data`, 'μV' or 'mV'
+            units of `sig`, 'μV' or 'mV'
         """
         if sig_type.lower() == "ecg":
             _MAX_mV = 20  # 20mV, seldom an ECG device has range larger than this value
-            max_val = np.max(np.abs(data))
+            max_val = np.max(np.abs(sig))
             if max_val > _MAX_mV:
                 units = 'μV'
             else:
