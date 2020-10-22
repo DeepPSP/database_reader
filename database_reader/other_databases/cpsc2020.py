@@ -465,7 +465,7 @@ class CPSC2020(OtherDataBase):
         return premature_intervals
 
     
-    def plot(self, rec:Union[int,str], data:Optional[np.ndarray]=None, ticks_granularity:int=0, sampfrom:Optional[int]=None, sampto:Optional[int]=None) -> NoReturn:
+    def plot(self, rec:Union[int,str], data:Optional[np.ndarray]=None, ticks_granularity:int=0, sampfrom:Optional[int]=None, sampto:Optional[int]=None, rpeak_inds:Optional[Union[Sequence[int],np.ndarray]]=None) -> NoReturn:
         """ finished, checked,
 
         Parameters:
@@ -484,6 +484,9 @@ class CPSC2020(OtherDataBase):
             start index of the data to plot
         sampto: int, optional,
             end index of the data to plot
+        rpeak_inds: array_like, optional,
+            indices of R peaks,
+            if `data` is None, then indices should be the absolute indices in the record
         """
         if 'plt' not in dir():
             import matplotlib.pyplot as plt
@@ -508,6 +511,14 @@ class CPSC2020(OtherDataBase):
         pvc_indices = ann["PVC_indices"]
         spb_indices = spb_indices - sf
         pvc_indices = pvc_indices - sf
+
+        if rpeak_inds is not None:
+            if data is not None:
+                rpeak_secs = np.array(rpeak_inds) / self.fs
+            else:
+                rpeak_secs = np.array(rpeak_inds)
+                rpeak_secs = rpeak_secs[np.where( (rpeak_secs>=sf) & (rpeak_secs<st))[0]]
+                rpeak_secs = (rpeak_secs - sf) / self.fs
 
         line_len = self.fs * 25  # 25 seconds
         nb_lines = math.ceil(len(_data)/line_len)
@@ -555,6 +566,11 @@ class CPSC2020(OtherDataBase):
                     loc="lower left",
                     prop={"size": 16}
                 )
+            if rpeak_inds is not None:
+                seg_rpeak_secs = \
+                    rpeak_secs[np.where( (rpeak_secs>=secs[0]) & (rpeak_secs<secs[-1]))[0]]
+                for r in seg_rpeak_secs:
+                    ax.axvspan(r-0.01, r+0.01, color='green', alpha=0.7)
             ax.set_xlim(secs[0], secs[-1])
             ax.set_ylim(-y_range, y_range)
             ax.set_xlabel('Time [s]')
