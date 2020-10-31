@@ -206,7 +206,7 @@ class CPSC2020(OtherDataBase):
             "VS": ["A04", "A07"],
         })
 
-        self.palette = {"spb": "green", "pvc": "red",}
+        self.palette = {"spb": "yellow", "pvc": "red",}
 
 
     @property
@@ -523,6 +523,10 @@ class CPSC2020(OtherDataBase):
         line_len = self.fs * 25  # 25 seconds
         nb_lines = math.ceil(len(_data)/line_len)
 
+        bias_thr = 0.15
+        winL = 0.06
+        winR = 0.08
+
         for idx in range(nb_lines):
             seg = _data[idx*line_len: (idx+1)*line_len]
             secs = (np.arange(len(seg)) + idx*line_len) / self.fs
@@ -552,13 +556,21 @@ class CPSC2020(OtherDataBase):
                 patches["PVC"] = mpatches.Patch(color=self.palette["pvc"], label="PVC")
             for t in seg_spb:
                 ax.axvspan(
-                    max(secs[0], t-0.05), min(secs[-1], t+0.05),
-                    color=self.palette["spb"], alpha=0.5
+                    max(secs[0], t-bias_thr), min(secs[-1], t+bias_thr),
+                    color=self.palette["spb"], alpha=0.3
+                )
+                ax.axvspan(
+                    max(secs[0], t-winL), min(secs[-1], t+winR),
+                    color=self.palette["spb"], alpha=0.9
                 )
             for t in seg_pvc:
                 ax.axvspan(
-                    max(secs[0], t-0.05), min(secs[-1], t+0.05),
-                    color=self.palette["pvc"], alpha=0.5
+                    max(secs[0], t-bias_thr), min(secs[-1], t+bias_thr),
+                    color=self.palette["pvc"], alpha=0.3
+                )
+                ax.axvspan(
+                    max(secs[0], t-winL), min(secs[-1], t+winR),
+                    color=self.palette["pvc"], alpha=0.9
                 )
             if len(patches) > 0:
                 ax.legend(
