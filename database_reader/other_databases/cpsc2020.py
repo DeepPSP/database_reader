@@ -465,7 +465,7 @@ class CPSC2020(OtherDataBase):
         return premature_intervals
 
     
-    def plot(self, rec:Union[int,str], data:Optional[np.ndarray]=None, ticks_granularity:int=0, sampfrom:Optional[int]=None, sampto:Optional[int]=None, rpeak_inds:Optional[Union[Sequence[int],np.ndarray]]=None) -> NoReturn:
+    def plot(self, rec:Union[int,str], data:Optional[np.ndarray]=None, ann:Optional[Dict[str, np.ndarray]]=None, ticks_granularity:int=0, sampfrom:Optional[int]=None, sampto:Optional[int]=None, rpeak_inds:Optional[Union[Sequence[int],np.ndarray]]=None) -> NoReturn:
         """ finished, checked,
 
         Parameters:
@@ -477,6 +477,10 @@ class CPSC2020(OtherDataBase):
             ecg signal to plot,
             if given, data of `rec` will not be used,
             this is useful when plotting filtered data
+        ann: dict, optional,
+            annotations for `data`,
+            "SPB_indices", "PVC_indices", each of ndarray values,
+            ignored if `data` is None
         ticks_granularity: int, default 0,
             the granularity to plot axis ticks, the higher the more,
             0 (no ticks) --> 1 (major ticks) --> 2 (major + minor ticks)
@@ -505,7 +509,8 @@ class CPSC2020(OtherDataBase):
             elif units == "μV":
                 _data = data.copy()
 
-        ann = self.load_ann(rec, sampfrom=sampfrom, sampto=sampto)
+        if ann is None or data is None:
+            ann = self.load_ann(rec, sampfrom=sampfrom, sampto=sampto)
         sf, st = (sampfrom or 0), (sampto or len(_data))
         spb_indices = ann["SPB_indices"]
         pvc_indices = ann["PVC_indices"]
