@@ -3,18 +3,19 @@
 """
 import os
 import random
+import math
 from datetime import datetime
-from typing import Union, Optional, Any, List, Dict, Tuple, NoReturn
+from typing import Union, Optional, Any, List, Tuple, Dict, Sequence, NoReturn
 from numbers import Real
 
 import numpy as np
+np.set_printoptions(precision=5, suppress=True)
 import pandas as pd
-from scipy.io import loadmat, savemat
+from scipy.io import loadmat
 from easydict import EasyDict as ED
 
 from ..utils.common import (
     ArrayLike,
-    get_record_list_recursive,
     DEFAULT_FIG_SIZE_PER_SEC,
 )
 from ..utils.utils_misc import PVC, SPB
@@ -142,7 +143,8 @@ class CPSC2020(OtherDataBase):
        A08   Yes    126908              118,311
        A09   No     89972               89,693
        A10   No     83509               82,061
-    2. A04 has duplicate 'PVC_indices' (13534856,27147621,35141190 all appear twice):
+    2. (fixed by an official update)
+    A04 has duplicate 'PVC_indices' (13534856,27147621,35141190 all appear twice):
        before correction of `load_ann`:
        >>> from collections import Counter
        >>> db_dir = "/mnt/wenhao71/data/CPSC2020/TrainingSet/"
@@ -421,7 +423,7 @@ class CPSC2020(OtherDataBase):
 
 
     def locate_premature_beats(self, rec:Union[int,str], premature_type:Optional[str]=None, window:int=10000, sampfrom:Optional[int]=None, sampto:Optional[int]=None) -> List[List[int]]:
-        """ finished, NOT checked,
+        """ finished, checked,
 
         Parameters:
         -----------
