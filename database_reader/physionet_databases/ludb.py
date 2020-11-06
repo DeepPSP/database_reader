@@ -618,7 +618,7 @@ class LUDB(PhysioNetDataBase):
             axes = [axes]
         for idx in range(nb_leads):
             lead_name = self.all_leads[_lead_indices[idx]]
-            axes[idx].plot(t, _data[idx], label=f'lead - {lead_name}')
+            axes[idx].plot(t, _data[idx], color="black", label=f'lead - {lead_name}')
             axes[idx].axhline(y=0, linestyle='-', linewidth='1.0', color='red')
             # NOTE that `Locator` has default `MAXTICKS` equal to 1000
             if ticks_granularity >= 1:

@@ -541,7 +541,7 @@ class CPSC2020(OtherDataBase):
             y_range = np.max(np.abs(seg)) + 100
             fig_sz_h = 6 * y_range / 1500
             fig, ax = plt.subplots(figsize=(fig_sz_w, fig_sz_h))
-            ax.plot(secs, seg, c='black')
+            ax.plot(secs, seg, color="black")
             ax.axhline(y=0, linestyle='-', linewidth='1.0', color='red')
             if ticks_granularity >= 1:
                 ax.xaxis.set_major_locator(plt.MultipleLocator(0.2))

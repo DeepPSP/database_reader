@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 """
-import os
+import os, json
 from datetime import datetime
 from typing import Union, Optional, Any, List, Dict, Sequence, NoReturn
 from numbers import Real
@@ -99,11 +99,42 @@ class CPSC2019(OtherDataBase):
         self.nb_records = 2000
         self._all_records = [f"data_{i:05d}" for i in range(1,1+self.nb_records)]
         self._all_annotations = [f"R_{i:05d}" for i in range(1,1+self.nb_records)]
+        self._ls_rec()
         # self.all_references = self.all_annotations
         self.rec_dir = os.path.join(self.db_dir, "data")
         self.ann_dir = os.path.join(self.db_dir, "ref")
+        # aliases
         self.data_dir = self.rec_dir
         self.ref_dir = self.ann_dir
+
+
+    def _ls_rec(self) -> NoReturn:
+        """ finished, NOT checked,
+        """
+        records_fn = os.path.join(self.db_dir, "records.json")
+        if os.path.isfile(records_fn):
+            with open(records_fn, "r") as f:
+                records_json = json.load(f)
+                self._all_records = records_json["rec"]
+                self._all_annotations = records_json["ann"]
+            return
+        print(f"Please allow some time for the reader to confirm the existence of corresponding data files and annotation files...")
+        self._all_records = [
+            rec for rec in self._all_records \
+                if os.path.isfile(os.path.join(self.rec_dir, f"{rec}{self.rec_ext}"))
+        ]
+        self._all_annotations = [
+            ann for ann in self._all_annotations \
+                if os.path.isfile(os.path.join(self.ann_dir, f"{ann}{self.ann_ext}"))
+        ]
+        common = set([rec.split("_")[1] for rec in self._all_records]) \
+            & set([ann.split("_")[1] for ann in self._all_annotations])
+        common = sorted(list(common))
+        self._all_records = [f"data_{item}" for item in common]
+        self._all_records = [f"R_{item}" for item in common]
+        with open(records_fn, "w") as f:
+            records_json = {"rec": self._all_records, "ann": self._all_annotations}
+            json.dump(records_json, f, ensure_ascii=False)
 
 
     @property
@@ -293,7 +324,7 @@ class CPSC2019(OtherDataBase):
         y_range = np.max(np.abs(_data))
         fig_sz_h = 6 * y_range / 1500
         fig, ax = plt.subplots(figsize=(fig_sz_w, fig_sz_h))
-        ax.plot(secs, _data, c='black')
+        ax.plot(secs, _data, color="black")
         ax.axhline(y=0, linestyle='-', linewidth='1.0', color='red')
         if ticks_granularity >= 1:
             ax.xaxis.set_major_locator(plt.MultipleLocator(0.2))
@@ -304,7 +335,8 @@ class CPSC2019(OtherDataBase):
             ax.yaxis.set_minor_locator(plt.MultipleLocator(100))
             ax.grid(which='minor', linestyle=':', linewidth='0.5', color='black')
         for r in rpeak_secs:
-            ax.axvspan(r-0.01, r+0.01, color='green', alpha=0.7)
+            ax.axvspan(r-0.01, r+0.01, color='green', alpha=0.9)
+            ax.axvspan(r-0.075, r+0.075, color='green', alpha=0.3)
         ax.set_xlim(secs[0], secs[-1])
         ax.set_ylim(-y_range, y_range)
         ax.set_xlabel('Time [s]')

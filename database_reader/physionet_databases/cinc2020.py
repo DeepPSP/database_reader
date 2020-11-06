@@ -978,7 +978,7 @@ class CINC2020(PhysioNetDataBase):
         if nb_leads == 1:
             axes = [axes]
         for idx in range(nb_leads):
-            axes[idx].plot(t, _data[idx], label=f'lead - {_leads[idx]}')
+            axes[idx].plot(t, _data[idx], color="black", label=f'lead - {_leads[idx]}')
             axes[idx].axhline(y=0, linestyle='-', linewidth='1.0', color='red')
             # NOTE that `Locator` has default `MAXTICKS` equal to 1000
             if ticks_granularity >= 1:
