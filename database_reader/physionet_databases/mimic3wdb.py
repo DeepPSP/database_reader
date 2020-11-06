@@ -2,13 +2,14 @@
 """
 """
 import os
-import wfdb
-import numpy as np
-import pandas as pd
 from datetime import datetime
 from typing import Union, Optional, Any, List, NoReturn
 from numbers import Real
 
+import wfdb
+import numpy as np
+np.set_printoptions(precision=5, suppress=True)
+import pandas as pd
 from easydict import EasyDict as ED
 
 from ..utils.common import (

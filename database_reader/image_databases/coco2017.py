@@ -7,6 +7,7 @@ from typing import Optional
 
 import cv2
 import numpy as np
+np.set_printoptions(precision=5, suppress=True)
 import pandas as pd
 from PIL import Image
 from easydict import EasyDict as ED

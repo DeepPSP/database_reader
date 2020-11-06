@@ -23,6 +23,7 @@ from numbers import Real
 
 import wfdb
 import numpy as np
+np.set_printoptions(precision=5, suppress=True)
 import pandas as pd
 from pyedflib import EdfReader
 
@@ -115,7 +116,7 @@ class _DataBase(object):
         _prefix = prefix+"-" if prefix else ""
         self.logger = logging.getLogger(f'{_prefix}-{self.db_name}-logger')
         log_filepath = os.path.join(self.working_dir, f"{_prefix}{self.db_name}.log")
-        print(f"log file path is set {log_filepath}")
+        print(f"log file path is set \042{log_filepath}\042")
 
         c_handler = logging.StreamHandler(sys.stdout)
         f_handler = logging.FileHandler(log_filepath)

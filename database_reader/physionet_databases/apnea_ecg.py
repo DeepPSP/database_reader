@@ -8,6 +8,7 @@ from typing import Union, Optional, Any, List, Tuple, NoReturn
 from numbers import Real
 
 import numpy as np
+np.set_printoptions(precision=5, suppress=True)
 import pandas as pd
 import wfdb
 
