@@ -90,8 +90,8 @@ class CPSC2019(OtherDataBase):
         """
         super().__init__(db_name="CPSC2019", db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
         
-        self.freq = 500
-        self.spacing = 1000 / self.freq
+        self.fs = 500
+        self.spacing = 1000 / self.fs
 
         self.rec_ext = '.mat'
         self.ann_ext = '.mat'
@@ -288,7 +288,7 @@ class CPSC2019(OtherDataBase):
         return ann_name
 
 
-    def plot(self, rec:Union[int,str], data:Optional[np.ndarray]=None, ticks_granularity:int=0) -> NoReturn:
+    def plot(self, rec:Union[int,str], data:Optional[np.ndarray]=None, ann::Optional[np.ndarray]=None, ticks_granularity:int=0) -> NoReturn:
         """ finished, checked,
 
         Parameters:
@@ -300,6 +300,9 @@ class CPSC2019(OtherDataBase):
             ecg signal to plot,
             if given, data of `rec` will not be used,
             this is useful when plotting filtered data
+        ann: ndarray, optional,
+            annotations (rpeak indices) for `data`,
+            ignored if `data` is None
         ticks_granularity: int, default 0,
             the granularity to plot axis ticks, the higher the more,
             0 (no ticks) --> 1 (major ticks) --> 2 (major + minor ticks)
@@ -316,9 +319,12 @@ class CPSC2019(OtherDataBase):
             elif units == "μV":
                 _data = data.copy()
 
-        duration = len(_data) / self.freq
+        duration = len(_data) / self.fs
         secs = np.linspace(0, duration, len(_data))
-        rpeak_secs = self.load_rpeaks(rec, keep_dim=False) / self.freq
+        if ann is None or data is None:
+            rpeak_secs = self.load_rpeaks(rec, keep_dim=False) / self.fs
+        else:
+            rpeak_secs = np.array(ann) / self.fs
 
         fig_sz_w = int(DEFAULT_FIG_SIZE_PER_SEC * duration)
         y_range = np.max(np.abs(_data))
