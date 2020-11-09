@@ -133,7 +133,7 @@ class CPSC2019(OtherDataBase):
             & set([ann.split("_")[1] for ann in self._all_annotations])
         common = sorted(list(common))
         self._all_records = [f"data_{item}" for item in common]
-        self._all_records = [f"R_{item}" for item in common]
+        self._all_annotations = [f"R_{item}" for item in common]
         with open(records_fn, "w") as f:
             records_json = {"rec": self._all_records, "ann": self._all_annotations}
             json.dump(records_json, f, ensure_ascii=False)
