@@ -96,13 +96,15 @@ class CPSC2019(OtherDataBase):
         self.rec_ext = '.mat'
         self.ann_ext = '.mat'
 
+        # self.all_references = self.all_annotations
+        self.rec_dir = os.path.join(self.db_dir, "data")
+        self.ann_dir = os.path.join(self.db_dir, "ref")
+
         self.nb_records = 2000
         self._all_records = [f"data_{i:05d}" for i in range(1,1+self.nb_records)]
         self._all_annotations = [f"R_{i:05d}" for i in range(1,1+self.nb_records)]
         self._ls_rec()
-        # self.all_references = self.all_annotations
-        self.rec_dir = os.path.join(self.db_dir, "data")
-        self.ann_dir = os.path.join(self.db_dir, "ref")
+
         # aliases
         self.data_dir = self.rec_dir
         self.ref_dir = self.ann_dir
@@ -288,7 +290,7 @@ class CPSC2019(OtherDataBase):
         return ann_name
 
 
-    def plot(self, rec:Union[int,str], data:Optional[np.ndarray]=None, ann::Optional[np.ndarray]=None, ticks_granularity:int=0) -> NoReturn:
+    def plot(self, rec:Union[int,str], data:Optional[np.ndarray]=None, ann:Optional[np.ndarray]=None, ticks_granularity:int=0) -> NoReturn:
         """ finished, checked,
 
         Parameters:
