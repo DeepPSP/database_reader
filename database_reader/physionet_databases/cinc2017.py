@@ -27,7 +27,7 @@ __all__ = [
 
 
 class CINC2017(PhysioNetDataBase):
-    """ finished, NOT checked,
+    """ finished, checked,
 
     AF Classification from a Short Single Lead ECG Recording
     - The PhysioNet Computing in Cardiology Challenge 2017
@@ -181,7 +181,7 @@ class CINC2017(PhysioNetDataBase):
             df = self._df_ann_ori
         else:
             df = self._df_ann
-        row = df[df.ann==rec].iloc[0]
+        row = df[df.rec==rec].iloc[0]
         ann = row.ann
         if ann_format.lower() == "f":
             ann = self.d_ann_names[ann]
@@ -255,7 +255,7 @@ class CINC2017(PhysioNetDataBase):
                 ax.yaxis.set_minor_locator(plt.MultipleLocator(100))
                 ax.grid(which="minor", linestyle=":", linewidth="0.5", color="black")
             ax.legend(
-                handles=patch,
+                handles=[patch],
                 loc="lower left",
                 prop={"size": 16}
             )
