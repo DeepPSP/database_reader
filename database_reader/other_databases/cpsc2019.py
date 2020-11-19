@@ -111,7 +111,7 @@ class CPSC2019(OtherDataBase):
 
 
     def _ls_rec(self) -> NoReturn:
-        """ finished, NOT checked,
+        """ finished, checked,
         """
         records_fn = os.path.join(self.db_dir, "records.json")
         if os.path.isfile(records_fn):

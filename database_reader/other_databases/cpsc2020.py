@@ -76,7 +76,7 @@ class CPSC2020(OtherDataBase):
     ... Name: AF, dtype: int64
     this could also be seen from this dataset, via the following code as an example:
     >>> from data_reader import CPSC2020Reader as CR
-    >>> db_dir = '/media/cfs/wenhao71/data/CPSC2020/TrainingSet/'
+    >>> db_dir = "/media/cfs/wenhao71/data/CPSC2020/TrainingSet/"
     >>> dr = CR(db_dir)
     >>> rec = dr.all_records[1]
     >>> dr.plot(rec, sampfrom=0, sampto=4000, ticks_granularity=2)
@@ -144,20 +144,20 @@ class CPSC2020(OtherDataBase):
        A09   No     89972               89,693
        A10   No     83509               82,061
     2. (fixed by an official update)
-    A04 has duplicate 'PVC_indices' (13534856,27147621,35141190 all appear twice):
+    A04 has duplicate "PVC_indices" (13534856,27147621,35141190 all appear twice):
        before correction of `load_ann`:
        >>> from collections import Counter
        >>> db_dir = "/mnt/wenhao71/data/CPSC2020/TrainingSet/"
        >>> data_gen = CPSC2020Reader(db_dir=db_dir,working_dir=db_dir)
        >>> rec = 4
        >>> ann = data_gen.load_ann(rec)
-       >>> Counter(ann['PVC_indices']).most_common()[:4]
+       >>> Counter(ann["PVC_indices"]).most_common()[:4]
        would produce [(13534856, 2), (27147621, 2), (35141190, 2), (848, 1)]
     3. when extracting morphological features using augmented rpeaks for A04,
        `RuntimeWarning: invalid value encountered in double_scalars` would raise
        for `R_value = (R_value - y_min) / (y_max - y_min)` and
        for `y_values[n] = (y_values[n] - y_min) / (y_max - y_min)`.
-       this is caused by the 13882273-th sample, which is contained in 'PVC_indices',
+       this is caused by the 13882273-th sample, which is contained in "PVC_indices",
        however, whether it is a PVC beat, or just motion artefact, is in doubt!
 
     TODO:
@@ -189,8 +189,8 @@ class CPSC2020(OtherDataBase):
 
         self.fs = 400
         self.spacing = 1000/self.fs
-        self.rec_ext = '.mat'
-        self.ann_ext = '.mat'
+        self.rec_ext = ".mat"
+        self.ann_ext = ".mat"
 
         self.nb_records = 10
         self._all_records = [f"A{i:02d}" for i in range(1,1+self.nb_records)]
@@ -267,7 +267,7 @@ class CPSC2020(OtherDataBase):
             print(self.__doc__)
 
 
-    def load_data(self, rec:Union[int,str], units:str='mV', sampfrom:Optional[int]=None, sampto:Optional[int]=None, keep_dim:bool=True) -> np.ndarray:
+    def load_data(self, rec:Union[int,str], units:str="mV", sampfrom:Optional[int]=None, sampto:Optional[int]=None, keep_dim:bool=True) -> np.ndarray:
         """ finished, checked,
 
         Parameters:
@@ -275,8 +275,8 @@ class CPSC2020(OtherDataBase):
         rec: int or str,
             number of the record, NOTE that rec_no starts from 1,
             or the record name
-        units: str, default 'mV',
-            units of the output signal, can also be 'μV', with an alias of 'uV'
+        units: str, default "mV",
+            units of the output signal, can also be "μV", with an alias of "uV"
         sampfrom: int, optional,
             start index of the data to be loaded
         sampto: int, optional,
@@ -291,8 +291,8 @@ class CPSC2020(OtherDataBase):
         """
         rec_name = self._get_rec_name(rec)
         rec_fp = os.path.join(self.data_dir, f"{rec_name}{self.rec_ext}")
-        data = loadmat(rec_fp)['ecg']
-        if units.lower() in ['uv', 'μv']:
+        data = loadmat(rec_fp)["ecg"]
+        if units.lower() in ["uv", "μv"]:
             data = (1000 * data).astype(int)
         sf, st = (sampfrom or 0), (sampto or len(data))
         data = data[sf:st]
@@ -322,13 +322,13 @@ class CPSC2020(OtherDataBase):
         """
         ann_name = self._get_ann_name(rec)
         ann_fp = os.path.join(self.ann_dir, ann_name + self.ann_ext)
-        ann = loadmat(ann_fp)['ref']
+        ann = loadmat(ann_fp)["ref"]
         sf, st = (sampfrom or 0), (sampto or np.inf)
-        spb_indices = ann['S_ref'][0,0].flatten().astype(int)
+        spb_indices = ann["S_ref"][0,0].flatten().astype(int)
         # drop duplicates
         spb_indices = np.array(sorted(list(set(spb_indices))), dtype=int)
         spb_indices = spb_indices[np.where( (spb_indices>=sf) & (spb_indices<st) )[0]]
-        pvc_indices = ann['V_ref'][0,0].flatten().astype(int)
+        pvc_indices = ann["V_ref"][0,0].flatten().astype(int)
         # drop duplicates
         pvc_indices = np.array(sorted(list(set(pvc_indices))), dtype=int)
         pvc_indices = pvc_indices[np.where( (pvc_indices>=sf) & (pvc_indices<st) )[0]]
@@ -494,7 +494,7 @@ class CPSC2020(OtherDataBase):
             indices of R peaks,
             if `data` is None, then indices should be the absolute indices in the record
         """
-        if 'plt' not in dir():
+        if "plt" not in dir():
             import matplotlib.pyplot as plt
         import matplotlib.patches as mpatches
 
@@ -542,15 +542,15 @@ class CPSC2020(OtherDataBase):
             fig_sz_h = 6 * y_range / 1500
             fig, ax = plt.subplots(figsize=(fig_sz_w, fig_sz_h))
             ax.plot(secs, seg, color="black")
-            ax.axhline(y=0, linestyle='-', linewidth='1.0', color='red')
+            ax.axhline(y=0, linestyle="-", linewidth="1.0", color="red")
             if ticks_granularity >= 1:
                 ax.xaxis.set_major_locator(plt.MultipleLocator(0.2))
                 ax.yaxis.set_major_locator(plt.MultipleLocator(500))
-                ax.grid(which='major', linestyle='-', linewidth='0.5', color='red')
+                ax.grid(which="major", linestyle="-", linewidth="0.5", color="red")
             if ticks_granularity >= 2:
                 ax.xaxis.set_minor_locator(plt.MultipleLocator(0.04))
                 ax.yaxis.set_minor_locator(plt.MultipleLocator(100))
-                ax.grid(which='minor', linestyle=':', linewidth='0.5', color='black')
+                ax.grid(which="minor", linestyle=":", linewidth="0.5", color="black")
             seg_spb = np.where( (spb_indices>=idx*line_len) & (spb_indices<(idx+1)*line_len) )[0]
             # print(f"spb_indices = {spb_indices}, seg_spb = {seg_spb}")
             if len(seg_spb) > 0:
@@ -589,11 +589,11 @@ class CPSC2020(OtherDataBase):
                 seg_rpeak_secs = \
                     rpeak_secs[np.where( (rpeak_secs>=secs[0]) & (rpeak_secs<secs[-1]))[0]]
                 for r in seg_rpeak_secs:
-                    ax.axvspan(r-0.01, r+0.01, color='green', alpha=0.7)
+                    ax.axvspan(r-0.01, r+0.01, color="green", alpha=0.7)
             ax.set_xlim(secs[0], secs[-1])
             ax.set_ylim(-y_range, y_range)
-            ax.set_xlabel('Time [s]')
-            ax.set_ylabel('Voltage [μV]')
+            ax.set_xlabel("Time [s]")
+            ax.set_ylabel("Voltage [μV]")
             plt.show()
 
 
@@ -625,10 +625,10 @@ def _ann_to_beat_ann_epoch_v1(rpeaks:np.ndarray, ann:Dict[str, np.ndarray], bias
     """
     beat_ann = np.array(["N" for _ in range(len(rpeaks))])
     for idx, r in enumerate(rpeaks):
-        if any([abs(r-p) < bias_thr for p in ann['SPB_indices']]):
-            beat_ann[idx] = 'S'
-        elif any([abs(r-p) < bias_thr for p in ann['PVC_indices']]):
-            beat_ann[idx] = 'V'
+        if any([abs(r-p) < bias_thr for p in ann["SPB_indices"]]):
+            beat_ann[idx] = "S"
+        elif any([abs(r-p) < bias_thr for p in ann["PVC_indices"]]):
+            beat_ann[idx] = "V"
     ann_matched = ann.copy()
     retval = dict(ann_matched=ann_matched, beat_ann=beat_ann)
     return retval
@@ -664,37 +664,37 @@ def _ann_to_beat_ann_epoch_v2(rpeaks:np.ndarray, ann:Dict[str, np.ndarray], bias
         - beat_ann: ndarray,
             label for each beat from `rpeaks`
     """
-    beat_ann = np.array(["N" for _ in range(len(rpeaks))], dtype='<U1')
+    beat_ann = np.array(["N" for _ in range(len(rpeaks))], dtype="<U1")
     # used to add back those beat that is not detected via proprocess algorithm
     _ann = {k: v.astype(int).tolist() for k,v in ann.items()}
     for idx_r, r in enumerate(rpeaks):
         found = False
-        for idx_a, a in enumerate(_ann['SPB_indices']):
+        for idx_a, a in enumerate(_ann["SPB_indices"]):
             if abs(r-a) < bias_thr:
                 found = True
-                beat_ann[idx_r] = 'S'
-                del _ann['SPB_indices'][idx_a]
+                beat_ann[idx_r] = "S"
+                del _ann["SPB_indices"][idx_a]
                 break
         if found:
             continue
-        for idx_a, a in enumerate(_ann['PVC_indices']):
+        for idx_a, a in enumerate(_ann["PVC_indices"]):
             if abs(r-a) < bias_thr:
                 found = True
-                beat_ann[idx_r] = 'V'
-                del _ann['PVC_indices'][idx_a]
+                beat_ann[idx_r] = "V"
+                del _ann["PVC_indices"][idx_a]
                 break
     ann_matched = {
         k: np.array([a for a in v if a not in _ann[k]], dtype=int) for k,v in ann.items()
     }
     retval = dict(ann_matched=ann_matched, beat_ann=beat_ann)
     return retval
-    # _ann['SPB_indices'] = [a for a in _ann['SPB_indices'] if prev_r<a<next_r]
-    # _ann['PVC_indices'] = [a for a in _ann['PVC_indices'] if prev_r<a<next_r]
-    # augmented_rpeaks = np.concatenate((rpeaks, np.array(_ann['SPB_indices']), np.array(_ann['PVC_indices'])))
-    # beat_ann = np.concatenate((beat_ann, np.array(['S' for _ in _ann['SPB_indices']], dtype='<U1'), np.array(['V' for _ in _ann['PVC_indices']], dtype='<U1')))
+    # _ann["SPB_indices"] = [a for a in _ann["SPB_indices"] if prev_r<a<next_r]
+    # _ann["PVC_indices"] = [a for a in _ann["PVC_indices"] if prev_r<a<next_r]
+    # augmented_rpeaks = np.concatenate((rpeaks, np.array(_ann["SPB_indices"]), np.array(_ann["PVC_indices"])))
+    # beat_ann = np.concatenate((beat_ann, np.array(["S" for _ in _ann["SPB_indices"]], dtype="<U1"), np.array(["V" for _ in _ann["PVC_indices"]], dtype="<U1")))
     # sorted_indices = np.argsort(augmented_rpeaks)
     # augmented_rpeaks = augmented_rpeaks[sorted_indices].astype(int)
-    # beat_ann = beat_ann[sorted_indices].astype('<U1')
+    # beat_ann = beat_ann[sorted_indices].astype("<U1")
 
     # retval = dict(augmented_rpeaks=augmented_rpeaks, beat_ann=beat_ann)
     # return retval
@@ -724,7 +724,7 @@ def _ann_to_beat_ann_epoch_v3(rpeaks:np.ndarray, ann:Dict[str, np.ndarray], bias
         - beat_ann: ndarray,
             label for each beat from `rpeaks`
     """
-    beat_ann = np.array(["N" for _ in range(len(rpeaks))], dtype='<U1')
+    beat_ann = np.array(["N" for _ in range(len(rpeaks))], dtype="<U1")
     ann_matched = {k: [] for k,v in ann.items()}
     for idx_r, r in enumerate(rpeaks):
         dist_to_spb = np.abs(r-ann["SPB_indices"])
@@ -816,10 +816,10 @@ def compute_metrics(sbp_true:List[np.ndarray], pvc_true:List[np.ndarray], sbp_pr
     if verbose >= 1:
         retval = ED(
             total_loss=-(Score1+Score2),
-            class_loss={'S':-Score1, 'V':-Score2},
-            true_positive={'S':s_tp, 'V':v_tp},
-            false_positive={'S':s_fp, 'V':v_fp},
-            false_negative={'S':s_fn, 'V':v_fn},
+            class_loss={"S":-Score1, "V":-Score2},
+            true_positive={"S":s_tp, "V":v_tp},
+            false_positive={"S":s_fp, "V":v_fp},
+            false_negative={"S":s_fn, "V":v_fn},
         )
     else:
         retval = Score1, Score2

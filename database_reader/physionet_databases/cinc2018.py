@@ -78,7 +78,8 @@ class CINC2018(PhysioNetDataBase):
     [1] https://physionet.org/content/challenge-2018/1.0.0/
     """
     def __init__(self, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
-        """
+        """ NOT finished, NOT checked,
+        
         Parameters:
         -----------
         db_dir: str, optional,
@@ -87,10 +88,10 @@ class CINC2018(PhysioNetDataBase):
             working directory, to store intermediate files and log file
         verbose: int, default 2,
         """
-        super().__init__(db_name='CINC2018', db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
+        super().__init__(db_name="CINC2018", db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
         self.freq = None
-        self.training_dir = os.path.join(self.db_dir, 'training')
-        self.test_dir = os.path.join(self.db_dir, 'test')
+        self.training_dir = os.path.join(self.db_dir, "training")
+        self.test_dir = os.path.join(self.db_dir, "test")
         self.training_records = []
         self.test_records = []
         self._all_records = []
@@ -109,7 +110,7 @@ class CINC2018(PhysioNetDataBase):
         pid: int,
             the `subject_id` corr. to `rec`
         """
-        head = '2018'
+        head = "2018"
         mid = rec[2:4]
         tail = rec[-4:]
         pid = int(head+mid+tail)
