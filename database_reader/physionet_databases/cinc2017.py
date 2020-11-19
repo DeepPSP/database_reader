@@ -4,7 +4,7 @@
 import os
 import math
 from datetime import datetime
-from typing import Union, Optional, Any, List, NoReturn
+from typing import Union, Optional, Any, List, Sequence, NoReturn
 from numbers import Real
 
 import wfdb
@@ -81,7 +81,7 @@ class CINC2017(PhysioNetDataBase):
 
         self._df_ann = pd.read_csv(os.path.join(self.db_dir, "REFERENCE.csv"), header=None)
         self._df_ann.columns = ["rec", "ann",]
-        self._df_ann_ori = pd.read_csv(os.path.join(self.db_dir, "REFERENCE-original.csv")header=None)
+        self._df_ann_ori = pd.read_csv(os.path.join(self.db_dir, "REFERENCE-original.csv"), header=None)
         self._df_ann_ori.columns = ["rec", "ann",]
         # ["N", "A", "O", "~"]
         self._all_ann = list(set(self._df_ann.ann.unique().tolist() + self._df_ann_ori.ann.unique().tolist()))
@@ -116,7 +116,7 @@ class CINC2017(PhysioNetDataBase):
                 f.write(f"{rec}\n")
 
 
-    def load_data(self, rec:str, data_format:str="channel_first", units:str="mV") -> np:ndarray:
+    def load_data(self, rec:str, data_format:str="channel_first", units:str="mV") -> np.ndarray:
         """ finished, checked,
 
         Parameters:

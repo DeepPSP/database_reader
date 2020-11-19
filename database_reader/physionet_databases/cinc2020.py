@@ -238,7 +238,7 @@ class CINC2020(PhysioNetDataBase):
         s2d = {self.rec_prefix[k]:v for k,v in s2d.items()}
         prefix = "".join(re.findall(r"[A-Z]", rec))
         n = rec.replace(prefix,"")
-        sid = int(f"{s2d[prefix]}{"0"*(8-len(n))}{n}")
+        sid = int(f"{s2d[prefix]}{'0'*(8-len(n))}{n}")
         return sid
 
     
@@ -997,8 +997,8 @@ class CINC2020(PhysioNetDataBase):
                 axes[idx].grid(which="minor", linestyle=":", linewidth="0.5", color="black")
             # add extra info. to legend
             # https://stackoverflow.com/questions/16826711/is-it-possible-to-add-a-string-as-a-legend-item-in-matplotlib
-            axes[idx].plot([], [], " ", label=f"labels_s - {",".join(diag_scored)}")
-            axes[idx].plot([], [], " ", label=f"labels_a - {",".join(diag_all)}")
+            axes[idx].plot([], [], " ", label=f"labels_s - {','.join(diag_scored)}")
+            axes[idx].plot([], [], " ", label=f"labels_a - {','.join(diag_all)}")
             axes[idx].plot([], [], " ", label=f"tranche - {self.tranche_names[tranche]}")
             axes[idx].plot([], [], " ", label=f"freq - {self.freq[tranche]}")
             for w in ["p_waves", "qrs", "t_waves"]:
