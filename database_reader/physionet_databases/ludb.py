@@ -634,7 +634,7 @@ class LUDB(PhysioNetDataBase):
             for d in diagnoses:
                 axes[idx].plot([], [], " ", label=d)
             for w in ["pwaves", "qrs", "twaves"]:
-                for itv in eval(f"{w}["{lead_name}"]"):
+                for itv in eval(f"{w}['{lead_name}']"):
                     axes[idx].axvspan(
                         itv[0]/self.freq, itv[1]/self.freq,
                         color=palette[w], alpha=plot_alpha,

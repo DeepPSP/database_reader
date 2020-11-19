@@ -571,9 +571,9 @@ class PhysioNetDataBase(_DataBase):
             for a in all_annotations:
                 if k in a.keys() or "("+k in a.keys():
                     try:
-                        print(f"{k.split("(")[1]} stands for {a[k]}")
+                        print(f"{k.split('(')[1]} stands for {a[k]}")
                     except:
-                        print(f"{k} stands for {a["("+k]}")
+                        print(f"{k} stands for {a['('+k]}")
 
 
 class NSRRDataBase(_DataBase):

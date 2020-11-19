@@ -170,7 +170,7 @@ class SleepAccel(OtherDataBase):
         """
         hr_fp = os.path.join(self.hr_dir, subject_id+self.hr_file_suffix)
         df_hr = pd.read_csv(hr_fp,sep=",",header=None,names=["sec","hr"])
-        df_hr = df_hr.sort_values(by="sec").
+        df_hr = df_hr.sort_values(by="sec")
         df_hr = df_hr.drop_duplicates(subset="sec")
         df_hr = df_hr.reset_index(drop=True)
         return df_hr

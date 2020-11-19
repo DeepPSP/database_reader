@@ -235,7 +235,7 @@ class SHHS(NSRRDataBase):
 
         # stats
         try:
-            self.rec_with_hrv_ann = [f"shhs{int(row["visitnumber"])}-{int(row["nsrrid"])}" for _,row in self.load_hrv_summary_ann().iterrows()]
+            self.rec_with_hrv_ann = [f"shhs{int(row['visitnumber'])}-{int(row['nsrrid'])}" for _,row in self.load_hrv_summary_ann().iterrows()]
         except:
             self.rec_with_hrv_ann = []
 
@@ -885,7 +885,7 @@ class SHHS(NSRRDataBase):
             # temporarily finished
             # latter to make imporvements
             df_sleep_ann = df_event_ann
-            self.logger.info(f"record {rec} has {len(df_sleep_ann["df_events"])} sleep event annotations from corresponding event-profusion annotation file, with {len(df_sleep_ann["df_events"].columns)} column(s)")
+            self.logger.info(f"record {rec} has {len(df_sleep_ann['df_events'])} sleep event annotations from corresponding event-profusion annotation file, with {len(df_sleep_ann['df_events'].columns)} column(s)")
         return df_sleep_ann
 
 
@@ -1003,7 +1003,7 @@ class SHHS(NSRRDataBase):
         _et = []
         if source.lower() != "hrv":
             if event_types is None or len(event_types) == 0:
-                raise ValueError(f"When `source` is "{source}", please specify legal `event_types`!")
+                raise ValueError(f"When `source` is \042{source}\042, please specify legal `event_types`!")
             else:
                 _et = [s.lower() for s in event_types]
 
