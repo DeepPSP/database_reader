@@ -75,13 +75,13 @@ class PTBDB(PhysioNetDataBase):
             working directory, to store intermediate files and log file
         verbose: int, default 2,
         """
-        super().__init__(db_name='ptbdb', db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
+        super().__init__(db_name="ptbdb", db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
         self.freq = 1000
         self.spacing = 1000/self.freq
 
-        self.rec_ext = 'dat'
-        self.aux_rec_ext = 'xyz'  # the extra 3 Frank lead ECGs
-        self.ann_ext = 'atr'
+        self.rec_ext = "dat"
+        self.aux_rec_ext = "xyz"  # the extra 3 Frank lead ECGs
+        self.ann_ext = "atr"
 
         self._ls_rec()
         

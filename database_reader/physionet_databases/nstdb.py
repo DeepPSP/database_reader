@@ -57,7 +57,7 @@ class NSTDB(PhysioNetDataBase):
             working directory, to store intermediate files and log file
         verbose: int, default 2,
         """
-        super().__init__(db_name='nstdb', db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
+        super().__init__(db_name="nstdb", db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
         self.freq = None
         self.data_ext = "dat"
         self.ann_ext = "atr"

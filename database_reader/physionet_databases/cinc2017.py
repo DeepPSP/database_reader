@@ -86,8 +86,8 @@ class CINC2017(PhysioNetDataBase):
         # ["N", "A", "O", "~"]
         self._all_ann = list(set(self._df_ann.ann.unique().tolist() + self._df_ann_ori.ann.unique().tolist()))
         self.d_ann_names = {
-            "N": "Normal",
-            "A": "AF",
+            "N": "Normal rhythm",
+            "A": "AF rhythm",
             "O": "Other rhythm",
             "~": "Noisy",
         }

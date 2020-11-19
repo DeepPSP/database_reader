@@ -67,7 +67,7 @@ class MIMIC3WDB(PhysioNetDataBase):
             print verbosity
         kwargs:
         """
-        super().__init__(db_name='mimic3wdb', db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
+        super().__init__(db_name="mimic3wdb", db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
         self.metadata_files = ED(
             all_records=os.path.join(self.db_dir, "RECORDS"),
             waveforms=os.path.join(self.db_dir, "RECORDS-waveforms"),

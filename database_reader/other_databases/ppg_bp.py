@@ -64,7 +64,7 @@ class PPGBP(OtherDataBase):
             working directory, to store intermediate files and log file
         verbose: int, default 2,
 
-        typical 'db_dir': '/export/servers/kuangzhexiang/data/PPG_BP/'
+        typical "db_dir": "/export/servers/kuangzhexiang/data/PPG_BP/"
         ------------------
         to be written
         """
@@ -76,13 +76,14 @@ class PPGBP(OtherDataBase):
         self.form_paths()
 
         self.freq = 1000
-        self._all_records = sorted(list(set([fn.split('_')[0] for fn in os.listdir(self.ppg_data_dir)])), key=lambda r:int(r))
-        self.rec_ext = '.txt'
+        self._all_records = sorted(list(set([fn.split("_")[0] for fn in os.listdir(self.ppg_data_dir)])), key=lambda r:int(r))
+        self.rec_ext = ".txt"
 
         self.ann_items = [
-            'Num.', 'subject_ID', 'Sex(M/F)', 'Age(year)', 'Height(cm)', 'Weight(kg)', 'BMI(kg/m^2)',
-            'Systolic Blood Pressure(mmHg)', 'Diastolic Blood Pressure(mmHg)', 'Heart Rate(b/m)',
-            'Hypertension', 'Diabetes', 'cerebral infarction', 'cerebrovascular disease',
+            "Num.", "subject_ID",
+            "Sex(M/F)", "Age(year)", "Height(cm)", "Weight(kg)", "BMI(kg/m^2)",
+            "Systolic Blood Pressure(mmHg)", "Diastolic Blood Pressure(mmHg)", "Heart Rate(b/m)",
+            "Hypertension", "Diabetes", "cerebral infarction", "cerebrovascular disease",
         ]
 
 
@@ -90,9 +91,9 @@ class PPGBP(OtherDataBase):
         """ finished, checked, to be improved,
 
         """
-        self.ppg_data_dir = self.db_dir + '0_subject/'
-        self.unkown_file = self.db_dir + 'Table 1.xlsx'
-        self.ann_file = self.db_dir + 'PPG-BP dataset.xlsx'
+        self.ppg_data_dir = os.path.join(self.db_dir, "0_subject")
+        self.unkown_file = os.path.join(self.db_dir, "Table 1.xlsx")
+        self.ann_file = os.path.join(self.db_dir, "PPG-BP dataset.xlsx")
 
 
     def get_subject_id(self, rec_no:int) -> int:
@@ -101,7 +102,7 @@ class PPGBP(OtherDataBase):
         Parameters:
         -----------
         rec_no: int,
-            number of the record, or 'subject_ID'
+            number of the record, or "subject_ID"
 
         Returns:
         int, the `subject_id` corr. to `rec_no`
@@ -132,7 +133,7 @@ class PPGBP(OtherDataBase):
         Parameters:
         -----------
         rec_no: int,
-            number of the record, or 'subject_ID'
+            number of the record, or "subject_ID"
         seg_no: int,
             number of the segment measured from the subject
         
@@ -143,9 +144,9 @@ class PPGBP(OtherDataBase):
         verbose = self.verbose if verbose is None else verbose
         rec_fn = f"{self._all_records[rec_no]}_{seg_no}.txt"
         data = []
-        with open(self.ppg_data_dir+rec_fn, 'r') as f:
+        with open(self.ppg_data_dir+rec_fn, "r") as f:
             data = f.readlines()
-        data = np.array([float(i) for i in data[0].split('\t') if len(i)>0]).astype(int)
+        data = np.array([float(i) for i in data[0].split("\t") if len(i)>0]).astype(int)
         
         if verbose >= 2:
             import matplotlib.pyplot as plt
@@ -162,7 +163,7 @@ class PPGBP(OtherDataBase):
         Parameters:
         -----------
         rec_no: int, optional,
-            number of the record, or 'subject_ID',
+            number of the record, or "subject_ID",
             if not specified, then all annotations will be returned
         
         Returns:
@@ -176,7 +177,7 @@ class PPGBP(OtherDataBase):
         if rec_no is None:
             return df_ann
         
-        df_ann = df_ann[df_ann['subject_ID']==int(self._all_records[rec_no])].reset_index(drop=True)
+        df_ann = df_ann[df_ann["subject_ID"]==int(self._all_records[rec_no])].reset_index(drop=True)
         return df_ann
 
 
@@ -186,15 +187,17 @@ class PPGBP(OtherDataBase):
         Parameters:
         -----------
         rec_no: int,
-            number of the record, or 'subject_ID'
+            number of the record, or "subject_ID"
         
         Returns:
         --------
         list, the list of diagnosis or empty list for the normal subjects
         """
-        diagonosis_items = ['Hypertension', 'Diabetes', 'cerebral infarction', 'cerebrovascular disease']
+        diagonosis_items = [
+            "Hypertension", "Diabetes", "cerebral infarction", "cerebrovascular disease",
+        ]
         df_ann = self.load_ann(rec_no)[diagonosis_items].dropna(axis=1)
-        diagonosis = [item for item in df_ann.iloc[0].tolist() if item != 'Normal']
+        diagonosis = [item for item in df_ann.iloc[0].tolist() if item != "Normal"]
         return diagonosis
 
 
@@ -204,19 +207,19 @@ class PPGBP(OtherDataBase):
         Parameters:
         -----------
         rec_no: int,
-            number of the record, or 'subject_ID'
+            number of the record, or "subject_ID"
         items: list of str, optional,
             items of the patient information (e.g. sex, age, etc.)
         
         Returns:
         --------
-        if `items` contains only one item, then value of this item in the subject's information will be returned,
+        if `items` contains only one item, then value of this item in the subject"s information will be returned,
         otherwise, a dataframe of all information of the subject will be returned
         """
         if items is None or len(items) == 0:
             info_items = [
-                'Sex(M/F)','Age(year)','Height(cm)','Weight(kg)','BMI(kg/m^2)',
-                'Systolic Blood Pressure(mmHg)','Diastolic Blood Pressure(mmHg)','Heart Rate(b/m)',
+                "Sex(M/F)","Age(year)","Height(cm)","Weight(kg)","BMI(kg/m^2)",
+                "Systolic Blood Pressure(mmHg)","Diastolic Blood Pressure(mmHg)","Heart Rate(b/m)",
             ]
         else:
             info_items = items

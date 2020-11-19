@@ -74,20 +74,20 @@ class INCARTDB(PhysioNetDataBase):
             working directory, to store intermediate files and log file
         verbose: int, default 2,
         """
-        super().__init__(db_name='incartdb', db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
+        super().__init__(db_name="incartdb", db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
         self.freq = 257
         self.spacing = 1000/self.freq
 
-        self.data_ext = '.dat'
-        self.ann_ext = '.atr'
-        self.aux_ann_ext = '.hea'
+        self.data_ext = "dat"
+        self.ann_ext = "atr"
+        self.aux_ann_ext = "hea"
 
         self._ls_rec()
 
-        # this file links record names with patient's `subject_id`
-        self.patients_file = os.path.join(self.db_dir, 'files-patients-diagnoses.txt')
-        # this file decribes each record's diagnosis
-        self.record_description_file = os.path.join(self.db_dir, 'files-patients-diagnoses.txt')
+        # this file links record names with patient"s `subject_id`
+        self.patients_file = os.path.join(self.db_dir, "files-patients-diagnoses.txt")
+        # this file decribes each record"s diagnosis
+        self.record_description_file = os.path.join(self.db_dir, "files-patients-diagnoses.txt")
         
 
     def get_subject_id(self, rec) -> int:
@@ -104,15 +104,15 @@ class INCARTDB(PhysioNetDataBase):
         print(self.__doc__)
 
 
-    def load_data(self, rec:str, data_format='channels_last') -> np.ndarray:
+    def load_data(self, rec:str, data_format="channels_last") -> np.ndarray:
         """ finished, checked,
 
         Parameters:
         -----------
         rec: str,
             name of the record
-        data_format: str, default 'channels_last',
-            format of the ecg data, 'channels_last' or 'channels_first' (original)
+        data_format: str, default "channels_last",
+            format of the ecg data, "channels_last" or "channels_first" (original)
         
         Returns:
         --------

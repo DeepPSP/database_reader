@@ -50,12 +50,12 @@ class PTB_XL(PhysioNetDataBase):
         Signal Metadata             static_noise, burst_noise, baseline_drift, electrodes_problems,
                                     extra_beats, pacemaker
         Cross-validation Folds      strat_fold
-    6. the 'scp_codes' are organized in the form of dict with 'statement: likelihood' as key, value pairs
-    7. the file ./scp_statements.csv stores mappings to other annotation standards such as AHA, aECGREFID, CDISC and DICOM, and side-information such as the category each statement can be assigned to (diagnostic, form and/or rhythm). For diagnostic statements, a proposed hierarchical organization into 'diagnostic_class' and 'diagnostic_subclass' is provided.
+    6. the "scp_codes" are organized in the form of dict with "statement: likelihood" as key, value pairs
+    7. the file ./scp_statements.csv stores mappings to other annotation standards such as AHA, aECGREFID, CDISC and DICOM, and side-information such as the category each statement can be assigned to (diagnostic, form and/or rhythm). For diagnostic statements, a proposed hierarchical organization into "diagnostic_class" and "diagnostic_subclass" is provided.
 
     NOTE:
     -----
-    1. in the 'scp_codes' column, which is of the form 'statement: likelihood', the likelihood is set to 0 if unknown
+    1. in the "scp_codes" column, which is of the form "statement: likelihood", the likelihood is set to 0 if unknown
 
     ISSUES:
     -------
@@ -80,7 +80,7 @@ class PTB_XL(PhysioNetDataBase):
             working directory, to store intermediate files and log file
         verbose: int, default 2,
         """
-        super().__init__(db_name='ptb-xl', db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
+        super().__init__(db_name="ptb-xl", db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
         self.data_ext = "dat"
         self.ann_ext = "atr"
         # wfdb.get_record_list currently not available for this new dataset

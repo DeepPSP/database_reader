@@ -21,7 +21,7 @@ if len(_IN_SYS_PATH) == 0:
     sys.path.append(_PARENT_DIR)
 
 import warnings
-warnings.simplefilter(action='ignore', category=FutureWarning)
+warnings.simplefilter(action="ignore", category=FutureWarning)
 
 # from .base import *
 # from .physionet_databases import *
@@ -31,4 +31,4 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 # from .other_databases import *
 
 
-# __all__ = [s for s in dir() if not s.startswith('_')]
+# __all__ = [s for s in dir() if not s.startswith("_")]

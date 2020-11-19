@@ -93,8 +93,8 @@ class CPSC2019(OtherDataBase):
         self.fs = 500
         self.spacing = 1000 / self.fs
 
-        self.rec_ext = '.mat'
-        self.ann_ext = '.mat'
+        self.rec_ext = ".mat"
+        self.ann_ext = ".mat"
 
         # self.all_references = self.all_annotations
         self.rec_dir = os.path.join(self.db_dir, "data")
@@ -138,12 +138,6 @@ class CPSC2019(OtherDataBase):
             records_json = {"rec": self._all_records, "ann": self._all_annotations}
             json.dump(records_json, f, ensure_ascii=False)
 
-
-    @property
-    def all_records(self):
-        """
-        """
-        return self._all_records
 
     @property
     def all_annotations(self):
@@ -194,7 +188,7 @@ class CPSC2019(OtherDataBase):
             print(self.__doc__)
 
     
-    def load_data(self, rec:Union[int,str], units:str='mV', keep_dim:bool=True) -> np.ndarray:
+    def load_data(self, rec:Union[int,str], units:str="mV", keep_dim:bool=True) -> np.ndarray:
         """ finished, checked,
 
         Parameters:
@@ -309,7 +303,7 @@ class CPSC2019(OtherDataBase):
             the granularity to plot axis ticks, the higher the more,
             0 (no ticks) --> 1 (major ticks) --> 2 (major + minor ticks)
         """
-        if 'plt' not in dir():
+        if "plt" not in dir():
             import matplotlib.pyplot as plt
 
         if data is None:
@@ -333,22 +327,22 @@ class CPSC2019(OtherDataBase):
         fig_sz_h = 6 * y_range / 1500
         fig, ax = plt.subplots(figsize=(fig_sz_w, fig_sz_h))
         ax.plot(secs, _data, color="black")
-        ax.axhline(y=0, linestyle='-', linewidth='1.0', color='red')
+        ax.axhline(y=0, linestyle="-", linewidth="1.0", color="red")
         if ticks_granularity >= 1:
             ax.xaxis.set_major_locator(plt.MultipleLocator(0.2))
             ax.yaxis.set_major_locator(plt.MultipleLocator(500))
-            ax.grid(which='major', linestyle='-', linewidth='0.5', color='red')
+            ax.grid(which="major", linestyle="-", linewidth="0.5", color="red")
         if ticks_granularity >= 2:
             ax.xaxis.set_minor_locator(plt.MultipleLocator(0.04))
             ax.yaxis.set_minor_locator(plt.MultipleLocator(100))
-            ax.grid(which='minor', linestyle=':', linewidth='0.5', color='black')
+            ax.grid(which="minor", linestyle=":", linewidth="0.5", color="black")
         for r in rpeak_secs:
-            ax.axvspan(r-0.01, r+0.01, color='green', alpha=0.9)
-            ax.axvspan(r-0.075, r+0.075, color='green', alpha=0.3)
+            ax.axvspan(r-0.01, r+0.01, color="green", alpha=0.9)
+            ax.axvspan(r-0.075, r+0.075, color="green", alpha=0.3)
         ax.set_xlim(secs[0], secs[-1])
         ax.set_ylim(-y_range, y_range)
-        ax.set_xlabel('Time [s]')
-        ax.set_ylabel('Voltage [μV]')
+        ax.set_xlabel("Time [s]")
+        ax.set_ylabel("Voltage [μV]")
         plt.show()
 
 
@@ -420,7 +414,7 @@ def compute_metrics(rpeaks_truth:Sequence[Union[np.ndarray,Sequence[int]]], rpea
             print(f"for the {idx}-th record,\ntrue positive = {true_positive}\nfalse positive = {false_positive}\nfalse negative = {false_negative}")
 
     rec_acc = round(np.sum(record_flags) / n_records, 4)
-    print(f'QRS_acc: {rec_acc}')
-    print('Scoring complete.')
+    print(f"QRS_acc: {rec_acc}")
+    print("Scoring complete.")
 
     return rec_acc

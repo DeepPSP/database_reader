@@ -70,7 +70,7 @@ class AFDB(PhysioNetDataBase):
             working directory, to store intermediate files and log file
         verbose: int, default 2,
         """
-        super().__init__(db_name='afdb', db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
+        super().__init__(db_name="afdb", db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
         self.freq = 250
         self.data_ext = "dat"
         self.ann_ext = "atr"
@@ -113,7 +113,7 @@ class AFDB(PhysioNetDataBase):
         return self._all_records
 
 
-    def load_data(self, rec:str, leads:Optional[Union[str, List[str]]]=None, data_format:str='channel_first', units:str='mV', freq:Optional[Real]=None) -> np.ndarray:
+    def load_data(self, rec:str, leads:Optional[Union[str, List[str]]]=None, data_format:str="channel_first", units:str="mV", freq:Optional[Real]=None) -> np.ndarray:
         """ finished, checked,
 
         load physical (converted from digital) ecg data,
@@ -125,12 +125,12 @@ class AFDB(PhysioNetDataBase):
             name of the record
         leads: str or list of str, optional,
             the leads to load
-        data_format: str, default 'channel_first',
+        data_format: str, default "channel_first",
             format of the ecg data,
-            'channel_last' (alias 'lead_last'), or
-            'channel_first' (alias 'lead_first')
-        units: str, default 'mV',
-            units of the output signal, can also be 'μV', with an alias of 'uV'
+            "channel_last" (alias "lead_last"), or
+            "channel_first" (alias "lead_first")
+        units: str, default "mV",
+            units of the output signal, can also be "μV", with an alias of "uV"
         freq: real number, optional,
             if not None, the loaded data will be resampled to this frequency
         
@@ -146,13 +146,13 @@ class AFDB(PhysioNetDataBase):
             _leads = [leads]
         else:
             _leads = leads
-        # p_signal in the format of 'lead_last'
+        # p_signal in the format of "lead_last"
         data = wfdb.rdrecord(fp, physical=True, channel_names=_leads).p_signal
-        if units.lower() in ['μV', 'uV']:
+        if units.lower() in ["μV", "uV"]:
             data = 1000 * data
         if freq is not None and freq != self.freq:
             data = resample_poly(data, freq, self.freq, axis=0)
-        if data_format.lower() in ['channel_first', 'lead_first']:
+        if data_format.lower() in ["channel_first", "lead_first"]:
             data = data.T
         return data
 
@@ -242,9 +242,9 @@ class AFDB(PhysioNetDataBase):
             if True, forces all leads to have the same y range
         waves: dict, optional,
             indices of the wave critical points, including
-            'p_onsets', 'p_peaks', 'p_offsets',
-            'q_onsets', 'q_peaks', 'r_peaks', 's_peaks', 's_offsets',
-            't_onsets', 't_peaks', 't_offsets'
+            "p_onsets", "p_peaks", "p_offsets",
+            "q_onsets", "q_peaks", "r_peaks", "s_peaks", "s_offsets",
+            "t_onsets", "t_peaks", "t_offsets"
         kwargs: dict,
 
         TODO:
@@ -276,12 +276,12 @@ class AFDB(PhysioNetDataBase):
         Returns:
         --------
         units: str,
-            units of `data`, 'μV' or 'mV'
+            units of `data`, "μV" or "mV"
         """
         _MAX_mV = 20  # 20mV, seldom an ECG device has range larger than this value
         max_val = np.max(np.abs(data))
         if max_val > _MAX_mV:
-            units = 'μV'
+            units = "μV"
         else:
-            units = 'mV'
+            units = "mV"
         return units

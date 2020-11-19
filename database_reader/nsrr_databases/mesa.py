@@ -89,7 +89,7 @@ class MESA(NSRRDataBase):
             working directory, to store intermediate files and log file
         verbose: int, default 2,
         """
-        super().__init__(db_name='MESA', db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
+        super().__init__(db_name="MESA", db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
 
         self.actigraph_cols = [
             "mesaid",

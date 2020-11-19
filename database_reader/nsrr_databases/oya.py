@@ -58,7 +58,7 @@ class OYA(NSRRDataBase):
             working directory, to store intermediate files and log file
         verbose: int, default 2,
         """
-        super().__init__(db_name='OYA', db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
+        super().__init__(db_name="OYA", db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
 
 
     def get_subject_id(self, rec:str) -> int:

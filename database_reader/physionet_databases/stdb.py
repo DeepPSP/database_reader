@@ -59,14 +59,14 @@ class STDB(PhysioNetDataBase):
             working directory, to store intermediate files and log file
         verbose: int, default 2,
         """
-        super().__init__(db_name='stdb', db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
+        super().__init__(db_name="stdb", db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
         self.freq = None  # to check
         self.data_ext = "dat"
         self.ann_ext = "atr"
         
         self._ls_rec()
 
-        self.all_leads = ['ECG']
+        self.all_leads = ["ECG"]
 
 
     def _ls_rec(self, local:bool=True) -> NoReturn:
@@ -83,7 +83,12 @@ class STDB(PhysioNetDataBase):
         try:
             super()._ls_rec(local=local)
         except:
-            self._all_records = ['300', '301', '302', '303', '304', '305', '306', '307', '308', '309', '310', '311', '312', '313', '314', '315', '316', '317', '318', '319', '320', '321', '322', '323', '324', '325', '326', '327']
+            self._all_records = [
+                "300", "301", "302", "303", "304", "305", "306",
+                "307", "308", "309", "310", "311", "312", "313",
+                "314", "315", "316", "317", "318", "319", "320",
+                "321", "322", "323", "324", "325", "326", "327",
+            ]
 
 
     def get_subject_id(self, rec) -> int:

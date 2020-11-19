@@ -27,7 +27,7 @@ __all__ = [
 class UCDDB(PhysioNetDataBase):
     """ NOT finished,
 
-    St. Vincent's University Hospital / University College Dublin Sleep Apnea Database
+    St. Vincent"s University Hospital / University College Dublin Sleep Apnea Database
 
     ABOUT ucddb:
     ------------
@@ -94,7 +94,7 @@ class UCDDB(PhysioNetDataBase):
             working directory, to store intermediate files and log file
         verbose: int, default 2,
         """
-        super().__init__(db_name='ucddb', db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
+        super().__init__(db_name="ucddb", db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
         self.data_ext = "rec"
         self.extra_data_ext = "_lifecard.edf"
         self.ann_ext = None
@@ -107,13 +107,13 @@ class UCDDB(PhysioNetDataBase):
         self.file_opened = None
 
 
-    def safe_edf_file_operation(self, operation:str='close', full_file_path:Optional[str]=None) -> Union[EdfReader, NoReturn]:
+    def safe_edf_file_operation(self, operation:str="close", full_file_path:Optional[str]=None) -> Union[EdfReader, NoReturn]:
         """ finished, checked,
 
         Parameters:
         -----------
-        operation: str, default 'close',
-            operation name, can be 'open' and 'close'
+        operation: str, default "close",
+            operation name, can be "open" and "close"
         full_file_path: str, optional,
             path of the file which contains the psg data,
             if not given, default path will be used
@@ -122,11 +122,11 @@ class UCDDB(PhysioNetDataBase):
         --------
 
         """
-        if operation == 'open':
+        if operation == "open":
             if self.file_opened is not None:
                 self.file_opened._close()
             self.file_opened = EdfReader(full_file_path)
-        elif operation =='close':
+        elif operation =="close":
             if self.file_opened is not None:
                 self.file_opened._close()
                 self.file_opened = None

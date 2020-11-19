@@ -92,15 +92,15 @@ class _DataBase(object):
         Returns:
         --------
         units: str,
-            units of `sig`, 'μV' or 'mV'
+            units of `sig`, "μV" or "mV"
         """
         if sig_type.lower() == "ecg":
             _MAX_mV = 20  # 20mV, seldom an ECG device has range larger than this value
             max_val = np.max(np.abs(sig))
             if max_val > _MAX_mV:
-                units = 'μV'
+                units = "μV"
             else:
-                units = 'mV'
+                units = "mV"
         else:
             raise NotImplementedError(f"not implemented for {sig_type}")
         return units
@@ -114,7 +114,7 @@ class _DataBase(object):
             prefix (for each line) of the logger, and its file name
         """
         _prefix = prefix+"-" if prefix else ""
-        self.logger = logging.getLogger(f'{_prefix}-{self.db_name}-logger')
+        self.logger = logging.getLogger(f"{_prefix}-{self.db_name}-logger")
         log_filepath = os.path.join(self.working_dir, f"{_prefix}{self.db_name}.log")
         print(f"log file path is set \042{log_filepath}\042")
 
@@ -137,8 +137,8 @@ class _DataBase(object):
             self.logger.setLevel(logging.WARNING)
 
         # Create formatters and add it to handlers
-        c_format = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
-        f_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        c_format = logging.Formatter("%(name)s - %(levelname)s - %(message)s")
+        f_format = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
         c_handler.setFormatter(c_format)
         f_handler.setFormatter(f_format)
 
@@ -206,143 +206,143 @@ class PhysioNetDataBase(_DataBase):
             all_dbs = wfdb.io.get_dbs()
         except:
             all_dbs = [
-                ['adfecgdb', 'Abdominal and Direct Fetal ECG Database'],
-                ['aftdb', 'AF Termination Challenge Database'],
-                ['ahadb', 'AHA Database [sample excluded record]'],
-                ['aami-ec13', 'ANSI/AAMI EC13 Test Waveforms'],
-                ['apnea-ecg', 'Apnea-ECG Database'],
-                ['chfdb', 'BIDMC Congestive Heart Failure Database'],
-                ['bidmc', 'BIDMC PPG and Respiration Dataset'],
-                ['bpssrat', 'Blood Pressure in Salt-Sensitive Dahl Rats'],
-                ['capslpdb', 'CAP Sleep Database'],
-                ['crisdb', 'CAST RR Interval Sub-Study Database'],
-                ['cves', 'Cerebral Vasoregulation in Elderly with Stroke'],
-                ['challenge/2009/test-set-a', 'Challenge 2009 Test Set A'],
-                ['challenge/2009/test-set-b', 'Challenge 2009 Test Set B'],
-                ['challenge/2010/set-a', 'Challenge 2010 Training Set A'],
-                ['challenge/2010/set-b', 'Challenge 2010 Test Set B'],
-                ['challenge/2010/set-c', 'Challenge 2010 Test Set C'],
-                ['challenge/2011/sim', 'Challenge 2011 Pilot Set'],
-                ['challenge/2011/set-a', 'Challenge 2011 Training Set A'],
-                ['challenge/2011/set-b', 'Challenge 2011 Test Set B'],
-                ['challenge/2013/set-a', 'Challenge 2013 Training Set A'],
-                ['challenge/2013/set-b', 'Challenge 2013 Test Set B'],
-                ['challenge/2014/set-p2', 'Challenge 2014 Extended Training Set'],
-                ['challenge/2014/set-p', 'Challenge 2014 Training Set'],
-                ['challenge/2015/training', 'Challenge 2015 Training Set'],
-                ['challenge/2016/training-a', 'Challenge 2016 Training Set A'],
-                ['challenge/2016/training-b', 'Challenge 2016 Training Set B'],
-                ['challenge/2016/training-c', 'Challenge 2016 Training Set C'],
-                ['challenge/2016/training-d', 'Challenge 2016 Training Set D'],
-                ['challenge/2016/training-e', 'Challenge 2016 Training Set E'],
-                ['challenge/2016/training-f', 'Challenge 2016 Training Set F'],
-                ['challenge/2017/training', 'Challenge 2017 Training Set'],
-                ['challenge/2018/training', 'Challenge 2018 Training Set'],
-                ['challenge/2018/test', 'Challenge 2018 Test Set'],
-                ['charisdb', 'CHARIS database'],
-                ['chbmit', 'CHB-MIT Scalp EEG Database'],
-                ['cebsdb', 'Combined measurement of ECG, Breathing and Seismocardiograms'],
-                ['culm', 'Complex Upper-Limb Movements'],
-                ['chf2db', 'Congestive Heart Failure RR Interval Database'],
-                ['ctu-uhb-ctgdb', 'CTU-CHB Intrapartum Cardiotocography Database'],
-                ['cudb', 'CU Ventricular Tachyarrhythmia Database'],
-                ['ecgdmmld',
-                'ECG Effects of Dofetilide, Moxifloxacin, Dofetilide+Mexiletine, Dofetilide+Lidocaine and Moxifloxacin+Diltiazem'],
-                ['ecgcipa', 'CiPA ECG Validation Study'],
-                ['ecgrdvq',
-                'ECG Effects of Ranolazine, Dofetilide, Verapamil, and Quinidine'],
-                ['ecgiddb', 'ECG-ID Database'],
-                ['eegmat', 'EEG During Mental Arithmetic Tasks'],
-                ['eegmmidb', 'EEG Motor Movement/Imagery Dataset'],
-                ['ltrsvp', 'EEG Signals from an RSVP Task'],
-                ['erpbci', 'ERP-based Brain-Computer Interface recordings'],
-                ['edb', 'European ST-T Database'],
-                ['earh', 'Evoked Auditory Responses in Heading Impaired'],
-                ['earndb', 'Evoked Auditory Responses in Normals'],
-                ['emgdb', 'Examples of Electromyograms'],
-                ['fantasia', 'Fantasia Database'],
-                ['fecgsyndb', 'Fetal ECG Synthetic Database'],
-                ['fpcgdb', 'Fetal PCG Database'],
-                ['gaitdb', 'Gait in Aging and Disease Database'],
-                ['gaitndd', 'Gait in Neurodegenerative Disease Database'],
-                ['gait-maturation-db/data', 'Gait Maturation Database'],
-                ['meditation/data', 'Heart Rate Oscillations during Meditation'],
-                ['hbedb', 'Human Balance Evaluation Database'],
-                ['ehgdb', 'Icelandic 16-electrode Electrohysterogram Database'],
-                ['iafdb', 'Intracardiac Atrial Fibrillation Database'],
-                ['ltafdb', 'Long Term AF Database'],
-                ['ltstdb', 'Long Term ST Database'],
-                ['mssvepdb', 'MAMEM SSVEP Database'],
-                ['mghdb', 'MGH/MF Waveform Database'],
-                ['mimicdb', 'MIMIC Database'],
-                ['mimicdb/numerics', 'MIMIC Database Numerics'],
-                ['mimic2cdb', 'MIMIC II Clinical Database Public Subset'],
-                ['mimic2wdb/30', 'MIMIC II/III Waveform Database, part 0'],
-                ['mimic2wdb/31', 'MIMIC II/III Waveform Database, part 1'],
-                ['mimic2wdb/32', 'MIMIC II/III Waveform Database, part 2'],
-                ['mimic2wdb/33', 'MIMIC II/III Waveform Database, part 3'],
-                ['mimic2wdb/34', 'MIMIC II/III Waveform Database, part 4'],
-                ['mimic2wdb/35', 'MIMIC II/III Waveform Database, part 5'],
-                ['mimic2wdb/36', 'MIMIC II/III Waveform Database, part 6'],
-                ['mimic2wdb/37', 'MIMIC II/III Waveform Database, part 7'],
-                ['mimic2wdb/38', 'MIMIC II/III Waveform Database, part 8'],
-                ['mimic2wdb/39', 'MIMIC II/III Waveform Database, part 9'],
-                ['mimic2wdb/matched', 'MIMIC II Waveform Database Matched Subset'],
-                ['mimic3wdb/matched', 'MIMIC III Waveform Database Matched Subset'],
-                ['mitdb', 'MIT-BIH Arrhythmia Database'],
-                ['pwave', 'MIT-BIH Arrhythmia Database P-Wave Annotations'],
-                ['afdb', 'MIT-BIH Atrial Fibrillation Database'],
-                ['cdb', 'MIT-BIH ECG Compression Test Database'],
-                ['ltdb', 'MIT-BIH Long-Term ECG Database'],
-                ['vfdb', 'MIT-BIH Malignant Ventricular Ectopy Database'],
-                ['nstdb', 'MIT-BIH Noise Stress Test Database'],
-                ['nsrdb', 'MIT-BIH Normal Sinus Rhythm Database'],
-                ['excluded', '... [Recordings excluded from the NSR DB]'],
-                ['slpdb', 'MIT-BIH Polysomnographic Database'],
-                ['stdb', 'MIT-BIH ST Change Database'],
-                ['svdb', 'MIT-BIH Supraventricular Arrhythmia Database'],
-                ['mmgdb', 'MMG Database'],
-                ['macecgdb', 'Motion Artifact Contaminated ECG Database'],
-                ['motion-artifact', 'Motion Artifact Contaminated fNIRS and EEG Data'],
-                ['noneeg', 'Non-EEG Dataset for Assessment of Neurological Status'],
-                ['nifecgdb', 'Non-Invasive Fetal ECG Database'],
-                ['nifeadb', 'Non-Invasive Fetal ECG Arrhythmia Database'],
-                ['nsr2db', 'Normal Sinus Rhythm RR Interval Database'],
-                ['ob1db', 'OB-1 Fetal ECG Database [sample record]'],
-                ['afpdb', 'PAF Prediction Challenge Database'],
-                ['osv', 'Pattern Analysis of Oxygen Saturation Variability'],
-                ['prcp', 'Physiologic Response to Changes in Posture'],
-                ['szdb', 'Post-Ictal Heart Rate Oscillations in Partial Epilepsy'],
-                ['picsdb', 'Preterm Infant Cardio-Respiratory Signals Database'],
-                ['ptbdb', 'PTB Diagnostic ECG Database'],
-                ['qtdb', 'QT Database'],
-                ['rvmh1', 'Response to Valsalva Maneuver in Humans'],
-                ['sufhsdb', 'Shiraz University Fetal Heart Sounds Database'],
-                ['simfpcgdb', 'Simulated Fetal Phonocardiograms'],
-                ['sleepbrl', 'Sleep Bioradiolocation Database'],
-                ['sleep-edfx', 'Sleep-EDF Database [Expanded]'],
-                ['shhpsgdb', 'Sleep Heart Health Study PSG Database [sample record]'],
-                ['shareedb',
-                'Smart Health for Assessing the Risk of Events via ECG Database'],
-                ['mvtdb/data', 'Spontaneous Ventricular Tachyarrhythmia Database'],
-                ['sgamp', 'Squid Giant Axon Membrane Potential'],
-                ['incartdb', 'St Petersburg INCART 12-lead Arrhythmia Database'],
-                ['staffiii', 'STAFF III Database'],
-                ['drivedb', 'Stress Recognition in Automobile Drivers'],
-                ['sddb', 'Sudden Cardiac Death Holter Database'],
-                ['twadb', 'T-Wave Alternans Challenge Database'],
-                ['taichidb', 'Tai Chi, Physiological Complexity, and Healthy Aging - Gait'],
-                ['tpehgdb', 'Term-Preterm EHG Database'],
-                ['tpehgt', 'Term-Preterm EHG DataSet with Tocogram (TPEHGT DS)'],
-                ['ucddb', 'UCD Sleep Apnea Database'],
-                ['unicaprop', 'UniCA ElectroTastegram Database (PROP)'],
-                ['videopulse', 'Video Pulse Signals in Stationary and Motion Conditions'],
-                ['voiced', 'VOice ICar fEDerico II Database'],
-                ['wrist', 'Wrist PPG During Exercise'],
-                ['mimic2db', 'MIMIC II Waveform DB, v2 [deprecated, use v3]'],
-                ['mimic2db/numerics',
-                'MIMIC II Waveform DB, v2 Numerics [deprecated, use v3]'],
-                ['sleep-edf', 'Sleep-EDF Database, v1 [deprecated, use sleep-edfx]']
+                ["adfecgdb", "Abdominal and Direct Fetal ECG Database"],
+                ["aftdb", "AF Termination Challenge Database"],
+                ["ahadb", "AHA Database [sample excluded record]"],
+                ["aami-ec13", "ANSI/AAMI EC13 Test Waveforms"],
+                ["apnea-ecg", "Apnea-ECG Database"],
+                ["chfdb", "BIDMC Congestive Heart Failure Database"],
+                ["bidmc", "BIDMC PPG and Respiration Dataset"],
+                ["bpssrat", "Blood Pressure in Salt-Sensitive Dahl Rats"],
+                ["capslpdb", "CAP Sleep Database"],
+                ["crisdb", "CAST RR Interval Sub-Study Database"],
+                ["cves", "Cerebral Vasoregulation in Elderly with Stroke"],
+                ["challenge/2009/test-set-a", "Challenge 2009 Test Set A"],
+                ["challenge/2009/test-set-b", "Challenge 2009 Test Set B"],
+                ["challenge/2010/set-a", "Challenge 2010 Training Set A"],
+                ["challenge/2010/set-b", "Challenge 2010 Test Set B"],
+                ["challenge/2010/set-c", "Challenge 2010 Test Set C"],
+                ["challenge/2011/sim", "Challenge 2011 Pilot Set"],
+                ["challenge/2011/set-a", "Challenge 2011 Training Set A"],
+                ["challenge/2011/set-b", "Challenge 2011 Test Set B"],
+                ["challenge/2013/set-a", "Challenge 2013 Training Set A"],
+                ["challenge/2013/set-b", "Challenge 2013 Test Set B"],
+                ["challenge/2014/set-p2", "Challenge 2014 Extended Training Set"],
+                ["challenge/2014/set-p", "Challenge 2014 Training Set"],
+                ["challenge/2015/training", "Challenge 2015 Training Set"],
+                ["challenge/2016/training-a", "Challenge 2016 Training Set A"],
+                ["challenge/2016/training-b", "Challenge 2016 Training Set B"],
+                ["challenge/2016/training-c", "Challenge 2016 Training Set C"],
+                ["challenge/2016/training-d", "Challenge 2016 Training Set D"],
+                ["challenge/2016/training-e", "Challenge 2016 Training Set E"],
+                ["challenge/2016/training-f", "Challenge 2016 Training Set F"],
+                ["challenge/2017/training", "Challenge 2017 Training Set"],
+                ["challenge/2018/training", "Challenge 2018 Training Set"],
+                ["challenge/2018/test", "Challenge 2018 Test Set"],
+                ["charisdb", "CHARIS database"],
+                ["chbmit", "CHB-MIT Scalp EEG Database"],
+                ["cebsdb", "Combined measurement of ECG, Breathing and Seismocardiograms"],
+                ["culm", "Complex Upper-Limb Movements"],
+                ["chf2db", "Congestive Heart Failure RR Interval Database"],
+                ["ctu-uhb-ctgdb", "CTU-CHB Intrapartum Cardiotocography Database"],
+                ["cudb", "CU Ventricular Tachyarrhythmia Database"],
+                ["ecgdmmld",
+                "ECG Effects of Dofetilide, Moxifloxacin, Dofetilide+Mexiletine, Dofetilide+Lidocaine and Moxifloxacin+Diltiazem"],
+                ["ecgcipa", "CiPA ECG Validation Study"],
+                ["ecgrdvq",
+                "ECG Effects of Ranolazine, Dofetilide, Verapamil, and Quinidine"],
+                ["ecgiddb", "ECG-ID Database"],
+                ["eegmat", "EEG During Mental Arithmetic Tasks"],
+                ["eegmmidb", "EEG Motor Movement/Imagery Dataset"],
+                ["ltrsvp", "EEG Signals from an RSVP Task"],
+                ["erpbci", "ERP-based Brain-Computer Interface recordings"],
+                ["edb", "European ST-T Database"],
+                ["earh", "Evoked Auditory Responses in Heading Impaired"],
+                ["earndb", "Evoked Auditory Responses in Normals"],
+                ["emgdb", "Examples of Electromyograms"],
+                ["fantasia", "Fantasia Database"],
+                ["fecgsyndb", "Fetal ECG Synthetic Database"],
+                ["fpcgdb", "Fetal PCG Database"],
+                ["gaitdb", "Gait in Aging and Disease Database"],
+                ["gaitndd", "Gait in Neurodegenerative Disease Database"],
+                ["gait-maturation-db/data", "Gait Maturation Database"],
+                ["meditation/data", "Heart Rate Oscillations during Meditation"],
+                ["hbedb", "Human Balance Evaluation Database"],
+                ["ehgdb", "Icelandic 16-electrode Electrohysterogram Database"],
+                ["iafdb", "Intracardiac Atrial Fibrillation Database"],
+                ["ltafdb", "Long Term AF Database"],
+                ["ltstdb", "Long Term ST Database"],
+                ["mssvepdb", "MAMEM SSVEP Database"],
+                ["mghdb", "MGH/MF Waveform Database"],
+                ["mimicdb", "MIMIC Database"],
+                ["mimicdb/numerics", "MIMIC Database Numerics"],
+                ["mimic2cdb", "MIMIC II Clinical Database Public Subset"],
+                ["mimic2wdb/30", "MIMIC II/III Waveform Database, part 0"],
+                ["mimic2wdb/31", "MIMIC II/III Waveform Database, part 1"],
+                ["mimic2wdb/32", "MIMIC II/III Waveform Database, part 2"],
+                ["mimic2wdb/33", "MIMIC II/III Waveform Database, part 3"],
+                ["mimic2wdb/34", "MIMIC II/III Waveform Database, part 4"],
+                ["mimic2wdb/35", "MIMIC II/III Waveform Database, part 5"],
+                ["mimic2wdb/36", "MIMIC II/III Waveform Database, part 6"],
+                ["mimic2wdb/37", "MIMIC II/III Waveform Database, part 7"],
+                ["mimic2wdb/38", "MIMIC II/III Waveform Database, part 8"],
+                ["mimic2wdb/39", "MIMIC II/III Waveform Database, part 9"],
+                ["mimic2wdb/matched", "MIMIC II Waveform Database Matched Subset"],
+                ["mimic3wdb/matched", "MIMIC III Waveform Database Matched Subset"],
+                ["mitdb", "MIT-BIH Arrhythmia Database"],
+                ["pwave", "MIT-BIH Arrhythmia Database P-Wave Annotations"],
+                ["afdb", "MIT-BIH Atrial Fibrillation Database"],
+                ["cdb", "MIT-BIH ECG Compression Test Database"],
+                ["ltdb", "MIT-BIH Long-Term ECG Database"],
+                ["vfdb", "MIT-BIH Malignant Ventricular Ectopy Database"],
+                ["nstdb", "MIT-BIH Noise Stress Test Database"],
+                ["nsrdb", "MIT-BIH Normal Sinus Rhythm Database"],
+                ["excluded", "... [Recordings excluded from the NSR DB]"],
+                ["slpdb", "MIT-BIH Polysomnographic Database"],
+                ["stdb", "MIT-BIH ST Change Database"],
+                ["svdb", "MIT-BIH Supraventricular Arrhythmia Database"],
+                ["mmgdb", "MMG Database"],
+                ["macecgdb", "Motion Artifact Contaminated ECG Database"],
+                ["motion-artifact", "Motion Artifact Contaminated fNIRS and EEG Data"],
+                ["noneeg", "Non-EEG Dataset for Assessment of Neurological Status"],
+                ["nifecgdb", "Non-Invasive Fetal ECG Database"],
+                ["nifeadb", "Non-Invasive Fetal ECG Arrhythmia Database"],
+                ["nsr2db", "Normal Sinus Rhythm RR Interval Database"],
+                ["ob1db", "OB-1 Fetal ECG Database [sample record]"],
+                ["afpdb", "PAF Prediction Challenge Database"],
+                ["osv", "Pattern Analysis of Oxygen Saturation Variability"],
+                ["prcp", "Physiologic Response to Changes in Posture"],
+                ["szdb", "Post-Ictal Heart Rate Oscillations in Partial Epilepsy"],
+                ["picsdb", "Preterm Infant Cardio-Respiratory Signals Database"],
+                ["ptbdb", "PTB Diagnostic ECG Database"],
+                ["qtdb", "QT Database"],
+                ["rvmh1", "Response to Valsalva Maneuver in Humans"],
+                ["sufhsdb", "Shiraz University Fetal Heart Sounds Database"],
+                ["simfpcgdb", "Simulated Fetal Phonocardiograms"],
+                ["sleepbrl", "Sleep Bioradiolocation Database"],
+                ["sleep-edfx", "Sleep-EDF Database [Expanded]"],
+                ["shhpsgdb", "Sleep Heart Health Study PSG Database [sample record]"],
+                ["shareedb",
+                "Smart Health for Assessing the Risk of Events via ECG Database"],
+                ["mvtdb/data", "Spontaneous Ventricular Tachyarrhythmia Database"],
+                ["sgamp", "Squid Giant Axon Membrane Potential"],
+                ["incartdb", "St Petersburg INCART 12-lead Arrhythmia Database"],
+                ["staffiii", "STAFF III Database"],
+                ["drivedb", "Stress Recognition in Automobile Drivers"],
+                ["sddb", "Sudden Cardiac Death Holter Database"],
+                ["twadb", "T-Wave Alternans Challenge Database"],
+                ["taichidb", "Tai Chi, Physiological Complexity, and Healthy Aging - Gait"],
+                ["tpehgdb", "Term-Preterm EHG Database"],
+                ["tpehgt", "Term-Preterm EHG DataSet with Tocogram (TPEHGT DS)"],
+                ["ucddb", "UCD Sleep Apnea Database"],
+                ["unicaprop", "UniCA ElectroTastegram Database (PROP)"],
+                ["videopulse", "Video Pulse Signals in Stationary and Motion Conditions"],
+                ["voiced", "VOice ICar fEDerico II Database"],
+                ["wrist", "Wrist PPG During Exercise"],
+                ["mimic2db", "MIMIC II Waveform DB, v2 [deprecated, use v3]"],
+                ["mimic2db/numerics",
+                "MIMIC II Waveform DB, v2 Numerics [deprecated, use v3]"],
+                ["sleep-edf", "Sleep-EDF Database, v1 [deprecated, use sleep-edfx]"]
             ]
         self.df_all_db_info = pd.DataFrame(
             {
@@ -461,71 +461,71 @@ class PhysioNetDataBase(_DataBase):
             if not specified, then a comprehensive printing of meanings of all symbols will be performed
         """
         attrs = vars(self)
-        methods = [func for func in dir(self) if callable(getattr(self, func)) and not (func.startswith('__') and func.endswith('__'))]
+        methods = [func for func in dir(self) if callable(getattr(self, func)) and not (func.startswith("__") and func.endswith("__"))]
 
         beat_annotations = {
-            'N': 'Normal beat',
-            'L': 'Left bundle branch block beat',
-            'R': 'Right bundle branch block beat',
-            'B': 'Bundle branch block beat (unspecified)',
-            'A': 'Atrial premature beat',
-            'a': 'Aberrated atrial premature beat',
-            'J': 'Nodal (junctional) premature beat',
-            'S': 'Supraventricular premature or ectopic beat (atrial or nodal)',
-            'V': 'Premature ventricular contraction',
-            'r': 'R-on-T premature ventricular contraction',
-            'F': 'Fusion of ventricular and normal beat',
-            'e': 'Atrial escape beat',
-            'j': 'Nodal (junctional) escape beat',
-            'n': 'Supraventricular escape beat (atrial or nodal)',
-            'E': 'Ventricular escape beat',
-            '/': 'Paced beat',
-            'f': 'Fusion of paced and normal beat',
-            'Q': 'Unclassifiable beat',
-            '?': 'Beat not classified during learning'
+            "N": "Normal beat",
+            "L": "Left bundle branch block beat",
+            "R": "Right bundle branch block beat",
+            "B": "Bundle branch block beat (unspecified)",
+            "A": "Atrial premature beat",
+            "a": "Aberrated atrial premature beat",
+            "J": "Nodal (junctional) premature beat",
+            "S": "Supraventricular premature or ectopic beat (atrial or nodal)",
+            "V": "Premature ventricular contraction",
+            "r": "R-on-T premature ventricular contraction",
+            "F": "Fusion of ventricular and normal beat",
+            "e": "Atrial escape beat",
+            "j": "Nodal (junctional) escape beat",
+            "n": "Supraventricular escape beat (atrial or nodal)",
+            "E": "Ventricular escape beat",
+            "/": "Paced beat",
+            "f": "Fusion of paced and normal beat",
+            "Q": "Unclassifiable beat",
+            "?": "Beat not classified during learning"
         }
 
         non_beat_annotations = {
-            '[': 'Start of ventricular flutter/fibrillation',
-            '!': 'Ventricular flutter wave',
-            ']': 'End of ventricular flutter/fibrillation',
-            'x': 'Non-conducted P-wave (blocked APC)',
-            '(': 'Waveform onset',
-            ')': 'Waveform end',
-            'p': 'Peak of P-wave',
-            't': 'Peak of T-wave',
-            'u': 'Peak of U-wave',
-            '`': 'PQ junction',
-            "'": 'J-point',
-            '^': '(Non-captured) pacemaker artifact',
-            '|': 'Isolated QRS-like artifact',
-            '~': 'Change in signal quality',
-            '+': 'Rhythm change',
-            's': 'ST segment change',
-            'T': 'T-wave change',
-            '*': 'Systole',
-            'D': 'Diastole',
-            '=': 'Measurement annotation',
-            '"': 'Comment annotation',
-            '@': 'Link to external data'
+            "[": "Start of ventricular flutter/fibrillation",
+            "!": "Ventricular flutter wave",
+            "]": "End of ventricular flutter/fibrillation",
+            "x": "Non-conducted P-wave (blocked APC)",
+            "(": "Waveform onset",
+            ")": "Waveform end",
+            "p": "Peak of P-wave",
+            "t": "Peak of T-wave",
+            "u": "Peak of U-wave",
+            "`": "PQ junction",
+            """: "J-point",
+            "^": "(Non-captured) pacemaker artifact",
+            "|": "Isolated QRS-like artifact",
+            "~": "Change in signal quality",
+            "+": "Rhythm change",
+            "s": "ST segment change",
+            "T": "T-wave change",
+            "*": "Systole",
+            "D": "Diastole",
+            "=": "Measurement annotation",
+            """: "Comment annotation",
+            "@": "Link to external data"
         }
 
         rhythm_annotations = {
-            '(AB': 'Atrial bigeminy',
-            '(AFIB': 'Atrial fibrillation',
-            '(AFL': 'Atrial flutter',
-            '(B': 'Ventricular bigeminy',
-            '(BII': '2° heart block',
-            '(IVR': 'Idioventricular rhythm',
-            '(N': 'Normal sinus rhythm',
-            '(NOD': 'Nodal (A-V junctional) rhythm',
-            '(P': 'Paced rhythm',
-            '(PREX': 'Pre-excitation (WPW)',
-            '(SBR': 'Sinus bradycardia',
-            '(SVTA': 'Supraventricular tachyarrhythmia',
-            '(T': 'Ventricular trigeminy',
-            '(VFL': 'Ventricular flutter',
-            '(VT': 'Ventricular tachycardia'
+            "(AB": "Atrial bigeminy",
+            "(AFIB": "Atrial fibrillation",
+            "(AFL": "Atrial flutter",
+            "(B": "Ventricular bigeminy",
+            "(BII": "2° heart block",
+            "(IVR": "Idioventricular rhythm",
+            "(N": "Normal sinus rhythm",
+            "(NOD": "Nodal (A-V junctional) rhythm",
+            "(P": "Paced rhythm",
+            "(PREX": "Pre-excitation (WPW)",
+            "(SBR": "Sinus bradycardia",
+            "(SVTA": "Supraventricular tachyarrhythmia",
+            "(T": "Ventricular trigeminy",
+            "(VFL": "Ventricular flutter",
+            "(VT": "Ventricular tachycardia"
         }
 
         all_annotations = [
@@ -537,11 +537,11 @@ class PhysioNetDataBase(_DataBase):
         summary_items = [
             "beat",
             "non-beat",
-            'rhythm'
+            "rhythm",
         ]
 
         if items is None:
-            _items = ['attributes', 'methods', 'beat', 'non-beat', 'rhythm']
+            _items = ["attributes", "methods", "beat", "non-beat", "rhythm"]
         elif isinstance(items, str):
             _items = [items]
         else:
@@ -549,19 +549,19 @@ class PhysioNetDataBase(_DataBase):
 
         pp = pprint.PrettyPrinter(indent=4)
 
-        if 'attributes' in _items:
+        if "attributes" in _items:
             print("--- helpler - attributes ---")
             pp.pprint(attrs)
-        if 'methods' in _items:
+        if "methods" in _items:
             print("--- helpler - methods ---")
             pp.pprint(methods)
-        if 'beat' in _items:
+        if "beat" in _items:
             print("--- helpler - beat ---")
             pp.pprint(beat_annotations)
-        if 'non-beat' in _items:
+        if "non-beat" in _items:
             print("--- helpler - non-beat ---")
             pp.pprint(non_beat_annotations)
-        if 'rhythm' in _items:
+        if "rhythm" in _items:
             print("--- helpler - rhythm ---")
             pp.pprint(rhythm_annotations)
 
@@ -569,11 +569,11 @@ class PhysioNetDataBase(_DataBase):
             if k in summary_items:
                 continue
             for a in all_annotations:
-                if k in a.keys() or '('+k in a.keys():
+                if k in a.keys() or "("+k in a.keys():
                     try:
-                        print(f"{k.split('(')[1]} stands for {a[k]}")
+                        print(f"{k.split("(")[1]} stands for {a[k]}")
                     except:
-                        print(f"{k} stands for {a['('+k]}")
+                        print(f"{k} stands for {a["("+k]}")
 
 
 class NSRRDataBase(_DataBase):
@@ -622,13 +622,13 @@ class NSRRDataBase(_DataBase):
         self.kwargs = kwargs
 
 
-    def safe_edf_file_operation(self, operation:str='close', full_file_path:Optional[str]=None) -> Union[EdfReader, NoReturn]:
+    def safe_edf_file_operation(self, operation:str="close", full_file_path:Optional[str]=None) -> Union[EdfReader, NoReturn]:
         """ finished, checked,
 
         Parameters:
         -----------
-        operation: str, default 'close',
-            operation name, can be 'open' and 'close'
+        operation: str, default "close",
+            operation name, can be "open" and "close"
         full_file_path: str, optional,
             path of the file which contains the psg data,
             if not given, default path will be used
@@ -637,11 +637,11 @@ class NSRRDataBase(_DataBase):
         --------
 
         """
-        if operation == 'open':
+        if operation == "open":
             if self.file_opened is not None:
                 self.file_opened._close()
             self.file_opened = EdfReader(full_file_path)
-        elif operation =='close':
+        elif operation =="close":
             if self.file_opened is not None:
                 self.file_opened._close()
                 self.file_opened = None
@@ -711,10 +711,10 @@ class NSRRDataBase(_DataBase):
         pp = pprint.PrettyPrinter(indent=4)
 
         attrs = vars(self)
-        methods = [func for func in dir(self) if callable(getattr(self, func)) and not (func.startswith('__') and func.endswith('__'))]
+        methods = [func for func in dir(self) if callable(getattr(self, func)) and not (func.startswith("__") and func.endswith("__"))]
 
         if items is None:
-            _items = ['attributes', 'methods', ]
+            _items = ["attributes", "methods", ]
         elif isinstance(items, str):
             _items = [items]
         else:
@@ -722,10 +722,10 @@ class NSRRDataBase(_DataBase):
 
         pp = pprint.PrettyPrinter(indent=4)
 
-        if 'attributes' in _items:
+        if "attributes" in _items:
             print("--- helpler - attributes ---")
             pp.pprint(attrs)
-        if 'methods' in _items:
+        if "methods" in _items:
             print("--- helpler - methods ---")
             pp.pprint(methods)
 
@@ -757,10 +757,10 @@ class ImageDataBase(_DataBase):
         pp = pprint.PrettyPrinter(indent=4)
 
         attrs = vars(self)
-        methods = [func for func in dir(self) if callable(getattr(self, func)) and not (func.startswith('__') and func.endswith('__'))]
+        methods = [func for func in dir(self) if callable(getattr(self, func)) and not (func.startswith("__") and func.endswith("__"))]
 
         if items is None:
-            _items = ['attributes', 'methods', ]
+            _items = ["attributes", "methods", ]
         elif isinstance(items, str):
             _items = [items]
         else:
@@ -768,10 +768,10 @@ class ImageDataBase(_DataBase):
 
         pp = pprint.PrettyPrinter(indent=4)
 
-        if 'attributes' in _items:
+        if "attributes" in _items:
             print("--- helpler - attributes ---")
             pp.pprint(attrs)
-        if 'methods' in _items:
+        if "methods" in _items:
             print("--- helpler - methods ---")
             pp.pprint(methods)
 
@@ -803,10 +803,10 @@ class AudioDataBase(_DataBase):
         pp = pprint.PrettyPrinter(indent=4)
 
         attrs = vars(self)
-        methods = [func for func in dir(self) if callable(getattr(self, func)) and not (func.startswith('__') and func.endswith('__'))]
+        methods = [func for func in dir(self) if callable(getattr(self, func)) and not (func.startswith("__") and func.endswith("__"))]
 
         if items is None:
-            _items = ['attributes', 'methods', ]
+            _items = ["attributes", "methods", ]
         elif isinstance(items, str):
             _items = [items]
         else:
@@ -814,10 +814,10 @@ class AudioDataBase(_DataBase):
 
         pp = pprint.PrettyPrinter(indent=4)
 
-        if 'attributes' in _items:
+        if "attributes" in _items:
             print("--- helpler - attributes ---")
             pp.pprint(attrs)
-        if 'methods' in _items:
+        if "methods" in _items:
             print("--- helpler - methods ---")
             pp.pprint(methods)
 
@@ -839,7 +839,7 @@ class OtherDataBase(_DataBase):
         verbose: int, default 2,
         kwargs: dict,
 
-        typical 'db_dir':
+        typical "db_dir":
         ------------------
             "E:\\notebook_dir\\ecg\\data\xxx\\"
             "/export/algo/wenh06/ecg_data/xxx/"
@@ -899,10 +899,10 @@ class OtherDataBase(_DataBase):
         pp = pprint.PrettyPrinter(indent=4)
         
         attrs = vars(self)
-        methods = [func for func in dir(self) if callable(getattr(self, func)) and not (func.startswith('__') and func.endswith('__'))]
+        methods = [func for func in dir(self) if callable(getattr(self, func)) and not (func.startswith("__") and func.endswith("__"))]
 
         if items is None:
-            _items = ['attributes', 'methods', ]
+            _items = ["attributes", "methods", ]
         elif isinstance(items, str):
             _items = [items]
         else:
@@ -910,16 +910,16 @@ class OtherDataBase(_DataBase):
 
         pp = pprint.PrettyPrinter(indent=4)
 
-        if 'attributes' in _items:
+        if "attributes" in _items:
             print("--- helpler - attributes ---")
             pp.pprint(attrs)
-        if 'methods' in _items:
+        if "methods" in _items:
             print("--- helpler - methods ---")
             pp.pprint(methods)
 
 
 
 ECGWaveForm = namedtuple(
-    typename='ECGWaveForm',
-    field_names=['name', 'onset', 'offset', 'peak', 'duration'],
+    typename="ECGWaveForm",
+    field_names=["name", "onset", "offset", "peak", "duration"],
 )

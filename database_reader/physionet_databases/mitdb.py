@@ -63,11 +63,22 @@ class MITDB(PhysioNetDataBase):
         self.ann_ext = "atr"
 
         self._ls_rec()
-        
 
-    def get_subject_id(self, rec) -> int:
+
+    def load_data(self) -> np.ndarray:
         """
+        """
+        raise NotImplementedError
 
+
+    def load_ann(self):
+        """
+        """
+        raise NotImplementedError
+
+
+    def plot(self) -> NoReturn:
+        """
         """
         raise NotImplementedError
 

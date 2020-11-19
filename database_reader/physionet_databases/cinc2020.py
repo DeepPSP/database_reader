@@ -280,15 +280,6 @@ class CINC2020(PhysioNetDataBase):
                 json.dump(to_save, f)
 
 
-    @property
-    def all_records(self):
-        """ finished, checked,
-        """
-        if self._all_records is None:
-            self._ls_rec()
-        return self._all_records
-
-
     def _ls_diagnoses_records(self) -> NoReturn:
         """ finished, checked,
 

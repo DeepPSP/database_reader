@@ -212,12 +212,6 @@ class CPSC2020(OtherDataBase):
 
 
     @property
-    def all_records(self):
-        """
-        """
-        return self._all_records
-
-    @property
     def all_annotations(self):
         """
         """

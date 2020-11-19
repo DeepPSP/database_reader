@@ -60,4 +60,4 @@ class nuMoM2b(NSRRDataBase):
             working directory, to store intermediate files and log file
         verbose: int, default 2,
         """
-        super().__init__(db_name='nuMoM2b', db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
+        super().__init__(db_name="nuMoM2b", db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
