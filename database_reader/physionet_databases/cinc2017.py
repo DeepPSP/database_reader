@@ -2,6 +2,7 @@
 """
 """
 import os
+import math
 from datetime import datetime
 from typing import Union, Optional, Any, List, NoReturn
 from numbers import Real
@@ -13,6 +14,7 @@ import pandas as pd
 
 from ..utils.common import (
     ArrayLike,
+    DEFAULT_FIG_SIZE_PER_SEC,
     get_record_list_recursive,
     get_record_list_recursive3,
 )
@@ -78,9 +80,9 @@ class CINC2017(PhysioNetDataBase):
         self._ls_rec()
 
         self._df_ann = pd.read_csv(os.path.join(self.db_dir, "REFERENCE.csv"), header=None)
-        self._df_ann.columns = ["rec", "ann"]
+        self._df_ann.columns = ["rec", "ann",]
         self._df_ann_ori = pd.read_csv(os.path.join(self.db_dir, "REFERENCE-original.csv")header=None)
-        self._df_ann_ori.columns = ["rec", "ann"]
+        self._df_ann_ori.columns = ["rec", "ann",]
         # ["N", "A", "O", "~"]
         self._all_ann = list(set(self._df_ann.ann.unique().tolist() + self._df_ann_ori.ann.unique().tolist()))
         self.d_ann_names = {
@@ -88,6 +90,12 @@ class CINC2017(PhysioNetDataBase):
             "A": "AF",
             "O": "Other rhythm",
             "~": "Noisy",
+        }
+        self.palette = {
+            "N": "green",
+            "A": "red",
+            "O": "yellow",
+            "~": "blue",
         }
 
 
@@ -108,22 +116,6 @@ class CINC2017(PhysioNetDataBase):
                 f.write(f"{rec}\n")
 
 
-    def get_subject_id(self, rec) -> int:
-        """ finished, checked,
-
-        Parameters:
-        -----------
-        rec: str,
-            name of the record
-
-        Returns:
-        --------
-        pid: int,
-            the `subject_id` corr. to `rec`
-        """
-        raise NotImplementedError
-
-
     def load_data(self, rec:str, data_format:str="channel_first", units:str="mV") -> np:ndarray:
         """ finished, checked,
 
@@ -132,7 +124,7 @@ class CINC2017(PhysioNetDataBase):
         rec: str,
             name of the record
         data_format: str, default "channel_first",
-            format of the ecg data,
+            format of the ecg data, case insensitive, can be
             "channel_last" (alias "lead_last"), or
             "channel_first" (alias "lead_first"), or
             "flat" (of dimension 1, without channel dimension)
@@ -144,6 +136,8 @@ class CINC2017(PhysioNetDataBase):
         data: ndarray,
             data loaded from `rec`, with given units and format
         """
+        assert data_format.lower() in ["channel_first", "lead_first", "channel_last", "lead_last", "flat",]
+        assert units.lower() in ["mv", "uv", "μv",]
         wr = wfdb.rdrecord(os.path.join(self.db_dir, rec))
         data = wr.p_signal
 
@@ -162,7 +156,7 @@ class CINC2017(PhysioNetDataBase):
         return data
 
 
-    def load_ann(self, rec:str, original:bool=False) -> str:
+    def load_ann(self, rec:str, original:bool=False, ann_format:str="a") -> str:
         """ finished, checked,
 
         Parameters:
@@ -172,24 +166,110 @@ class CINC2017(PhysioNetDataBase):
         original: bool, default False,
             if True, load annotations from the file `REFERENCE-original.csv`,
             otherwise from `REFERENCE.csv`
+        ann_format: str, default "a",
+            format of returned annotation, can be one of "a", "f",
+            "a" - abbreviation
+            "f" - full name
 
         Returns:
         --------
         ann: str,
             annotation (label) of the record
         """
-        assert rec in self.all_records
+        assert rec in self.all_records and ann_format.lower() in ["a", "f"]
         if original:
             df = self._df_ann_ori
         else:
             df = self._df_ann
         row = df[df.ann==rec].iloc[0]
         ann = row.ann
+        if ann_format.lower() == "f":
+            ann = self.d_ann_names[ann]
         return ann
+
+
+    def plot(self, rec:str, data:Optional[np.ndarray]=None, ann:Optional[str]=None, ticks_granularity:int=0, rpeak_inds:Optional[Union[Sequence[int],np.ndarray]]=None) -> NoReturn:
+        """ finished, checked,
+
+        Parameters:
+        -----------
+        rec: str,
+            name of the record
+        data: ndarray, optional,
+            ecg signal to plot,
+            if given, data of `rec` will not be used,
+            this is useful when plotting filtered data
+        ann: dict, optional,
+            annotations for `data`,
+            "SPB_indices", "PVC_indices", each of ndarray values,
+            ignored if `data` is None
+        ticks_granularity: int, default 0,
+            the granularity to plot axis ticks, the higher the more,
+            0 (no ticks) --> 1 (major ticks) --> 2 (major + minor ticks)
+        rpeak_inds: array_like, optional,
+            indices of R peaks,
+        """
+        if "plt" not in dir():
+            import matplotlib.pyplot as plt
+        import matplotlib.patches as mpatches
+
+        if data is None:
+            _data = self.load_data(
+                rec, units="μV", data_format="flat",
+            )
+        else:
+            units = self._auto_infer_units(data)
+            if units == "mV":
+                _data = data * 1000
+            elif units == "μV":
+                _data = data.copy()
+
+        if ann is None or data is None:
+            ann = self.load_ann(rec, ann_format="a")
+            ann_fullname = self.load_ann(rec, ann_format="f")
+        else:
+            ann_fullname = self.d_ann_names.get(ann, ann)
+        patch = mpatches.Patch(color=self.palette.get(ann, "blue"), label=ann_fullname)
+
+        if rpeak_inds is not None:
+            rpeak_secs = np.array(rpeak_inds) / self.freq
+
+        line_len = self.freq * 25  # 25 seconds
+        nb_lines = math.ceil(len(_data)/line_len)
+
+        for idx in range(nb_lines):
+            seg = _data[idx*line_len: (idx+1)*line_len]
+            secs = (np.arange(len(seg)) + idx*line_len) / self.freq
+            fig_sz_w = int(round(DEFAULT_FIG_SIZE_PER_SEC * len(seg) / self.freq))
+            y_range = np.max(np.abs(seg)) + 100
+            fig_sz_h = 6 * y_range / 1500
+            fig, ax = plt.subplots(figsize=(fig_sz_w, fig_sz_h))
+            ax.plot(secs, seg, color="black")
+            ax.axhline(y=0, linestyle="-", linewidth="1.0", color="red")
+            if ticks_granularity >= 1:
+                ax.xaxis.set_major_locator(plt.MultipleLocator(0.2))
+                ax.yaxis.set_major_locator(plt.MultipleLocator(500))
+                ax.grid(which="major", linestyle="-", linewidth="0.5", color="red")
+            if ticks_granularity >= 2:
+                ax.xaxis.set_minor_locator(plt.MultipleLocator(0.04))
+                ax.yaxis.set_minor_locator(plt.MultipleLocator(100))
+                ax.grid(which="minor", linestyle=":", linewidth="0.5", color="black")
+            ax.legend(
+                handles=patch,
+                loc="lower left",
+                prop={"size": 16}
+            )
+            if rpeak_inds is not None:
+                for r in rpeak_secs:
+                    ax.axvspan(r-0.01, r+0.01, color="green", alpha=0.7)
+            ax.set_xlim(secs[0], secs[-1])
+            ax.set_ylim(-y_range, y_range)
+            ax.set_xlabel("Time [s]")
+            ax.set_ylabel("Voltage [μV]")
+            plt.show()
 
 
     def database_info(self) -> NoReturn:
         """
-
         """
         print(self.__doc__)
