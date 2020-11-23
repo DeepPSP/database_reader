@@ -474,7 +474,7 @@ class CPSC2020(OtherDataBase):
             if given, data of `rec` will not be used,
             this is useful when plotting filtered data
         ann: dict, optional,
-            annotations for `data`,
+            annotations for `data`, covering those from annotation files,
             "SPB_indices", "PVC_indices", each of ndarray values,
             ignored if `data` is None
         ticks_granularity: int, default 0,

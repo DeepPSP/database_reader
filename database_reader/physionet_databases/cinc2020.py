@@ -832,7 +832,7 @@ class CINC2020(PhysioNetDataBase):
             f.write("\n".join([recording_string, class_string, label_string, score_string, ""]))
 
 
-    def plot(self, rec:str, data:Optional[np.ndarray]=None, ticks_granularity:int=0, leads:Optional[Union[str, List[str]]]=None, same_range:bool=False, waves:Optional[Dict[str, Sequence[int]]]=None, **kwargs) -> NoReturn:
+    def plot(self, rec:str, data:Optional[np.ndarray]=None, ann:Optional[Dict[str, np.ndarray]]=None, ticks_granularity:int=0, leads:Optional[Union[str, List[str]]]=None, same_range:bool=False, waves:Optional[Dict[str, Sequence[int]]]=None, **kwargs) -> NoReturn:
         """ finished, checked, to improve,
 
         plot the signals of a record or external signals (units in μV),
@@ -848,6 +848,9 @@ class CINC2020(PhysioNetDataBase):
             should be of the format "channel_first", and compatible with `leads`
             if given, data of `rec` will not be used,
             this is useful when plotting filtered data
+        ann: dict, optional,
+            annotations for `data`,
+            ignored if `data` is None
         ticks_granularity: int, default 0,
             the granularity to plot axis ticks, the higher the more,
             0 (no ticks) --> 1 (major ticks) --> 2 (major + minor ticks)
@@ -959,8 +962,12 @@ class CINC2020(PhysioNetDataBase):
         palette = {"p_waves": "green", "qrs": "red", "t_waves": "pink",}
         plot_alpha = 0.4
 
-        diag_scored = self.get_labels(rec, scored_only=True, fmt="a")
-        diag_all = self.get_labels(rec, scored_only=False, fmt="a")
+        if ann is None or data is None:
+            diag_scored = self.get_labels(rec, scored_only=True, fmt="a")
+            diag_all = self.get_labels(rec, scored_only=False, fmt="a")
+        else:
+            diag_scored = ann["scored"]
+            diag_all = ann["all"]
 
         nb_leads = len(_leads)
 

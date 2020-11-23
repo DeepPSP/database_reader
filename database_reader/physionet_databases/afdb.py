@@ -3,6 +3,7 @@
 """
 import os
 import json
+import math
 from datetime import datetime
 from typing import Union, Optional, Any, List, Tuple, Dict, Sequence, NoReturn
 from numbers import Real
@@ -15,8 +16,10 @@ from easydict import EasyDict as ED
 
 from ..utils.common import (
     ArrayLike,
+    DEFAULT_FIG_SIZE_PER_SEC,
     get_record_list_recursive,
 )
+from ..utils.utils_universal import generalized_intervals_intersection
 from ..base import PhysioNetDataBase
 
 
@@ -26,7 +29,7 @@ __all__ = [
 
 
 class AFDB(PhysioNetDataBase):
-    """ partly finished, checked, to improve,
+    """ finished, checked,
 
     MIT-BIH Atrial Fibrillation Database
 
@@ -40,11 +43,13 @@ class AFDB(PhysioNetDataBase):
         - AFL:   atrial flutter
         - J:     AV junctional rhythm
         - N:     all other rhythms
+    5. rhythm annotations almost all start with "(N", except for 4 which start with '(AFIB', which are all within 1 second (250 samples)
 
     NOTE:
     -----
     1. beat annotation files (.qrs files) were prepared using an automated detector and have NOT been corrected manually
     2. for some records, manually corrected beat annotation files (.qrsc files) are available
+    3. one should never use wfdb.rdann with arguments `sampfrom`, since one has to know the `aux_note` (with values in ["(N", "(J", "(AFL", "(AFIB"]) before the index at `sampfrom`
 
     ISSUES:
     -------
@@ -77,7 +82,7 @@ class AFDB(PhysioNetDataBase):
         self.auto_beat_ann_ext = "qrs"
         self.manual_beat_ann_ext = "qrsc"
 
-        self.all_leads = ["ECG1", "ECG2"]
+        self.all_leads = ["ECG1", "ECG2",]
 
         self._ls_rec()
         self.special_records = ["00735", "03665"]
@@ -86,34 +91,14 @@ class AFDB(PhysioNetDataBase):
         self.class_map = ED(
             AFIB=1, AFL=2, J=3, N=0  # an extra isoelectric
         )
+        self.palette = ED(
+            AFIB="blue", AFL="red", J="yellow",
+            # N="green",
+            qrs="green",
+        )
 
 
-    def get_subject_id(self, rec:str) -> int:
-        """ finished, checked,
-
-        Parameters:
-        -----------
-        rec: str,
-            name of the record
-
-        Returns:
-        --------
-        sid: int,
-            the `get_subject_id` corr. to `rec`
-        """
-        raise NotImplementedError
-
-
-    @property
-    def all_records(self) -> List[str]:
-        """ finished, checked,
-        """
-        if self._all_records is None:
-            self._ls_rec()
-        return self._all_records
-
-
-    def load_data(self, rec:str, leads:Optional[Union[str, List[str]]]=None, data_format:str="channel_first", units:str="mV", freq:Optional[Real]=None) -> np.ndarray:
+    def load_data(self, rec:str, leads:Optional[Union[str, List[str]]]=None, sampfrom:Optional[int]=None, sampto:Optional[int]=None, data_format:str="channel_first", units:str="mV", freq:Optional[Real]=None) -> np.ndarray:
         """ finished, checked,
 
         load physical (converted from digital) ecg data,
@@ -125,6 +110,10 @@ class AFDB(PhysioNetDataBase):
             name of the record
         leads: str or list of str, optional,
             the leads to load
+        sampfrom: int, optional,
+            start index of the data to be loaded
+        sampto: int, optional,
+            end index of the data to be loaded
         data_format: str, default "channel_first",
             format of the ecg data,
             "channel_last" (alias "lead_last"), or
@@ -147,8 +136,14 @@ class AFDB(PhysioNetDataBase):
         else:
             _leads = leads
         # p_signal in the format of "lead_last"
-        data = wfdb.rdrecord(fp, physical=True, channel_names=_leads).p_signal
-        if units.lower() in ["μV", "uV"]:
+        data = wfdb.rdrecord(
+            fp,
+            sampfrom=sampfrom or 0,
+            sampto=sampto,
+            physical=True,
+            channel_names=_leads
+        ).p_signal
+        if units.lower() in ["μv", "uv"]:
             data = 1000 * data
         if freq is not None and freq != self.freq:
             data = resample_poly(data, freq, self.freq, axis=0)
@@ -157,7 +152,7 @@ class AFDB(PhysioNetDataBase):
         return data
 
     
-    def load_ann(self, rec:str, fmt:str="interval") -> Union[Dict[str, list], np.ndarray]:
+    def load_ann(self, rec:str, sampfrom:Optional[int]=None, sampto:Optional[int]=None, fmt:str="interval", keep_original:bool=False) -> Union[Dict[str, list], np.ndarray]:
         """ finished, checked,
 
         load annotations (header) stored in the .hea files
@@ -166,8 +161,16 @@ class AFDB(PhysioNetDataBase):
         -----------
         rec: str,
             name of the record
+        sampfrom: int, optional,
+            start index of the annotations to be loaded
+        sampto: int, optional,
+            end index of the annotations to be loaded
         fmt: str, default "interval", case insensitive,
             format of returned annotation, can also be "mask"
+        keep_original: bool, default False,
+            if True, in the "interval" `fmt`,
+            intervals (in the form [a,b]) will keep the same with the annotation file
+            otherwise subtract `sampfrom` if specified
         
         Returns:
         --------
@@ -177,31 +180,59 @@ class AFDB(PhysioNetDataBase):
         fp = os.path.join(self.db_dir, rec)
         wfdb_ann = wfdb.rdann(fp, extension=self.ann_ext)
         header = wfdb.rdheader(fp)
+        sig_len = header.sig_len
+        sf = sampfrom or 0
+        st = sampto or sig_len
+        assert st > sf, "`sampto` should be greater than `sampfrom`!"
         ann = ED({k:[] for k in self.class_map.keys()})
-        critical_points = wfdb_ann.sample.tolist() + [header.sig_len]
-        for idx, rhythm in enumerate(wfdb_ann.aux_note):
+        critical_points = wfdb_ann.sample.tolist() + [sig_len]
+        aux_note = wfdb_ann.aux_note
+        if aux_note[0] == "(N":
+            # ref. the doc string of the class
+            critical_points[0] = 0
+        else:
+            critical_points.insert(0, 0)
+            aux_note.insert(0, "(N")
+
+        for idx, rhythm in enumerate(aux_note):
             ann[rhythm.replace("(", "")].append([critical_points[idx], critical_points[idx+1]])
+        ann = ED({
+            k: generalized_intervals_intersection(l_itv, [[sf,st]]) \
+                for k, l_itv in ann.items()
+        })
+
         if fmt.lower() == "mask":
-            tmp = ann.copy()
-            ann = np.full(shape=(header.sig_len,), fill_value=self.class_map.N, dtype=int)
+            tmp = deepcopy(ann)
+            ann = np.full(shape=(st-sf,), fill_value=self.class_map.N, dtype=int)
             for rhythm, l_itv in tmp.items():
                 for itv in l_itv:
-                    ann[itv[0]: itv[1]] = self.class_map[rhythm]
+                    ann[itv[0]-sf: itv[1]-sf] = self.class_map[rhythm]
+        elif not keep_original:
+            for k, l_itv in ann.items():
+                ann[k] = [[itv[0]-sf, itv[1]-sf] for itv in l_itv]
+
         return ann
 
 
-    def load_beat_ann(self, rec:str, use_manual:bool=True) -> np.ndarray:
+    def load_beat_ann(self, rec:str, sampfrom:Optional[int]=None, sampto:Optional[int]=None, use_manual:bool=True, keep_original:bool=False) -> np.ndarray:
         """ finished, checked,
 
-        load annotations (header) stored in the .hea files
+        load beat annotations stored in corresponding annotation files
         
         Parameters:
         -----------
         rec: str,
             name of the record
+        sampfrom: int, optional,
+            start index of the annotations to be loaded
+        sampto: int, optional,
+            end index of the annotations to be loaded
         use_manual: bool, default True,
             use manually annotated beat annotations (qrs),
             instead of those generated by algorithms
+        keep_original: bool, default False,
+            if True, indices will keep the same with the annotation file
+            otherwise subtract `sampfrom` if specified
         
         Returns:
         --------
@@ -210,15 +241,30 @@ class AFDB(PhysioNetDataBase):
         """
         fp = os.path.join(self.db_dir, rec)
         if use_manual and rec in self.qrsc_records:
-            ann = wfdb.rdann(fp, extension=self.manual_beat_ann_ext)
+            ext = self.manual_beat_ann_ext
         else:
-            ann = wfdb.rdann(fp, extension=self.auto_beat_ann_ext)
+            ext = self.auto_beat_ann_ext
+        ann = wfdb.rdann(
+            fp,
+            extension=ext,
+            sampfrom=sampfrom or 0,
+            sampto=sampto,
+        )
         ann = ann.sample
+        if not keep_original and sampfrom is not None:
+            ann -= sampfrom
         return ann
 
 
-    def plot(self, rec:str, data:Optional[np.ndarray]=None, ticks_granularity:int=0, leads:Optional[Union[str, List[str]]]=None, same_range:bool=False, waves:Optional[Dict[str, Sequence[int]]]=None, **kwargs) -> NoReturn:
-        """ NOT finished,
+    def load_rpeak_indices(self, rec:str, sampfrom:Optional[int]=None, sampto:Optional[int]=None, use_manual:bool=True, keep_original:bool=False) -> np.ndarray:
+        """
+        alias of `self.load_beat_ann`
+        """
+        return self.load_beat_ann(rec, sampfrom, sampto, use_manual, keep_original)
+
+
+    def plot(self, rec:str, data:Optional[np.ndarray]=None, ann:Optional[Dict[str, np.ndarray]]=None, rpeak_inds:Optional[Union[Sequence[int],np.ndarray]]=None, ticks_granularity:int=0, leads:Optional[Union[str, List[str]]]=None, sampfrom:Optional[int]=None, sampto:Optional[int]=None, same_range:bool=False, **kwargs) -> NoReturn:
+        """ finished, checked,
 
         plot the signals of a record or external signals (units in μV),
         with metadata (freq, labels, tranche, etc.),
@@ -229,59 +275,143 @@ class AFDB(PhysioNetDataBase):
         rec: str,
             name of the record
         data: ndarray, optional,
-            (12-lead) ecg signal to plot,
+            (2-lead) ecg signal to plot,
             should be of the format "channel_first", and compatible with `leads`
             if given, data of `rec` will not be used,
             this is useful when plotting filtered data
+        ann: dict, optional,
+            annotations for `data`, covering those from annotation files,
+            in the form of {"AFIB":l_itv, "AFL":l_itv, "J":l_itv, "N":l_itv},
+            where `l_itv` in the form of [[a,b], ...],
+            ignored if `data` is None
+        rpeak_inds: array_like, optional,
+            indices of R peaks, covering those from annotation files,
+            if `data` is None, then indices should be the absolute indices in the record,
         ticks_granularity: int, default 0,
             the granularity to plot axis ticks, the higher the more,
             0 (no ticks) --> 1 (major ticks) --> 2 (major + minor ticks)
         leads: str or list of str, optional,
             the leads to plot
+        sampfrom: int, optional,
+            start index of the data to plot
+        sampto: int, optional,
+            end index of the data to plot
         same_range: bool, default False,
             if True, forces all leads to have the same y range
-        waves: dict, optional,
-            indices of the wave critical points, including
-            "p_onsets", "p_peaks", "p_offsets",
-            "q_onsets", "q_peaks", "r_peaks", "s_peaks", "s_offsets",
-            "t_onsets", "t_peaks", "t_offsets"
         kwargs: dict,
-
-        TODO:
-        -----
-        1. slice too long records, and plot separately for each segment
-        2. plot waves using `axvspan`
-
-        NOTE:
-        -----
-        `Locator` of `plt` has default `MAXTICKS` equal to 1000,
-        if not modifying this number, at most 40 seconds of signal could be plotted once
-
-        Contributors: Jeethan, and WEN Hao
         """
-        raise NotImplementedError
-
-
-    def _auto_infer_units(self, data:np.ndarray) -> str:
-        """ finished, checked,
-
-        automatically infer the units of `data`,
-        under the assumption that `data` not raw data, with baseline removed
-
-        Parameters:
-        -----------
-        data: ndarray,
-            the data to infer its units
-
-        Returns:
-        --------
-        units: str,
-            units of `data`, "μV" or "mV"
-        """
-        _MAX_mV = 20  # 20mV, seldom an ECG device has range larger than this value
-        max_val = np.max(np.abs(data))
-        if max_val > _MAX_mV:
-            units = "μV"
+        if "plt" not in dir():
+            import matplotlib.pyplot as plt
+            plt.MultipleLocator.MAXTICKS = 3000
+        if leads is None or leads == "all":
+            _leads = self.all_leads
+        elif isinstance(leads, str):
+            _leads = [leads]
         else:
-            units = "mV"
-        return units
+            _leads = leads
+        assert all([l in self.all_leads for l in _leads])
+
+        lead_indices = [self.all_leads.index(l) for l in _leads]
+        if data is None:
+            _data = self.load_data(
+                rec,
+                leads=_leads,
+                sampfrom=sampfrom,
+                sampto=sampto,
+                data_format="channel_first",
+                units="μV",
+            )
+        else:
+            units = self._auto_infer_units(data)
+            print(f"input data is auto detected to have units in {units}")
+            if units.lower() == "mv":
+                _data = 1000 * data
+            else:
+                _data = data
+            assert _data.shape[0] == len(_leads), \
+                f"number of leads from data of shape ({_data.shape[0]}) does not match the length ({len(_leads)}) of `leads`"
+        if ann is None:
+            _ann = self.load_ann(
+                rec,
+                sampfrom=sampfrom,
+                sampto=sampto,
+                fmt="interval",
+                keep_original=False,
+            )
+        else:
+            _ann = ann
+        # indices to time
+        _ann = {
+            k: [[itv[0]/self.freq, itv[1]/self.freq] for itv in l_itv] \
+                for k, l_itv in _ann.items()
+        }
+        if rpeak_inds is None:
+            _rpeak = self.load_rpeak_indices(
+                rec,
+                sampfrom=sampfrom,
+                sampto=sampto,
+                use_manual=True,
+                keep_original=False,
+            )
+            _rpeak = _rpeak / self.freq  # indices to time
+        else:
+            _rpeak = np.array(rpeak_inds) / self.freq  # indices to time
+
+        ann_plot_alpha = 0.2
+        rpeaks_plot_alpha = 0.8
+
+        nb_leads = len(_leads)
+
+        line_len = self.freq * 25  # 25 seconds
+        nb_lines = math.ceil(_data.shape[1]/line_len)
+
+        for seg_idx in range(nb_lines):
+            seg_data = _data[...,seg_idx*line_len: (seg_idx+1)*line_len]
+            secs = (np.arange(seg_data.shape[1]) + seg_idx*line_len) / self.freq
+            seg_ann = {
+                k: generalized_intervals_intersection(l_itv, [[secs[0], secs[-1]]]) \
+                    for k, l_itv in _ann.items()
+            }
+            seg_rpeaks = _rpeak[np.where((_rpeak>=secs[0]) & (_rpeak<secs[-1]))[0]]
+            fig_sz_w = int(round(DEFAULT_FIG_SIZE_PER_SEC * seg_data.shape[1] / self.freq))
+            if same_range:
+                y_ranges = np.ones((seg_data.shape[0],)) * np.max(np.abs(seg_data)) + 100
+            else:
+                y_ranges = np.max(np.abs(seg_data), axis=1) + 100
+            fig_sz_h = 6 * y_ranges / 1500
+            fig, axes = plt.subplots(nb_leads, 1, sharex=True, figsize=(fig_sz_w, np.sum(fig_sz_h)))
+            if nb_leads == 1:
+                axes = [axes]
+            for idx in range(nb_leads):
+                axes[idx].plot(secs, seg_data[idx], color="black", label=f"lead - {_leads[idx]}")
+                axes[idx].axhline(y=0, linestyle="-", linewidth="1.0", color="red")
+                # NOTE that `Locator` has default `MAXTICKS` equal to 1000
+                if ticks_granularity >= 1:
+                    axes[idx].xaxis.set_major_locator(plt.MultipleLocator(0.2))
+                    axes[idx].yaxis.set_major_locator(plt.MultipleLocator(500))
+                    axes[idx].grid(which="major", linestyle="-", linewidth="0.5", color="red")
+                if ticks_granularity >= 2:
+                    axes[idx].xaxis.set_minor_locator(plt.MultipleLocator(0.04))
+                    axes[idx].yaxis.set_minor_locator(plt.MultipleLocator(100))
+                    axes[idx].grid(which="minor", linestyle=":", linewidth="0.5", color="black")
+                for k, l_itv in seg_ann.items():
+                    if k == "N":
+                        continue
+                    for itv in l_itv:
+                        axes[idx].axvspan(
+                            itv[0], itv[1],
+                            color=self.palette[k], alpha=ann_plot_alpha,
+                            label=k,
+                        )
+                for ri in seg_rpeaks:
+                    axes[idx].axvspan(
+                        ri-0.01, ri+0.01,
+                        color=self.palette["qrs"], alpha=rpeaks_plot_alpha,
+                    )
+                axes[idx].legend(loc="upper left")
+                axes[idx].set_xlim(secs[0], secs[-1])
+                axes[idx].set_ylim(-y_ranges[idx], y_ranges[idx])
+                axes[idx].set_xlabel("Time [s]")
+                axes[idx].set_ylabel("Voltage [μV]")
+            plt.subplots_adjust(hspace=0.2)
+            plt.show()
