@@ -51,8 +51,8 @@ class MIMIC3(PhysioNetDataBase):
     [1] https://mimic.physionet.org/
     [2] https://github.com/MIT-LCP/mimic-code
     [3] https://www.physionet.org/content/mimiciii/1.4/
-    [4] https://archive.physionet.org/physiobank/database/mimic3wdb/
-    [5] https://archive.physionet.org/physiobank/database/mimic3wdb/matched/
+    [4] https://physionet.org/content/mimic3wdb/1.0/
+    [5] https://physionet.org/content/mimic3wdb-matched/1.0/
     """
     def __init__(self, db_dir:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """

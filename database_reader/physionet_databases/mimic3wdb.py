@@ -31,7 +31,7 @@ class MIMIC3WDB(PhysioNetDataBase):
 
     ABOUT mimic3wdb:
     ----------------
-    1. contains 67,830 record sets for approximately 30,000 ICU patients
+    1. contains 67,830 record sets (totally 6.7 TB) for approximately 30,000 ICU patients
     2. almost all record sets include a waveform record containing digitized signals (typically including ECG, ABP, respiration, and PPG, and frequently other signals) and a “numerics” record containing time series (HR, RESP, SpO2, BP, etc.) of periodic measurements
     3. a subset (the matched subset) of mimic3wdb contains waveform and numerics records that have been matched and time-aligned with MIMIC-III Clinical Database records
 
@@ -51,8 +51,8 @@ class MIMIC3WDB(PhysioNetDataBase):
     [1] https://mimic.physionet.org/
     [2] https://github.com/MIT-LCP/mimic-code
     [3] https://www.physionet.org/content/mimiciii/1.4/
-    [4] https://archive.physionet.org/physiobank/database/mimic3wdb/
-    [5] https://archive.physionet.org/physiobank/database/mimic3wdb/matched/
+    [4] https://physionet.org/content/mimic3wdb/1.0/
+    [5] https://physionet.org/content/mimic3wdb-matched/1.0/
     """
     def __init__(self, db_dir:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
