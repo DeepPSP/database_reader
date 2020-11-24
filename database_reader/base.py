@@ -380,17 +380,18 @@ class PhysioNetDataBase(_DataBase):
 
         find all records in `self.db_dir`
         """
-        record_list_fp = os.path.join(self.db_dir, "record_list.json")
+        record_list_fp = os.path.join(self.db_dir, "RECORDS")
         if os.path.isfile(record_list_fp):
             with open(record_list_fp, "r") as f:
-                self._all_records = json.load(f)
-        else:
-            print("Please wait patiently to let the reader find all records of the database from local storage...")
-            start = time.time()
-            self._all_records = get_record_list_recursive(self.db_dir, self.data_ext)
-            print(f"Done in {time.time() - start} seconds!")
-            with open(record_list_fp, "w") as f:
-                json.dump(self._all_records, f)
+                self._all_records = f.read().splitlines()
+                return
+        print("Please wait patiently to let the reader find all records of the database from local storage...")
+        start = time.time()
+        self._all_records = get_record_list_recursive(self.db_dir, self.data_ext)
+        print(f"Done in {time.time() - start:.3f} seconds!")
+        with open(record_list_fp, "w") as f:
+            for rec in self._all_records:
+                f.write(f"{rec}\n")
 
 
     def get_subject_id(self, rec:str) -> int:
@@ -482,7 +483,7 @@ class PhysioNetDataBase(_DataBase):
             "/": "Paced beat",
             "f": "Fusion of paced and normal beat",
             "Q": "Unclassifiable beat",
-            "?": "Beat not classified during learning"
+            "?": "Beat not classified during learning",
         }
 
         non_beat_annotations = {
@@ -496,7 +497,7 @@ class PhysioNetDataBase(_DataBase):
             "t": "Peak of T-wave",
             "u": "Peak of U-wave",
             "`": "PQ junction",
-            """: "J-point",
+            "'": "J-point",
             "^": "(Non-captured) pacemaker artifact",
             "|": "Isolated QRS-like artifact",
             "~": "Change in signal quality",
@@ -506,8 +507,8 @@ class PhysioNetDataBase(_DataBase):
             "*": "Systole",
             "D": "Diastole",
             "=": "Measurement annotation",
-            """: "Comment annotation",
-            "@": "Link to external data"
+            '"': "Comment annotation",
+            "@": "Link to external data",
         }
 
         rhythm_annotations = {
@@ -525,7 +526,7 @@ class PhysioNetDataBase(_DataBase):
             "(SVTA": "Supraventricular tachyarrhythmia",
             "(T": "Ventricular trigeminy",
             "(VFL": "Ventricular flutter",
-            "(VT": "Ventricular tachycardia"
+            "(VT": "Ventricular tachycardia",
         }
 
         all_annotations = [
@@ -541,7 +542,7 @@ class PhysioNetDataBase(_DataBase):
         ]
 
         if items is None:
-            _items = ["attributes", "methods", "beat", "non-beat", "rhythm"]
+            _items = ["attributes", "methods", "beat", "non-beat", "rhythm",]
         elif isinstance(items, str):
             _items = [items]
         else:

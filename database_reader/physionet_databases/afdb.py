@@ -91,11 +91,13 @@ class AFDB(PhysioNetDataBase):
         self.class_map = ED(
             AFIB=1, AFL=2, J=3, N=0  # an extra isoelectric
         )
-        self.palette = ED(
-            AFIB="blue", AFL="red", J="yellow",
-            # N="green",
-            qrs="green",
-        )
+        self.palette = kwargs.get("palette", None)
+        if self.palette is None:
+            self.palette = ED(
+                AFIB="blue", AFL="red", J="yellow",
+                # N="green",
+                qrs="green",
+            )
 
 
     def load_data(self, rec:str, leads:Optional[Union[str, List[str]]]=None, sampfrom:Optional[int]=None, sampto:Optional[int]=None, data_format:str="channel_first", units:str="mV", freq:Optional[Real]=None) -> np.ndarray:
@@ -135,13 +137,14 @@ class AFDB(PhysioNetDataBase):
             _leads = [leads]
         else:
             _leads = leads
-        # p_signal in the format of "lead_last"
+        assert set(_leads).issubset(self.all_leads)
+        # p_signal in the format of "lead_last", and in units "mV"
         data = wfdb.rdrecord(
             fp,
             sampfrom=sampfrom or 0,
             sampto=sampto,
             physical=True,
-            channel_names=_leads
+            channel_names=_leads,
         ).p_signal
         if units.lower() in ["μv", "uv"]:
             data = 1000 * data
@@ -184,6 +187,7 @@ class AFDB(PhysioNetDataBase):
         sf = sampfrom or 0
         st = sampto or sig_len
         assert st > sf, "`sampto` should be greater than `sampfrom`!"
+
         ann = ED({k:[] for k in self.class_map.keys()})
         critical_points = wfdb_ann.sample.tolist() + [sig_len]
         aux_note = wfdb_ann.aux_note
@@ -328,9 +332,8 @@ class AFDB(PhysioNetDataBase):
                 _data = 1000 * data
             else:
                 _data = data
-            assert _data.shape[0] == len(_leads), \
-                f"number of leads from data of shape ({_data.shape[0]}) does not match the length ({len(_leads)}) of `leads`"
-        if ann is None:
+            _leads = [f"ECG_{idx}" for idx in range(_data.shape[0])]
+        if ann is None and data is None:
             _ann = self.load_ann(
                 rec,
                 sampfrom=sampfrom,
@@ -339,13 +342,13 @@ class AFDB(PhysioNetDataBase):
                 keep_original=False,
             )
         else:
-            _ann = ann
+            _ann = ann or ED({k:[] for k in self.class_map.keys()})
         # indices to time
         _ann = {
             k: [[itv[0]/self.freq, itv[1]/self.freq] for itv in l_itv] \
                 for k, l_itv in _ann.items()
         }
-        if rpeak_inds is None:
+        if rpeak_inds is None and data is None:
             _rpeak = self.load_rpeak_indices(
                 rec,
                 sampfrom=sampfrom,
@@ -355,7 +358,7 @@ class AFDB(PhysioNetDataBase):
             )
             _rpeak = _rpeak / self.freq  # indices to time
         else:
-            _rpeak = np.array(rpeak_inds) / self.freq  # indices to time
+            _rpeak = np.array(rpeak_inds or []) / self.freq  # indices to time
 
         ann_plot_alpha = 0.2
         rpeaks_plot_alpha = 0.8

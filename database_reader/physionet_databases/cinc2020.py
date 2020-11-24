@@ -275,7 +275,7 @@ class CINC2020(PhysioNetDataBase):
                         raise ValueError(f"no record found for tranche {tranche}!")
                 self.db_dirs[tranche] = os.path.join(self.db_dir_base, tmp_dirname[0])
                 self._all_records[tranche] = [os.path.basename(f) for f in self._all_records[tranche]]
-            print(f"Done in {time.time() - start} seconds!")
+            print(f"Done in {time.time() - start:.3f} seconds!")
             with open(os.path.join(self.db_dir_base, fn), "w") as f:
                 json.dump(to_save, f)
 
