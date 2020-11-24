@@ -47,6 +47,7 @@ class LTAFDB(PhysioNetDataBase):
     1. both channels of the signals have name "ECG"
     2. the automatically generated qrs annotations (.qrs files) contains NO rhythm annotations
     3. `aux_note` of .atr files of all but one ("64") record start with valid rhythms, all but one end with "" ("30" ends with "\x01 Aux")
+    4. for more statistics on the whole database, see ref. [3]
 
     ISSUES:
     -------
