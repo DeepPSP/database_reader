@@ -20,7 +20,7 @@ from ..base import PhysioNetDataBase
 
 
 __all__ = [
-    "MIMIC3",
+    "MIMIC3WDB",
 ]
 
 
@@ -32,8 +32,11 @@ class MIMIC3WDB(PhysioNetDataBase):
     ABOUT mimic3wdb:
     ----------------
     1. contains 67,830 record sets (totally 6.7 TB) for approximately 30,000 ICU patients
-    2. almost all record sets include a waveform record containing digitized signals (typically including ECG, ABP, respiration, and PPG, and frequently other signals) and a “numerics” record containing time series (HR, RESP, SpO2, BP, etc.) of periodic measurements
+    2. almost all record sets include a waveform record (usually multi-record consisting of multiple continuous segments) containing digitized signals (typically including ECG, ABP, respiration, and PPG, and frequently other signals) digitized at 125 Hz with 8-, 10-, or (occasionally) 12-bit resolution and a "numerics" record containing time series of vital signs (HR, RESP, SpO2, BP, etc.) of periodic measurements sampled once per second or once per minute
     3. a subset (the matched subset) of mimic3wdb contains waveform and numerics records that have been matched and time-aligned with MIMIC-III Clinical Database records
+    4. each recording comprises two records (a waveform record, usually multi-record consisting of multiple continuous segments, and a matching numerics record) in a single record directory ("folder") with the name of the record.
+    5. the record directories are distributed among ten intermediate-level directories (30-39)
+    6. in each record directory, there are files of patterns "3[\d]{6}.hea", "3[\d]{6}_[\d]{4}.dat", "3[\d]{6}_[\d]{4}.hea", "3[\d]{6}n.dat", "3[\d]{6}n.hea", "3[\d]{6}_layout.hea"
 
     NOTE:
     -----

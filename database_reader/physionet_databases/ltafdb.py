@@ -306,9 +306,9 @@ class LTAFDB(PhysioNetDataBase):
                 continue
             ann[bt].append(idx)
         if not keep_original and sampfrom is not None:
-            ann = ED({k: np.array(v) - sampfrom for k, v in ann.items()})
+            ann = ED({k: np.array(v, dtype=int) - sampfrom for k, v in ann.items()})
         else:
-            ann = ED({k: np.array(v) for k, v in ann.items()})
+            ann = ED({k: np.array(v, dtype=int) for k, v in ann.items()})
         return ann
 
 
@@ -463,7 +463,7 @@ class LTAFDB(PhysioNetDataBase):
             )
         else:
             _beat_ann = beat_ann or ED({k: [] for k in self.all_beat_types})
-        _beat_ann = {
+        _beat_ann = { # indices to time
             k: [i/self.freq for i in l_inds] \
                 for k, l_inds in _beat_ann.items()
         }

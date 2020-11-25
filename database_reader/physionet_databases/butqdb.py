@@ -90,3 +90,4 @@ class BUTQDB(PhysioNetDataBase):
         """
 
         """
+        raise NotImplementedError

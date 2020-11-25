@@ -150,9 +150,9 @@ class CINC2017(PhysioNetDataBase):
 
         data = data.squeeze()
         if data_format.lower() in ["channel_first", "lead_first"]:
-            data = data[np.newaxis,...]
+            data = data[np.newaxis, ...]
         elif data_format.lower() in ["channel_last", "lead_last"]:
-            data = data[...,np.newaxis]
+            data = data[..., np.newaxis]
         return data
 
 
