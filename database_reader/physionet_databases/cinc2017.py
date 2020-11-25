@@ -71,7 +71,7 @@ class CINC2017(PhysioNetDataBase):
         verbose: int, default 2,
         """
         super().__init__(db_name="CINC2017", db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
-        self.freq = 300
+        self.fs = 300
         
         self.rec_ext = "mat"
         self.ann_ext = "hea"
@@ -232,15 +232,15 @@ class CINC2017(PhysioNetDataBase):
         patch = mpatches.Patch(color=self.palette.get(ann, "blue"), label=ann_fullname)
 
         if rpeak_inds is not None:
-            rpeak_secs = np.array(rpeak_inds) / self.freq
+            rpeak_secs = np.array(rpeak_inds) / self.fs
 
-        line_len = self.freq * 25  # 25 seconds
+        line_len = self.fs * 25  # 25 seconds
         nb_lines = math.ceil(len(_data)/line_len)
 
         for idx in range(nb_lines):
             seg = _data[idx*line_len: (idx+1)*line_len]
-            secs = (np.arange(len(seg)) + idx*line_len) / self.freq
-            fig_sz_w = int(round(DEFAULT_FIG_SIZE_PER_SEC * len(seg) / self.freq))
+            secs = (np.arange(len(seg)) + idx*line_len) / self.fs
+            fig_sz_w = int(round(DEFAULT_FIG_SIZE_PER_SEC * len(seg) / self.fs))
             y_range = np.max(np.abs(seg)) + 100
             fig_sz_h = 6 * y_range / 1500
             fig, ax = plt.subplots(figsize=(fig_sz_w, fig_sz_h))

@@ -163,8 +163,8 @@ class LUDB(PhysioNetDataBase):
         verbose: int, default 2,
         """
         super().__init__(db_name="ludb", db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
-        self.freq = 500
-        self.spacing = 1000 / self.freq
+        self.fs = 500
+        self.spacing = 1000 / self.fs
         self.data_ext = "dat"
         self.all_leads = ["I", "II", "III", "aVR", "aVL", "aVF", "V1", "V2", "V3", "V4", "V5", "V6",]
         self.all_leads_lower = [l.lower() for l in self.all_leads]
@@ -196,7 +196,7 @@ class LUDB(PhysioNetDataBase):
         raise NotImplementedError
 
 
-    def load_data(self, rec:str, leads:Optional[Union[str, List[str]]]=None, data_format="channel_first", units:str="mV", freq:Optional[Real]=None) -> np.ndarray:
+    def load_data(self, rec:str, leads:Optional[Union[str, List[str]]]=None, data_format="channel_first", units:str="mV", fs:Optional[Real]=None) -> np.ndarray:
         """ finished, checked,
 
         load physical (converted from digital) ecg data,
@@ -214,7 +214,7 @@ class LUDB(PhysioNetDataBase):
             "channel_first" (alias "lead_first", original)
         units: str, default "mV",
             units of the output signal, can also be "μV", with an alias of "uV"
-        freq: real number, optional,
+        fs: real number, optional,
             if not None, the loaded data will be resampled to this frequency
         
         Returns:
@@ -234,8 +234,8 @@ class LUDB(PhysioNetDataBase):
         if units.lower() in ["uv", "μv"]:
             data = data * 1000
 
-        if freq is not None and freq != self.freq:
-            data = resample_poly(data, freq, self.freq, axis=1)
+        if fs is not None and fs != self.fs:
+            data = resample_poly(data, fs, self.fs, axis=1)
 
         if data_format.lower() in ["channel_last", "lead_last"]:
             data = data.T
@@ -381,7 +381,7 @@ class LUDB(PhysioNetDataBase):
         return masks
 
 
-    def from_masks(self, masks:np.ndarray, mask_format:str="channel_first", leads:Optional[Sequence[str]]=None, class_map:Optional[Dict[str, int]]=None, freq:Optional[Real]=None) -> Dict[str, List[ECGWaveForm]]:
+    def from_masks(self, masks:np.ndarray, mask_format:str="channel_first", leads:Optional[Sequence[str]]=None, class_map:Optional[Dict[str, int]]=None, fs:Optional[Real]=None) -> Dict[str, List[ECGWaveForm]]:
         """ finished, checked,
 
         convert masks into lists of waveforms
@@ -400,9 +400,9 @@ class LUDB(PhysioNetDataBase):
         class_map: dict, optional,
             custom class map,
             if not set, `self.class_map` will be used
-        freq: real number, optional,
+        fs: real number, optional,
             sampling frequency of the signal corresponding to the `masks`,
-            if is None, `self.freq` will be used, to compute `duration` of the ecg waveforms
+            if is None, `self.fs` will be used, to compute `duration` of the ecg waveforms
 
         Returns:
         --------
@@ -427,7 +427,7 @@ class LUDB(PhysioNetDataBase):
 
         _class_map = ED(class_map) if class_map is not None else self.class_map
 
-        _freq = freq if freq is not None else self.freq
+        _fs = fs if fs is not None else self.fs
 
         waves = ED({lead_name:[] for lead_name in _leads})
         for channel_idx, lead_name in enumerate(_leads):
@@ -451,7 +451,7 @@ class LUDB(PhysioNetDataBase):
                         onset=itv_start,
                         offset=itv_end,
                         peak=np.nan,
-                        duration=1000*(itv_end-itv_start)/_freq,  # ms
+                        duration=1000*(itv_end-itv_start)/_fs,  # ms
                     )
                     waves[lead_name].append(w)
             waves[lead_name].sort(key=lambda w: w.onset)
@@ -525,7 +525,7 @@ class LUDB(PhysioNetDataBase):
         """ finished, checked, to improve,
 
         plot the signals of a record or external signals (units in μV),
-        with metadata (freq, labels, tranche, etc.),
+        with metadata (fs, labels, tranche, etc.),
         possibly also along with wave delineations
 
         Parameters:
@@ -606,11 +606,11 @@ class LUDB(PhysioNetDataBase):
 
         nb_leads = len(_leads)
 
-        seg_len = self.freq * 25  # 25 seconds
+        seg_len = self.fs * 25  # 25 seconds
         nb_segs = _data.shape[1] // seg_len
 
-        t = np.arange(_data.shape[1]) / self.freq
-        duration = len(t) / self.freq
+        t = np.arange(_data.shape[1]) / self.fs
+        duration = len(t) / self.fs
         fig_sz_w = int(round(4.8 * duration))
         fig_sz_h = 6 * y_ranges / 1500
         fig, axes = plt.subplots(nb_leads, 1, sharex=True, figsize=(fig_sz_w, np.sum(fig_sz_h)))
@@ -636,7 +636,7 @@ class LUDB(PhysioNetDataBase):
             for w in ["pwaves", "qrs", "twaves"]:
                 for itv in eval(f"{w}['{lead_name}']"):
                     axes[idx].axvspan(
-                        itv[0]/self.freq, itv[1]/self.freq,
+                        itv[0]/self.fs, itv[1]/self.fs,
                         color=palette[w], alpha=plot_alpha,
                     )
             axes[idx].legend(loc="upper left")

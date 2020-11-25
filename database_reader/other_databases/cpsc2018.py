@@ -96,8 +96,8 @@ class CPSC2018(OtherDataBase):
         """
         super().__init__(db_name="CPSC2018", db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
 
-        self.freq = 500
-        self.spacing = 1000 / self.freq
+        self.fs = 500
+        self.spacing = 1000 / self.fs
         self.rec_ext = ".mat"
         self.ann_ext = ".hea"
         self._all_records = [os.path.splitext(os.path.basename(item))[0] for item in glob.glob(os.path.join(db_dir, "*"+self.rec_ext))]
@@ -120,7 +120,7 @@ class CPSC2018(OtherDataBase):
         self.ann_items = [
             "rec_name",
             "nb_leads",
-            "freq",
+            "fs",
             "nb_samples",
             "datetime",
             "age",
@@ -227,10 +227,10 @@ class CPSC2018(OtherDataBase):
             header_data = f.read().splitlines()
 
         ann_dict = {}
-        ann_dict["rec_name"], ann_dict["nb_leads"], ann_dict["freq"], ann_dict["nb_samples"], ann_dict["datetime"], daytime = header_data[0].split(" ")
+        ann_dict["rec_name"], ann_dict["nb_leads"], ann_dict["fs"], ann_dict["nb_samples"], ann_dict["datetime"], daytime = header_data[0].split(" ")
 
         ann_dict["nb_leads"] = int(ann_dict["nb_leads"])
-        ann_dict["freq"] = int(ann_dict["freq"])
+        ann_dict["fs"] = int(ann_dict["fs"])
         ann_dict["nb_samples"] = int(ann_dict["nb_samples"])
         ann_dict["datetime"] = datetime.strptime(" ".join([ann_dict["datetime"], daytime]), "%d-%b-%Y %H:%M:%S")
         try: # see NOTE. 1.
@@ -472,8 +472,8 @@ class CPSC2018(OtherDataBase):
 
         nb_leads = len(leads)
 
-        t = np.arange(data.shape[1]) / self.freq
-        duration = len(t) / self.freq
+        t = np.arange(data.shape[1]) / self.fs
+        duration = len(t) / self.fs
         fig_sz_w = int(round(DEFAULT_FIG_SIZE_PER_SEC * duration))
         fig_sz_h = 6 * y_ranges / 1500
         fig, axes = plt.subplots(nb_leads, 1, sharex=True, figsize=(fig_sz_w, np.sum(fig_sz_h)))

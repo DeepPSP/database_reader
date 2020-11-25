@@ -103,7 +103,7 @@ class UCDDB(PhysioNetDataBase):
         
         self._ls_rec()
         
-        self.freq = None
+        self.fs = None
         self.file_opened = None
 
 

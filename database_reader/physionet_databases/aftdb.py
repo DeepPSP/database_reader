@@ -60,7 +60,7 @@ class AFTDB(PhysioNetDataBase):
         verbose: int, default 2,
         """
         super().__init__(db_name="aftdb", db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
-        # self.freq = 100
+        # self.fs = 100
         # self.data_ext = "dat"
         # self.ann_ext = "apn"
 
@@ -94,7 +94,7 @@ class AFTDB(PhysioNetDataBase):
         return self._all_records
 
 
-    def load_data(self, rec:str, leads:Optional[Union[str, List[str]]]=None, data_format:str="channel_first", units:str="mV", freq:Optional[Real]=None) -> np.ndarray:
+    def load_data(self, rec:str, leads:Optional[Union[str, List[str]]]=None, data_format:str="channel_first", units:str="mV", fs:Optional[Real]=None) -> np.ndarray:
         """ NOT finished,
 
         load physical (converted from digital) ecg data,
@@ -112,7 +112,7 @@ class AFTDB(PhysioNetDataBase):
             "channel_first" (alias "lead_first")
         units: str, default "mV",
             units of the output signal, can also be "μV", with an alias of "uV"
-        freq: real number, optional,
+        fs: real number, optional,
             if not None, the loaded data will be resampled to this frequency
         
         Returns:
@@ -131,8 +131,8 @@ class AFTDB(PhysioNetDataBase):
         # data = wfdb.rdrecord(fp, physical=True, channel_names=_leads).p_signal
         # if units.lower() in ["μV", "uV"]:
         #     data = 1000 * data
-        # if freq is not None and freq != self.freq:
-        #     data = resample_poly(data, freq, self.freq, axis=0)
+        # if fs is not None and fs != self.fs:
+        #     data = resample_poly(data, fs, self.fs, axis=0)
         # if data_format.lower() in ["channel_first", "lead_first"]:
         #     data = data.T
         # return data

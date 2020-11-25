@@ -75,7 +75,7 @@ class PPGBP(OtherDataBase):
         self.ann_file = None
         self.form_paths()
 
-        self.freq = 1000
+        self.fs = 1000
         self._all_records = sorted(list(set([fn.split("_")[0] for fn in os.listdir(self.ppg_data_dir)])), key=lambda r:int(r))
         self.rec_ext = ".txt"
 
@@ -151,7 +151,7 @@ class PPGBP(OtherDataBase):
         if verbose >= 2:
             import matplotlib.pyplot as plt
             fig,ax = plt.subplots(figsize=(8,4))
-            ax.plot(np.arange(0,len(data)/self.freq, 1/self.freq),data)
+            ax.plot(np.arange(0,len(data)/self.fs, 1/self.fs),data)
             plt.show()
         
         return data

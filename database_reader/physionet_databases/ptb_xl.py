@@ -86,9 +86,9 @@ class PTB_XL(PhysioNetDataBase):
         # wfdb.get_record_list currently not available for this new dataset
         self._ls_rec()
         
-        self.freq = kwargs.get("freq", 500)
-        assert int(self.freq) in [100, 500]
-        self.spacing = 1000/self.freq
+        self.fs = kwargs.get("fs", 500)
+        assert int(self.fs) in [100, 500]
+        self.spacing = 1000/self.fs
 
         self.metadata_fp = os.path.join(self.db_dir, "ptbxl_database.csv")
         self.scp_statements_fp = os.path.join(self.db_dir, "scp_statements.csv")

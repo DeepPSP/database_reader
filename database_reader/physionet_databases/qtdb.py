@@ -60,7 +60,7 @@ class QTDB(PhysioNetDataBase):
         verbose: int, default 2,
         """
         super().__init__(db_name="qtdb", db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
-        self.freq = 250
+        self.fs = 250
         self.data_ext = "dat"
         self.all_extensions = ["atr", "man", "q1c", "q2c", "qt1", "qt2", "pu", "pu0", "pu1"]
         """

@@ -76,8 +76,8 @@ class PTBDB(PhysioNetDataBase):
         verbose: int, default 2,
         """
         super().__init__(db_name="ptbdb", db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
-        self.freq = 1000
-        self.spacing = 1000/self.freq
+        self.fs = 1000
+        self.spacing = 1000/self.fs
 
         self.rec_ext = "dat"
         self.aux_rec_ext = "xyz"  # the extra 3 Frank lead ECGs

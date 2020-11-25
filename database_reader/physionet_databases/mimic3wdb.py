@@ -78,7 +78,7 @@ class MIMIC3WDB(PhysioNetDataBase):
             adults=os.path.join(self.db_dir, "RECORDS-adults"),
             neonates=os.path.join(self.db_dir, "RECORDS-neonates"),
         )
-        self.freq = None   # typically 125
+        self.fs = None   # typically 125
         
         self.data_ext = "dat"
         self.ann_ext = "hea"

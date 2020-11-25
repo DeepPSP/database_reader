@@ -230,7 +230,7 @@ class SHHS(NSRRDataBase):
         self.event_profusion_ann_path = None
         self.form_paths()
         
-        self.freq = None
+        self.fs = None
         self.file_opened = None
 
         # stats

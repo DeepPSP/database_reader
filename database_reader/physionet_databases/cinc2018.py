@@ -89,7 +89,7 @@ class CINC2018(PhysioNetDataBase):
         verbose: int, default 2,
         """
         super().__init__(db_name="CINC2018", db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
-        self.freq = None
+        self.fs = None
         self.training_dir = os.path.join(self.db_dir, "training")
         self.test_dir = os.path.join(self.db_dir, "test")
         self.training_records = []

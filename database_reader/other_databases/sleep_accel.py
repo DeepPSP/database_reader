@@ -79,8 +79,8 @@ class SleepAccel(OtherDataBase):
         self.motion_file_suffix = "_acceleration.txt"
         self.steps_file_suffix = "_steps.txt"
 
-        self.acc_freq = 50
-        self.hr_freq = None  # to be checked
+        self.acc_fs = 50
+        self.hr_fs = None  # to be checked
         self.all_subjects = [
             "1066528", "1360686", "1449548", "1455390", "1818471",
             "2598705", "2638030", "3509524", "3997827", "4018081",

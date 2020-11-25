@@ -188,10 +188,10 @@ class PhysioNetDataBase(_DataBase):
         super().__init__(db_name=db_name, db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
         # self._set_logger(prefix="PhysioNet")
         """
-        `self.freq` for those with single signal source, e.g. ECG,
-        for those with multiple signal sources like PSG, self.freq is default to the frequency of ECG if ECG applicable
+        `self.fs` for those with single signal source, e.g. ECG,
+        for those with multiple signal sources like PSG, self.fs is default to the frequency of ECG if ECG applicable
         """
-        self.freq = None
+        self.fs = None
         self._all_records = None
 
         self.wfdb_rec = None
@@ -601,7 +601,7 @@ class NSRRDataBase(_DataBase):
         """
         super().__init__(db_name=db_name, db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
         # self._set_logger(prefix="NSRR")
-        self.freq = None
+        self.fs = None
         self._all_records = None
         self.device_id = None  # maybe data are imported into impala db, to facilitate analyzing
         self.file_opened = None
@@ -848,7 +848,7 @@ class OtherDataBase(_DataBase):
         super().__init__(db_name=db_name, db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
         # self._set_logger(prefix=None)
 
-        self.freq = None
+        self.fs = None
         self._all_records = None
         self.device_id = None  # maybe data are imported into impala db, to facilitate analyzing
         

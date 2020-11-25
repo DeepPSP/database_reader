@@ -66,7 +66,7 @@ class CAPSLPDB(PhysioNetDataBase):
         self.data_ext = "edf"
         self.ann_ext = "st"
         self.alias_ann_ext = "txt"
-        self.freq = None  # psg data with different frequencies for each signal
+        self.fs = None  # psg data with different frequencies for each signal
         
         self._ls_rec()
 

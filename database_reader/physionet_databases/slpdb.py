@@ -65,7 +65,7 @@ class SLPDB(PhysioNetDataBase):
         verbose: int, default 2,
         """
         super().__init__(db_name="slpdb", db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
-        self.freq = 250  # for ecg
+        self.fs = 250  # for ecg
         self.data_ext = "dat"
         self.ann_ext = "st"
         self.beat_ann_ext = "ecg"
@@ -73,7 +73,7 @@ class SLPDB(PhysioNetDataBase):
         self._ls_rec()
 
         self.epoch_len_t = 30  # 30 seconds
-        self.epoch_len = self.epoch_len_t * self.freq
+        self.epoch_len = self.epoch_len_t * self.fs
         self.all_ann_states = ["1", "2", "3", "4", "M", "MT", "R", "W"]
         """
         W	--- awake

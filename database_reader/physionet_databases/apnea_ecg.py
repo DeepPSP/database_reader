@@ -72,7 +72,7 @@ class ApneaECG(PhysioNetDataBase):
         verbose: int, default 2,
         """
         super().__init__(db_name="apnea-ecg", db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
-        self.freq = 100
+        self.fs = 100
         self.data_ext = "dat"
         self.ann_ext = "apn"
         self.qrs_ann_ext = "qrs"
@@ -214,7 +214,7 @@ class ApneaECG(PhysioNetDataBase):
         file_path = ann_path if ann_path is not None else os.path.join(self.db_dir, rec)
         extension = kwargs.get("extension", "apn")
         self.wfdb_ann = wfdb.rdann(file_path, extension=extension)
-        detailed_ann = [[si//(self.freq*60), sy] for si, sy in zip(self.wfdb_ann.sample, self.wfdb_ann.symbol)]
+        detailed_ann = [[si//(self.fs*60), sy] for si, sy in zip(self.wfdb_ann.sample, self.wfdb_ann.symbol)]
         return detailed_ann
 
 

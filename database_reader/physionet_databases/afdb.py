@@ -76,7 +76,7 @@ class AFDB(PhysioNetDataBase):
         verbose: int, default 2,
         """
         super().__init__(db_name="afdb", db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
-        self.freq = 250
+        self.fs = 250
         self.data_ext = "dat"
         self.ann_ext = "atr"
         self.auto_beat_ann_ext = "qrs"
@@ -100,7 +100,7 @@ class AFDB(PhysioNetDataBase):
             )
 
 
-    def load_data(self, rec:str, leads:Optional[Union[str, List[str]]]=None, sampfrom:Optional[int]=None, sampto:Optional[int]=None, data_format:str="channel_first", units:str="mV", freq:Optional[Real]=None) -> np.ndarray:
+    def load_data(self, rec:str, leads:Optional[Union[str, List[str]]]=None, sampfrom:Optional[int]=None, sampto:Optional[int]=None, data_format:str="channel_first", units:str="mV", fs:Optional[Real]=None) -> np.ndarray:
         """ finished, checked,
 
         load physical (converted from digital) ecg data,
@@ -122,7 +122,7 @@ class AFDB(PhysioNetDataBase):
             "channel_first" (alias "lead_first")
         units: str, default "mV",
             units of the output signal, can also be "μV", with an alias of "uV"
-        freq: real number, optional,
+        fs: real number, optional,
             if not None, the loaded data will be resampled to this frequency
         
         Returns:
@@ -148,8 +148,8 @@ class AFDB(PhysioNetDataBase):
         ).p_signal
         if units.lower() in ["μv", "uv"]:
             data = 1000 * data
-        if freq is not None and freq != self.freq:
-            data = resample_poly(data, freq, self.freq, axis=0)
+        if fs is not None and fs != self.fs:
+            data = resample_poly(data, fs, self.fs, axis=0)
         if data_format.lower() in ["channel_first", "lead_first"]:
             data = data.T
         return data
@@ -271,7 +271,7 @@ class AFDB(PhysioNetDataBase):
         """ finished, checked,
 
         plot the signals of a record or external signals (units in μV),
-        with metadata (freq, labels, tranche, etc.),
+        with metadata (fs, labels, tranche, etc.),
         possibly also along with wave delineations
 
         Parameters:
@@ -345,7 +345,7 @@ class AFDB(PhysioNetDataBase):
             _ann = ann or ED({k:[] for k in self.class_map.keys()})
         # indices to time
         _ann = {
-            k: [[itv[0]/self.freq, itv[1]/self.freq] for itv in l_itv] \
+            k: [[itv[0]/self.fs, itv[1]/self.fs] for itv in l_itv] \
                 for k, l_itv in _ann.items()
         }
         if rpeak_inds is None and data is None:
@@ -356,27 +356,27 @@ class AFDB(PhysioNetDataBase):
                 use_manual=True,
                 keep_original=False,
             )
-            _rpeak = _rpeak / self.freq  # indices to time
+            _rpeak = _rpeak / self.fs  # indices to time
         else:
-            _rpeak = np.array(rpeak_inds or []) / self.freq  # indices to time
+            _rpeak = np.array(rpeak_inds or []) / self.fs  # indices to time
 
         ann_plot_alpha = 0.2
         rpeaks_plot_alpha = 0.8
 
         nb_leads = len(_leads)
 
-        line_len = self.freq * 25  # 25 seconds
+        line_len = self.fs * 25  # 25 seconds
         nb_lines = math.ceil(_data.shape[1]/line_len)
 
         for seg_idx in range(nb_lines):
             seg_data = _data[...,seg_idx*line_len: (seg_idx+1)*line_len]
-            secs = (np.arange(seg_data.shape[1]) + seg_idx*line_len) / self.freq
+            secs = (np.arange(seg_data.shape[1]) + seg_idx*line_len) / self.fs
             seg_ann = {
                 k: generalized_intervals_intersection(l_itv, [[secs[0], secs[-1]]]) \
                     for k, l_itv in _ann.items()
             }
             seg_rpeaks = _rpeak[np.where((_rpeak>=secs[0]) & (_rpeak<secs[-1]))[0]]
-            fig_sz_w = int(round(DEFAULT_FIG_SIZE_PER_SEC * seg_data.shape[1] / self.freq))
+            fig_sz_w = int(round(DEFAULT_FIG_SIZE_PER_SEC * seg_data.shape[1] / self.fs))
             if same_range:
                 y_ranges = np.ones((seg_data.shape[0],)) * np.max(np.abs(seg_data)) + 100
             else:

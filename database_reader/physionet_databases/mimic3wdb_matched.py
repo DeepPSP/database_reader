@@ -76,7 +76,7 @@ class MIMIC3WDB_MATCHED(PhysioNetDataBase):
             waveforms=os.path.join(self.db_dir, "RECORDS-waveforms"),
             numerics=os.path.join(self.db_dir, "RECORDS-numerics"),
         )
-        self.freq = None   # typically 125
+        self.fs = None   # typically 125
         
         self.data_ext = "dat"
         self.ann_ext = "hea"
