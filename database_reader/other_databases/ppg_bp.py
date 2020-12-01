@@ -51,6 +51,7 @@ class PPGBP(OtherDataBase):
     [1] Liang Y, Chen Z, Liu G, et al. A new, short-recorded photoplethysmogram dataset for blood pressure monitoring in China[J]. Scientific data, 2018, 5: 180020.
     [2] Allen J. Photoplethysmography and its application in clinical physiological measurement[J]. Physiological measurement, 2007, 28(3): R1.
     [3] Elgendi M. On the analysis of fingertip photoplethysmogram signals[J]. Current cardiology reviews, 2012, 8(1): 14-25.
+    [4] https://figshare.com/articles/PPG-BP_Database_zip/5459299/3
     """
     
     def __init__(self, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
@@ -105,6 +106,7 @@ class PPGBP(OtherDataBase):
             number of the record, or "subject_ID"
 
         Returns:
+        --------
         int, the `subject_id` corr. to `rec_no`
         """
         return int(self._all_records[rec_no])
@@ -139,7 +141,8 @@ class PPGBP(OtherDataBase):
         
         Returns:
         --------
-        ndarray, the ppg data
+        data: ndarray,
+            the ppg data
         """
         verbose = self.verbose if verbose is None else verbose
         rec_fn = f"{self._all_records[rec_no]}_{seg_no}.txt"
@@ -168,7 +171,8 @@ class PPGBP(OtherDataBase):
         
         Returns:
         --------
-        DataFrame, the annotations
+        df_ann: DataFrame,
+            the annotations
         """
         df_ann = pd.read_excel(self.ann_file)
         df_ann.columns = df_ann.iloc[0]
@@ -191,7 +195,8 @@ class PPGBP(OtherDataBase):
         
         Returns:
         --------
-        list, the list of diagnosis or empty list for the normal subjects
+        diagonosis: list,
+            the list of diagnosis or empty list for the normal subjects
         """
         diagonosis_items = [
             "Hypertension", "Diabetes", "cerebral infarction", "cerebrovascular disease",
@@ -229,3 +234,9 @@ class PPGBP(OtherDataBase):
             return df_info.iloc[0].values[0]
         else:
             return df_info
+
+
+    def plot(self,) -> NoReturn:
+        """
+        """
+        raise NotImplementedError

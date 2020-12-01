@@ -15,6 +15,7 @@ from easydict import EasyDict as ED
 from ..utils.common import (
     ArrayLike,
     get_record_list_recursive,
+    get_record_list_recursive3,
 )
 from ..base import PhysioNetDataBase
 
@@ -78,14 +79,16 @@ class MIMIC3WDB(PhysioNetDataBase):
             adults=os.path.join(self.db_dir, "RECORDS-adults"),
             neonates=os.path.join(self.db_dir, "RECORDS-neonates"),
         )
-        self.fs = None   # typically 125
+        self.rec_pattern = "3[\d]{6}"
+        self.sub_dir_pattern = "3[\d]"
+        self.fs = 125   # sampling frequency of digitized signals
         
         self.data_ext = "dat"
         self.ann_ext = "hea"
         self._ls_rec()
 
 
-    def load_data(self,):
+    def load_data(self, rec:str, ):
         """
         """
         raise NotImplementedError
@@ -102,11 +105,28 @@ class MIMIC3WDB(PhysioNetDataBase):
         self._all_records = {}
         for l in tmp:
             gp, sb = l.strip("/").split("/")
-            if gp in self._all_records.keys():
-                self._all_records[gp].append(sb)
-            else:
-                self._all_records[gp] = [sb]
+            # add only those which are in local disc
+            if os.path.isdir(os.path.join(self.db_dir, gp, sb)):
+                if gp in self._all_records.keys():
+                    self._all_records[gp].append(sb)
+                else:
+                    self._all_records[gp] = [sb]
         self._all_records = {k:sorted(v) for k,v in self._all_records.items()}
+
+
+    def _get_sub_dir(self, rec:str) -> str:
+        """
+        """
+        sub_dir = rec[:2]
+        return sub_dir
+
+
+    def _get_filepath(self, rec:str) -> str:
+        """
+        """
+        sub_dir = self._get_sub_dir(rec)
+        fp = os.path.join(self.db_dir, sub_dir, rec)
+        return fp
 
 
     def get_subject_id(self, rec) -> int:
