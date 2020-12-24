@@ -18,6 +18,7 @@ from .capslpdb import *
 from .cinc2017 import *
 from .cinc2018 import *
 from .cinc2020 import *
+from .cinc2021 import *
 from .edb import *
 from .ltafdb import *
 from .ltstdb import *
