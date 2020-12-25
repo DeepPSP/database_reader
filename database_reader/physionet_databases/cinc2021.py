@@ -72,7 +72,8 @@ class CINC2021(PhysioNetDataBase):
         - American (NEW, UNDISCLOSED):
             contains 10,000 ECGs,
             all retained as test data,
-            geographically distinct from the Georgia database
+            geographically distinct from the Georgia database.
+            Perhaps is the main part of the hidden test set of CINC2020
     3. to add more, or ref. docstring of `CINC2020`
 
     Usage:
