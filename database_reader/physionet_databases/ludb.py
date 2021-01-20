@@ -132,6 +132,7 @@ class LUDB(PhysioNetDataBase):
             Apical	                                        11
         4.9. there are also 9 records with early repolarization syndrome
         there might well be records with multiple conditions.
+    5. ludb.csv stores information about the patients (gender, age, rhythm type, direction of the electrical axis of the heart, the presence of a cardiac pacemaker, etc.)
     
 
     NOTE:
@@ -139,7 +140,7 @@ class LUDB(PhysioNetDataBase):
 
     ISSUES:
     -------
-    1. (version 1.0.0) ADC gain might be wrong, either `units` should be μV, or `adc_gain` should be 1000 times larger
+    1. (version 1.0.0, fixed in version 1.0.1) ADC gain might be wrong, either `units` should be μV, or `adc_gain` should be 1000 times larger
 
     Usage:
     ------
@@ -148,7 +149,7 @@ class LUDB(PhysioNetDataBase):
 
     References:
     -----------
-    [1] https://physionet.org/content/ludb/1.0.0/
+    [1] https://physionet.org/content/ludb/1.0.1/
     [2] Kalyakulina, A., Yusipov, I., Moskalenko, V., Nikolskiy, A., Kozlov, A., Kosonogov, K., Zolotykh, N., & Ivanchenko, M. (2020). Lobachevsky University Electrocardiography Database (version 1.0.0).
     """
     def __init__(self, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
@@ -163,6 +164,7 @@ class LUDB(PhysioNetDataBase):
         verbose: int, default 2,
         """
         super().__init__(db_name="ludb", db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
+        print("Version 1.0.0 has bugs, make sure that version 1.0.1 or higher is used")
         self.fs = 500
         self.spacing = 1000 / self.fs
         self.data_ext = "dat"
@@ -185,6 +187,19 @@ class LUDB(PhysioNetDataBase):
         self.class_map = ED(
             p=1, N=2, t=3, i=0  # an extra isoelectric
         )
+
+        if os.path.isfile(os.path.join(self.db_dir, "ludb.csv")):
+            self._df_patient_info = pd.read_csv(os.path.join(self.db_dir, "ludb.csv"))
+            self._df_patient_info.ID = self._df_patient_info.ID.apply(str)
+            self._df_patient_info.Sex = self._df_patient_info.Sex.apply(lambda s: s.strip())
+            self._df_patient_info.Age = self._df_patient_info.Age.apply(lambda s: s.strip())
+        else:
+            self._df_patient_info = pd.DataFrame(columns=[
+                "ID", "Sex", "Age", "Rhythms", "Electric axis of the heart",
+                "Conduction abnormalities", "Extrasystolies", "Hypertrophies",
+                "Cardiac pacing", "Ischemia", "Non-specific repolarization abnormalities",
+                "Other states",
+            ])
 
         self._ls_rec()
     
@@ -228,8 +243,9 @@ class LUDB(PhysioNetDataBase):
         rec_fp = os.path.join(self.db_dir, rec)
         wfdb_rec = wfdb.rdrecord(rec_fp, physical=True, channel_names=_leads)
         # p_signal of "lead_last" format
-        # ref. ISSUES 1.
-        data = np.asarray(wfdb_rec.p_signal.T / 1000, dtype=np.float64)
+        # ref. ISSUES 1. (fixed in version 1.0.1)
+        # data = np.asarray(wfdb_rec.p_signal.T / 1000, dtype=np.float64)
+        data = np.asarray(wfdb_rec.p_signal.T, dtype=np.float64)
 
         if units.lower() in ["uv", "μv"]:
             data = data * 1000
@@ -519,6 +535,38 @@ class LUDB(PhysioNetDataBase):
             _leads = [self.all_leads[idx] for idx in _lead_indices]
         
         return _leads
+
+
+    def load_patient_info(self, rec:str, fields:Optional[Union[str,Sequence[str]]]=None) -> Union[dict,str]:
+        """ finished, checked,
+
+        Parameters:
+        -----------
+        rec: str,
+            name of the record
+        fields: str or sequence of str, optional,
+            field(s) of the patient info of record `rec`,
+            if not specified, all fields of the patient info will be returned
+
+        Returns:
+        --------
+        info: dict or str,
+            patient info of the given fields of the record
+        """
+        row = self._df_patient_info[self._df_patient_info.ID==rec]
+        if row.empty:
+            return {}
+        row = row.iloc[0]
+        info = row.to_dict()
+        if fields is not None:
+            assert fields in self._df_patient_info.columns or \
+                set(fields).issubset(set(self._df_patient_info.columns)), \
+                    "No such field(s)!"
+            if isinstance(fields, str):
+                info = info[fields]
+            else:
+                info = {k:v for k,v in info.items() if k in fields}
+        return info
 
 
     def plot(self, rec:str, data:Optional[np.ndarray]=None, ticks_granularity:int=0, leads:Optional[Union[str, List[str]]]=None, same_range:bool=False, waves:Optional[ECGWaveForm]=None, **kwargs) -> NoReturn:
