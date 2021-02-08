@@ -189,6 +189,7 @@ class LUDB(PhysioNetDataBase):
         )
 
         if os.path.isfile(os.path.join(self.db_dir, "ludb.csv")):
+            # newly added in version 1.0.1
             self._df_patient_info = pd.read_csv(os.path.join(self.db_dir, "ludb.csv"))
             self._df_patient_info.ID = self._df_patient_info.ID.apply(str)
             self._df_patient_info.Sex = self._df_patient_info.Sex.apply(lambda s: s.strip())

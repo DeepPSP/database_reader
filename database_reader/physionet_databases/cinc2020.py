@@ -725,7 +725,7 @@ class CINC2020(PhysioNetDataBase):
             - "s", SNOMED CT Code
         normalize: bool, default True,
             if True, the labels will be transformed into their equavalents,
-            which are defined in ``
+            which are defined in `utils.utils_misc.cinc2020_aux_data.py`
         
         Returns:
         --------
@@ -812,11 +812,11 @@ class CINC2020(PhysioNetDataBase):
         output_dir: str,
             directory to save the predictions
         scores: list of real,
-            ...
+            raw predictions
         labels: list of int,
-            0 or 1
+            0 or 1, binary predictions
         classes: list of str,
-            ...
+            SNOMED CT Code of binary predictions
         """
         new_file = f"{rec}.csv"
         output_file = os.path.join(output_dir, new_file)

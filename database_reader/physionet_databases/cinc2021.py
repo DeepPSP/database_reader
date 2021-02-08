@@ -412,8 +412,6 @@ class CINC2021(PhysioNetDataBase):
             _leads = [leads]
         else:
             _leads = leads
-        # if tranche in "CD" and fs == 500:  # resample will be done at the end of the function
-        #     data = self.load_resampled_data(rec)
         if backend.lower() == "wfdb":
             rec_fp = self.get_data_filepath(rec, with_ext=False)
             # p_signal of "lead_last" format
@@ -706,7 +704,7 @@ class CINC2021(PhysioNetDataBase):
             - "s", SNOMED CT Code
         normalize: bool, default True,
             if True, the labels will be transformed into their equavalents,
-            which are defined in ``
+            which are defined in `utils.utils_misc.cinc2020_aux_data.py`
         
         Returns:
         --------
@@ -793,11 +791,11 @@ class CINC2021(PhysioNetDataBase):
         output_dir: str,
             directory to save the predictions
         scores: list of real,
-            ...
+            raw predictions
         labels: list of int,
-            0 or 1
+            0 or 1, binary predictions
         classes: list of str,
-            ...
+            SNOMED CT Code of binary predictions
         """
         new_file = f"{rec}.csv"
         output_file = os.path.join(output_dir, new_file)
