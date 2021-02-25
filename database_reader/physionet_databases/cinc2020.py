@@ -136,20 +136,21 @@ class CINC2020(PhysioNetDataBase):
     ...         resolution[tranche] = resolution[tranche].union(set(ann["df_leads"]["adc_gain"]))
     ...         baseline[tranche] = baseline[tranche].union(set(ann["df_leads"]["baseline"]))
     >>> print(resolution, baseline)
-    {"A": {1000}, "B": {1000}, "C": {1000}, "D": {1000}, "E": {1000}, "F": {4880}} {"A": {0}, "B": {0}, "C": {0}, "D": {0}, "E": {0}, "F": {0}}
+    {"A": {1000.0}, "B": {1000.0}, "C": {1000.0}, "D": {1000.0}, "E": {1000.0}, "F": {1000.0}} {"A": {0}, "B": {0}, "C": {0}, "D": {0}, "E": {0}, "F": {0}}
     9. the .mat files all contain digital signals, which has to be converted to physical values using adc gain, basesline, etc. in corresponding .hea files. `wfdb.rdrecord` has already done this conversion, hence greatly simplifies the data loading process.
     NOTE that there"s a difference when using `wfdb.rdrecord`: data from `loadmat` are in "channel_first" format, while `wfdb.rdrecord.p_signal` produces data in the "channel_last" format
     10. there"re 3 equivalent (2 classes are equivalent if the corr. value in the scoring matrix is 1):
         (RBBB, CRBBB), (PAC, SVPB), (PVC, VPB)
+    11. in the newly (Feb., 2021) created dataset (ref. [7]), header files of each subset were gathered into one separate compressed file. This is due to the fact that updates on the dataset are almost always done in the header files. The correct usage of ref. [7], after uncompressing, is replacing the header files in the folder `All_training_WFDB` by header files from the 6 folders containing all header files from the 6 subsets.
 
     ISSUES:
     -------
     1. reading the .hea files, baselines of all records are 0, however it is not the case if one plot the signal
     2. about half of the LAD records satisfy the "2-lead" criteria, but fail for the "3-lead" criteria, which means that their axis is (-30°, 0°) which is not truely LAD
-    3. (Aug. 15th) tranche F, the Georgia subset, has ADC gain 4880 which might be too high. Thus obtained voltages are too low. 1000 might be a suitable (correct) value of ADC gain for this tranche just as the other tranches.
+    3. (Aug. 15th, resolved, and changed to 1000) tranche F, the Georgia subset, has ADC gain 4880 which might be too high. Thus obtained voltages are too low. 1000 might be a suitable (correct) value of ADC gain for this tranche just as the other tranches.
     4. "E04603" (all leads), "E06072" (chest leads, epecially V1-V3), "E06909" (lead V2), "E07675" (lead V3), "E07941" (lead V6), "E08321" (lead V6) has exceptionally large values at rpeaks, reading (`load_data`) these two records using `wfdb` would bring in `nan` values. One can check using the following code
     >>> rec = "E04603"
-    >>> dr.plot(rec, dr.load_data(rec, backend="scipy", units="uv"))
+    >>> dr.plot(rec, dr.load_data(rec, backend="scipy", units="uv"))  # currently raising error
 
     Usage:
     ------
@@ -162,7 +163,8 @@ class CINC2020(PhysioNetDataBase):
     [3] https://physionet.org/content/incartdb/1.0.0/
     [4] https://physionet.org/content/ptbdb/1.0.0/
     [5] https://physionet.org/content/ptb-xl/1.0.1/
-    [6] https://storage.cloud.google.com/physionet-challenge-2020-12-lead-ecg-public/
+    [6] (deprecated) https://storage.cloud.google.com/physionet-challenge-2020-12-lead-ecg-public/
+    [7] (recommended) https://storage.cloud.google.com/physionetchallenge2021-public-datasets/
     """
     def __init__(self, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
@@ -216,8 +218,8 @@ class CINC2020(PhysioNetDataBase):
         ]
         self.label_trans_dict = equiv_class_dict.copy()
 
-        self.value_correction_factor = ED({tranche:1 for tranche in self.db_tranches})
-        self.value_correction_factor.F = 4.88  # ref. ISSUES 3
+        # self.value_correction_factor = ED({tranche:1 for tranche in self.db_tranches})
+        # self.value_correction_factor.F = 4.88  # ref. ISSUES 3
 
         self.exceptional_records = ["E04603", "E06072", "E06909", "E07675", "E07941", "E08321"]  # ref. ISSUES 4
 
@@ -455,7 +457,7 @@ class CINC2020(PhysioNetDataBase):
             raise ValueError(f"backend `{backend.lower()}` not supported for loading data")
         
         # ref. ISSUES 3, for multiplying `value_correction_factor`
-        data = data * self.value_correction_factor[tranche]
+        # data = data * self.value_correction_factor[tranche]
 
         if units.lower() in ["uv", "μv"]:
             data = data * 1000
