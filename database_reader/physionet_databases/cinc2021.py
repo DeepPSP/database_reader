@@ -26,7 +26,14 @@ from ..utils.common import (
     get_record_list_recursive3,
     ms2samples, samples2ms,
 )
+from ..utils.utils_signal import ensure_siglen
 from ..utils.utils_misc import ecg_arrhythmia_knowledge as EAK
+from ..utils.utils_misc.cinc2020_aux_data import (
+    dx_mapping_all, dx_mapping_scored, dx_mapping_unscored,
+    normalize_class, abbr_to_snomed_ct_code,
+    df_weights_abbr,
+    equiv_class_dict,
+)
 from ..utils.utils_universal.utils_str import dict_to_str
 from ..base import PhysioNetDataBase
 
@@ -34,6 +41,20 @@ from ..base import PhysioNetDataBase
 __all__ = [
     "CINC2021",
 ]
+
+
+# configurations for visualization
+PlotCfg = ED()
+# default const for the plot function in dataset.py
+# used only when corr. values are absent
+# all values are time bias w.r.t. corr. peaks, with units in ms
+PlotCfg.p_onset = -40
+PlotCfg.p_offset = 40
+PlotCfg.q_onset = -20
+PlotCfg.s_offset = 40
+PlotCfg.qrs_radius = 60
+PlotCfg.t_onset = -100
+PlotCfg.t_offset = 60
 
 
 class CINC2021(PhysioNetDataBase):
@@ -76,7 +97,6 @@ class CINC2021(PhysioNetDataBase):
             Perhaps is the main part of the hidden test set of CINC2020
     2. only a part of diagnosis_abbr (diseases that appear in the labels of the 6 tranches of training data) are used in the scoring function, while others are ignored. The scored diagnoses were chosen based on prevalence of the diagnoses in the training data, the severity of the diagnoses, and the ability to determine the diagnoses from ECG recordings. The ignored diagnosis_abbr can be put in a a "non-class" group.
     3. the (updated) scoring function has a scoring matrix with nonzero off-diagonal elements. This scoring function reflects the clinical reality that some misdiagnoses are more harmful than others and should be scored accordingly. Moreover, it reflects the fact that confusing some classes is much less harmful than confusing other classes.
-
     4. all data are recorded in the leads ordering of
         ["I", "II", "III", "aVR", "aVL", "aVF", "V1", "V2", "V3", "V4", "V5", "V6"]
     using for example the following code:
@@ -129,7 +149,7 @@ class CINC2021(PhysioNetDataBase):
     -------
     1. reading the .hea files, baselines of all records are 0, however it is not the case if one plot the signal
     2. about half of the LAD records satisfy the "2-lead" criteria, but fail for the "3-lead" criteria, which means that their axis is (-30°, 0°) which is not truely LAD
-    3. (Aug. 15th) tranche F, the Georgia subset, has ADC gain 4880 which might be too high. Thus obtained voltages are too low. 1000 might be a suitable (correct) value of ADC gain for this tranche just as the other tranches.
+    3. (Aug. 15th, 2020) tranche F, the Georgia subset, has ADC gain 4880 which might be too high. Thus obtained voltages are too low. 1000 might be a suitable (correct) value of ADC gain for this tranche just as the other tranches.
     4. "E04603" (all leads), "E06072" (chest leads, epecially V1-V3), "E06909" (lead V2), "E07675" (lead V3), "E07941" (lead V6), "E08321" (lead V6) has exceptionally large values at rpeaks, reading (`load_data`) these two records using `wfdb` would bring in `nan` values. One can check using the following code
     >>> rec = "E04603"
     >>> dr.plot(rec, dr.load_data(rec, backend="scipy", units="uv"))  # currently raising error
@@ -142,7 +162,8 @@ class CINC2021(PhysioNetDataBase):
     [3] https://physionet.org/content/incartdb/1.0.0/
     [4] https://physionet.org/content/ptbdb/1.0.0/
     [5] https://physionet.org/content/ptb-xl/1.0.1/
-    [6] https://storage.cloud.google.com/physionet-challenge-2020-12-lead-ecg-public/
+    [6] (deprecated) https://storage.cloud.google.com/physionet-challenge-2020-12-lead-ecg-public/
+    [7] https://storage.cloud.google.com/physionetchallenge2021-public-datasets/
     """
     def __init__(self, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
@@ -900,12 +921,15 @@ class CINC2021(PhysioNetDataBase):
         if waves:
             if waves.get("p_onsets", None) and waves.get("p_offsets", None):
                 p_waves = [
-                    [onset, offset] for onset, offset in zip(waves["p_onsets"], waves["p_offsets"])
+                    [onset, offset] \
+                        for onset, offset in zip(waves["p_onsets"], waves["p_offsets"])
                 ]
             elif waves.get("p_peaks", None):
                 p_waves = [
-                    [max(0, p + ms2samples(PlotCfg.p_onset)), min(_data.shape[1], p + ms2samples(PlotCfg.p_offset))] \
-                        for p in waves["p_peaks"]
+                    [
+                        max(0, p + ms2samples(PlotCfg.p_onset, fs=self.get_fs(rec))),
+                        min(_data.shape[1], p + ms2samples(PlotCfg.p_offset, fs=self.get_fs(rec)))
+                    ] for p in waves["p_peaks"]
                 ]
             else:
                 p_waves = []
@@ -915,13 +939,17 @@ class CINC2021(PhysioNetDataBase):
                 ]
             elif waves.get("q_peaks", None) and waves.get("s_peaks", None):
                 qrs = [
-                    [max(0, q + ms2samples(PlotCfg.q_onset)), min(_data.shape[1], s + ms2samples(PlotCfg.s_offset))] \
-                        for q,s in zip(waves["q_peaks"], waves["s_peaks"])
+                    [
+                        max(0, q + ms2samples(PlotCfg.q_onset, fs=self.get_fs(rec))),
+                        min(_data.shape[1], s + ms2samples(PlotCfg.s_offset, fs=self.get_fs(rec)))
+                    ] for q,s in zip(waves["q_peaks"], waves["s_peaks"])
                 ]
             elif waves.get("r_peaks", None):
                 qrs = [
-                    [max(0, r + ms2samples(PlotCfg.qrs_radius)), min(_data.shape[1], r + ms2samples(PlotCfg.qrs_radius))] \
-                        for r in waves["r_peaks"]
+                    [
+                        max(0, r + ms2samples(PlotCfg.qrs_radius, fs=self.get_fs(rec))),
+                        min(_data.shape[1], r + ms2samples(PlotCfg.qrs_radius, fs=self.get_fs(rec)))
+                    ] for r in waves["r_peaks"]
                 ]
             else:
                 qrs = []
@@ -931,8 +959,10 @@ class CINC2021(PhysioNetDataBase):
                 ]
             elif waves.get("t_peaks", None):
                 t_waves = [
-                    [max(0, t + ms2samples(PlotCfg.t_onset)), min(_data.shape[1], t + ms2samples(PlotCfg.t_offset))] \
-                        for t in waves["t_peaks"]
+                    [
+                        max(0, t + ms2samples(PlotCfg.t_onset, fs=self.get_fs(rec))),
+                        min(_data.shape[1], t + ms2samples(PlotCfg.t_offset, fs=self.get_fs(rec)))
+                    ] for t in waves["t_peaks"]
                 ]
             else:
                 t_waves = []

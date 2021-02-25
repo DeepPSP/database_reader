@@ -26,6 +26,7 @@ from ..utils.common import (
     get_record_list_recursive3,
     ms2samples, samples2ms,
 )
+from ..utils.utils_signal import ensure_siglen
 from ..utils.utils_misc import ecg_arrhythmia_knowledge as EAK
 from ..utils.utils_misc.cinc2020_aux_data import (
     dx_mapping_all, dx_mapping_scored, dx_mapping_unscored,
@@ -524,7 +525,7 @@ class CINC2020(PhysioNetDataBase):
             the annotations with items: ref. `self.ann_items`
         """
         header_fp = self.get_header_filepath(rec, with_ext=False)
-        header_reader = wfdb.rdheader(header_fp, pb_dir=None, rd_segments=False)
+        header_reader = wfdb.rdheader(header_fp, rd_segments=False)
         ann_dict = {}
         ann_dict["rec_name"], ann_dict["nb_leads"], ann_dict["fs"], ann_dict["nb_samples"], ann_dict["datetime"], daytime = header_data[0].split(" ")
 
@@ -921,12 +922,15 @@ class CINC2020(PhysioNetDataBase):
         if waves:
             if waves.get("p_onsets", None) and waves.get("p_offsets", None):
                 p_waves = [
-                    [onset, offset] for onset, offset in zip(waves["p_onsets"], waves["p_offsets"])
+                    [onset, offset] \
+                        for onset, offset in zip(waves["p_onsets"], waves["p_offsets"])
                 ]
             elif waves.get("p_peaks", None):
                 p_waves = [
-                    [max(0, p + ms2samples(PlotCfg.p_onset)), min(_data.shape[1], p + ms2samples(PlotCfg.p_offset))] \
-                        for p in waves["p_peaks"]
+                    [
+                        max(0, p + ms2samples(PlotCfg.p_onset, fs=self.get_fs(rec))),
+                        min(_data.shape[1], p + ms2samples(PlotCfg.p_offset, fs=self.get_fs(rec)))
+                    ] for p in waves["p_peaks"]
                 ]
             else:
                 p_waves = []
@@ -936,13 +940,17 @@ class CINC2020(PhysioNetDataBase):
                 ]
             elif waves.get("q_peaks", None) and waves.get("s_peaks", None):
                 qrs = [
-                    [max(0, q + ms2samples(PlotCfg.q_onset)), min(_data.shape[1], s + ms2samples(PlotCfg.s_offset))] \
-                        for q,s in zip(waves["q_peaks"], waves["s_peaks"])
+                    [
+                        max(0, q + ms2samples(PlotCfg.q_onset, fs=self.get_fs(rec))),
+                        min(_data.shape[1], s + ms2samples(PlotCfg.s_offset, fs=self.get_fs(rec)))
+                    ] for q,s in zip(waves["q_peaks"], waves["s_peaks"])
                 ]
             elif waves.get("r_peaks", None):
                 qrs = [
-                    [max(0, r + ms2samples(PlotCfg.qrs_radius)), min(_data.shape[1], r + ms2samples(PlotCfg.qrs_radius))] \
-                        for r in waves["r_peaks"]
+                    [
+                        max(0, r + ms2samples(PlotCfg.qrs_radius, fs=self.get_fs(rec))),
+                        min(_data.shape[1], r + ms2samples(PlotCfg.qrs_radius, fs=self.get_fs(rec)))
+                    ] for r in waves["r_peaks"]
                 ]
             else:
                 qrs = []
@@ -952,8 +960,10 @@ class CINC2020(PhysioNetDataBase):
                 ]
             elif waves.get("t_peaks", None):
                 t_waves = [
-                    [max(0, t + ms2samples(PlotCfg.t_onset)), min(_data.shape[1], t + ms2samples(PlotCfg.t_offset))] \
-                        for t in waves["t_peaks"]
+                    [
+                        max(0, t + ms2samples(PlotCfg.t_onset, fs=self.get_fs(rec))),
+                        min(_data.shape[1], t + ms2samples(PlotCfg.t_offset, fs=self.get_fs(rec)))
+                    ] for t in waves["t_peaks"]
                 ]
             else:
                 t_waves = []
