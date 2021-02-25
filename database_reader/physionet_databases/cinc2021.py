@@ -524,7 +524,7 @@ class CINC2021(PhysioNetDataBase):
             the annotations with items: ref. `self.ann_items`
         """
         header_fp = self.get_header_filepath(rec, with_ext=False)
-        header_reader = wfdb.rdheader(header_fp, pb_dir=None, rd_segments=False)
+        header_reader = wfdb.rdheader(header_fp)
         ann_dict = {}
         ann_dict["rec_name"], ann_dict["nb_leads"], ann_dict["fs"], ann_dict["nb_samples"], ann_dict["datetime"], daytime = header_data[0].split(" ")
 
