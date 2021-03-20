@@ -27,7 +27,7 @@ __all__ = [
 
 
 class CPSC2021(OtherDataBase):
-    """
+    r"""
 
     The 4th China Physiological Signal Challenge 2021:
     Paroxysmal Atrial Fibrillation Events Detection from Dynamic ECG Recordings
@@ -40,11 +40,26 @@ class CPSC2021(OtherDataBase):
     4. training set in the 1st stage consists of 716 records, extracted from the Holter records from 12 AF patients and 42 non-AF patients (usually including other abnormal and normal rhythms)
     5. test set comprises data from the same source as the training set as well as DIFFERENT data source, which are NOT to be released at any point
     6. annotations are standardized according to PhysioBank Annotations (Ref. [2] or PhysioNetDataBase.helper), and include the beat annotations (R peak location and beat type), the rhythm annotations (rhythm change flag and rhythm type) and the diagnosis of the global rhythm
-    7. 
+    7. challenge task:
+        (1). clasification of rhythm types: non-AF rhythm (N), persistent AF rhythm (AFf) and paroxysmal AF rhythm (AFp)
+        (2). locating of the onset and offset for any AF episode prediction
+    8. challenge metrics:
+        (1) metrics (Ur, scoring matrix) for classification:
+                Prediction
+                N        AFf        AFp
+        N      +1        -1         -0.5
+        AFf    -2        +1          0
+        AFp    -1         0         +1
+        (2) metric (Ue) for detecting onsets and offsets for AF events (episodes):
+        +1 if the detected onset (or offset) is within ±1 beat of the annotated position, and +0.5 if within ±2 beats
+        (3) final score (U):
+        U = \dfrac{1}{N} \sum\limits_{i=1}^N \left( Ur_i + \dfrac{Ma_i}{\max\{Mr_i, Ma_i\}} \right)
+        where N is the number of records, Ma is the number of annotated AF episodes, Mr the number of predicted AF episodes
 
     NOTE:
     -----
-    1. 
+    1. if an ECG record is classified as AFf, the provided onset and offset locations should be the first and last record points. If an ECG record is classified as N, the answer should be an empty list
+    2. it can be inferred from the classification scoring matrix that the punishment of false negatives of AFf is very heavy, while mixing-up of AFf and AFp is not punished
 
     ISSUES:
     -------
@@ -56,7 +71,7 @@ class CPSC2021(OtherDataBase):
 
     Usage:
     ------
-    1. 
+    1. AF (event, fine) detection
 
     References:
     -----------
