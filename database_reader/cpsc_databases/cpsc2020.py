@@ -35,7 +35,7 @@ class CPSC2020(OtherDataBase):
     The 3rd China Physiological Signal Challenge 2020:
     Searching for Premature Ventricular Contraction (PVC) and Supraventricular Premature Beat (SPB) from Long-term ECGs
 
-    ABOUT CPSC2019:
+    ABOUT CPSC2020:
     ---------------
     1. training data consists of 10 single-lead ECG recordings collected from arrhythmia patients, each of the recording last for about 24 hours
     2. data and annotations are stored in v5 .mat files
