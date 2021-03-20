@@ -762,6 +762,9 @@ def compute_metrics(sbp_true:List[np.ndarray], pvc_true:List[np.ndarray], sbp_pr
         - false_positive: number of false positives of each ectopic beat type
         - false_negative: number of false negatives of each ectopic beat type
     """
+    BaseCfg = ED()
+    BaseCfg.fs = 400
+    BaseCfg.bias_thr = 0.15 * BaseCfg.fs
     s_score = np.zeros([len(sbp_true), ], dtype=int)
     v_score = np.zeros([len(sbp_true), ], dtype=int)
     ## Scoring ##

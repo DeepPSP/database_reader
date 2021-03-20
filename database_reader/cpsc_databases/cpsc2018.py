@@ -259,6 +259,8 @@ class CPSC2018(OtherDataBase):
 
         ann_dict["df_leads"] = self._parse_leads(header_data[1:13])
 
+        return ann_dict
+
 
     def _parse_diagnosis(self, l_Dx:List[str]) -> Tuple[dict, dict]:
         """ finished, checked,
@@ -514,7 +516,7 @@ class CPSC2018(OtherDataBase):
             d = [diseases]
         else:
             d = diseases
-        assert all([item in cls.diagnosis_abbr_to_full.keys() for item in d])
+        # assert all([item in cls.diagnosis_abbr_to_full.keys() for item in d])
 
         # AF
 
