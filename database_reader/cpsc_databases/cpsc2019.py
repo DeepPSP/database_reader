@@ -93,8 +93,8 @@ class CPSC2019(OtherDataBase):
         self.fs = 500
         self.spacing = 1000 / self.fs
 
-        self.rec_ext = ".mat"
-        self.ann_ext = ".mat"
+        self.rec_ext = "mat"
+        self.ann_ext = "mat"
 
         # self.all_references = self.all_annotations
         self.rec_dir = os.path.join(self.db_dir, "data")
@@ -123,11 +123,11 @@ class CPSC2019(OtherDataBase):
         print(f"Please allow some time for the reader to confirm the existence of corresponding data files and annotation files...")
         self._all_records = [
             rec for rec in self._all_records \
-                if os.path.isfile(os.path.join(self.rec_dir, f"{rec}{self.rec_ext}"))
+                if os.path.isfile(os.path.join(self.rec_dir, f"{rec}.{self.rec_ext}"))
         ]
         self._all_annotations = [
             ann for ann in self._all_annotations \
-                if os.path.isfile(os.path.join(self.ann_dir, f"{ann}{self.ann_ext}"))
+                if os.path.isfile(os.path.join(self.ann_dir, f"{ann}.{self.ann_ext}"))
         ]
         common = set([rec.split("_")[1] for rec in self._all_records]) \
             & set([ann.split("_")[1] for ann in self._all_annotations])
@@ -203,7 +203,7 @@ class CPSC2019(OtherDataBase):
         data: ndarray,
             the ecg data
         """
-        fp = os.path.join(self.data_dir, f"{self._get_rec_name(rec)}{self.rec_ext}")
+        fp = os.path.join(self.data_dir, f"{self._get_rec_name(rec)}.{self.rec_ext}")
         data = loadmat(fp)["ecg"]
         if units.lower() in ["uv", "μv",]:
             data = (1000 * data).astype(int)
@@ -228,7 +228,7 @@ class CPSC2019(OtherDataBase):
         ann: dict,
             with items "SPB_indices" and "PVC_indices", which record the indices of SPBs and PVCs
         """
-        fp = os.path.join(self.ann_dir, f"{self._get_ann_name(rec)}{self.ann_ext}")
+        fp = os.path.join(self.ann_dir, f"{self._get_ann_name(rec)}.{self.ann_ext}")
         ann = loadmat(fp)["R_peak"].astype(int)
         if not keep_dim:
             ann = ann.flatten()

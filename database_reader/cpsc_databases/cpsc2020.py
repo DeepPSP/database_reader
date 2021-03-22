@@ -189,8 +189,8 @@ class CPSC2020(OtherDataBase):
 
         self.fs = 400
         self.spacing = 1000/self.fs
-        self.rec_ext = ".mat"
-        self.ann_ext = ".mat"
+        self.rec_ext = "mat"
+        self.ann_ext = "mat"
 
         self.nb_records = 10
         self._all_records = [f"A{i:02d}" for i in range(1,1+self.nb_records)]
@@ -284,7 +284,7 @@ class CPSC2020(OtherDataBase):
             the ecg data
         """
         rec_name = self._get_rec_name(rec)
-        rec_fp = os.path.join(self.data_dir, f"{rec_name}{self.rec_ext}")
+        rec_fp = os.path.join(self.data_dir, f"{rec_name}.{self.rec_ext}")
         data = loadmat(rec_fp)["ecg"]
         if units.lower() in ["uv", "μv"]:
             data = (1000 * data).astype(int)
@@ -315,7 +315,7 @@ class CPSC2020(OtherDataBase):
             which record the indices of SPBs and PVCs
         """
         ann_name = self._get_ann_name(rec)
-        ann_fp = os.path.join(self.ann_dir, ann_name + self.ann_ext)
+        ann_fp = os.path.join(self.ann_dir, f"{ann_name}.{self.ann_ext}")
         ann = loadmat(ann_fp)["ref"]
         sf, st = (sampfrom or 0), (sampto or np.inf)
         spb_indices = ann["S_ref"][0,0].flatten().astype(int)

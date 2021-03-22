@@ -78,7 +78,7 @@ class PPGBP(OtherDataBase):
 
         self.fs = 1000
         self._all_records = sorted(list(set([fn.split("_")[0] for fn in os.listdir(self.ppg_data_dir)])), key=lambda r:int(r))
-        self.rec_ext = ".txt"
+        self.rec_ext = "txt"
 
         self.ann_items = [
             "Num.", "subject_ID",

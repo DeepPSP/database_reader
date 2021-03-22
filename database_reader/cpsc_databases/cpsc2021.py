@@ -4,6 +4,7 @@
 import os
 import random
 import math
+import time
 from datetime import datetime
 from typing import Union, Optional, Any, List, Tuple, Dict, Sequence, NoReturn
 from numbers import Real
@@ -11,11 +12,14 @@ from numbers import Real
 import numpy as np
 np.set_printoptions(precision=5, suppress=True)
 import pandas as pd
-from scipy.io import loadmat
+from scipy.signal import resample, resample_poly
 from easydict import EasyDict as ED
 
 from ..utils.common import (
     ArrayLike,
+    get_record_list_recursive,
+    get_record_list_recursive3,
+    ms2samples, samples2ms,
     DEFAULT_FIG_SIZE_PER_SEC,
 )
 from ..base import OtherDataBase
@@ -40,10 +44,11 @@ class CPSC2021(OtherDataBase):
     4. training set in the 1st stage consists of 716 records, extracted from the Holter records from 12 AF patients and 42 non-AF patients (usually including other abnormal and normal rhythms)
     5. test set comprises data from the same source as the training set as well as DIFFERENT data source, which are NOT to be released at any point
     6. annotations are standardized according to PhysioBank Annotations (Ref. [2] or PhysioNetDataBase.helper), and include the beat annotations (R peak location and beat type), the rhythm annotations (rhythm change flag and rhythm type) and the diagnosis of the global rhythm
-    7. challenge task:
+    7. classification of a record is stored in corresponding .hea file, which can be accessed via the attribute `comments` of a wfdb Record obtained using `wfdb.rdheader`, `wfdb.rdrecord`, and `wfdb.rdsamp`; beat annotations and rhythm annotations can be accessed using the attributes `symbol`, `aux_note` of a wfdb Annotation obtained using `wfdb.rdann`, corresponding indices in the signal can be accessed via the attribute `sample`
+    8. challenge task:
         (1). clasification of rhythm types: non-AF rhythm (N), persistent AF rhythm (AFf) and paroxysmal AF rhythm (AFp)
         (2). locating of the onset and offset for any AF episode prediction
-    8. challenge metrics:
+    9. challenge metrics:
         (1) metrics (Ur, scoring matrix) for classification:
                 Prediction
                 N        AFf        AFp
@@ -93,24 +98,126 @@ class CPSC2021(OtherDataBase):
 
         self.fs = 200
         self.spacing = 1000/self.fs
-        # self.rec_ext = ".mat"
-        # self.ann_ext = ".mat"
+        self.rec_ext = "dat"
+        self.ann_ext = "hea"
+        self.all_leads = ["I", "II"]
+
+        self._ls_rec()
 
         # self.nb_records = 10
-        # self._all_records = [f"A{i:02d}" for i in range(1,1+self.nb_records)]
-        # self._all_annotations = [f"R{i:02d}" for i in range(1,1+self.nb_records)]
-        # # self.all_references = self.all_annotations
-        # self.rec_dir = os.path.join(self.db_dir, "data")
-        # self.ann_dir = os.path.join(self.db_dir, "ref")
-        # self.data_dir = self.rec_dir
-        # self.ref_dir = self.ann_dir
-
-        # self.subgroups = ED({
-        #     "N":  ["A01", "A03", "A05", "A06",],
-        #     "V":  ["A02", "A08"],
-        #     "S":  ["A09", "A10"],
-        #     "VS": ["A04", "A07"],
-        # })
 
         # self.palette = {"spb": "yellow", "pvc": "red",}
 
+
+        def _ls_rec(self) -> NoReturn:
+        """ finished, checked,
+
+        list all the records and load into `self._all_records`,
+        facilitating further uses
+        """
+        fn = "RECORDS"
+        record_list_fp = os.path.join(self.db_dir, fn)
+        if os.path.isfile(record_list_fp):
+            with open(record_list_fp, "r") as f:
+                self._all_records = f.read().splitlines()
+        else:
+            print("Please wait patiently to let the reader find all records...")
+            start = time.time()
+            rec_patterns_with_ext = f"data_(?:\d+)_(?:\d+).{self.rec_ext}"
+            self._all_records = \
+                get_record_list_recursive3(self.db_dir, rec_patterns_with_ext)
+            print(f"Done in {time.time() - start:.5f} seconds!")
+            with open(record_list_fp, "w") as f:
+                f.write("\n".join(self._all_records))
+
+
+    def get_subject_id(self, rec:str) -> int:
+        """ finished, checked,
+
+        Parameters:
+        -----------
+        rec: str,
+            name of the record
+
+        Returns:
+        --------
+        sid: int,
+            subject id corresponding to the record
+        """
+        sid = int(rec.split("_")[1])
+        return sid
+
+
+    def load_data(self, rec:str, leads:Optional[Union[str, List[str]]]=None, data_format:str="channel_first", units:str="mV", fs:Optional[Real]=None) -> np.ndarray:
+        """ NOT finished, NOT checked,
+
+        load physical (converted from digital) ecg data,
+        which is more understandable for humans
+
+        Parameters:
+        -----------
+        rec: str,
+            name of the record
+        leads: str or list of str, optional,
+            the leads to load
+        data_format: str, default "channel_first",
+            format of the ecg data,
+            "channel_last" (alias "lead_last"), or
+            "channel_first" (alias "lead_first")
+        units: str, default "mV",
+            units of the output signal, can also be "μV", with an alias of "uV"
+        fs: real number, optional,
+            if not None, the loaded data will be resampled to this frequency
+        
+        Returns:
+        --------
+        data: ndarray,
+            the ecg data
+        """
+        assert data_format.lower() in ["channel_first", "lead_first", "channel_last", "lead_last"]
+        if not leads:
+            _leads = self.all_leads
+        elif isinstance(leads, str):
+            _leads = [leads]
+        else:
+            _leads = leads
+
+        rec_fp = os.path.join(self.db_dir, rec)
+        wfdb_rec = wfdb.rdrecord(rec_fp, physical=True, channel_names=_leads)
+        data = np.asarray(wfdb_rec.p_signal.T)
+        # lead_units = np.vectorize(lambda s: s.lower())(wfdb_rec.units)
+
+        if units.lower() in ["uv", "μv"]:
+            data = data * 1000
+
+        if fs is not None and fs != self.fs:
+            data = resample_poly(data, fs, self.fs, axis=1)
+
+        if data_format.lower() in ["channel_last", "lead_last"]:
+            data = data.T
+
+        return data
+
+    
+    def load_ann(self,):
+        """
+        """
+        raise NotImplementedError
+
+
+    def load_rpeaks(self,) -> np.ndarray:
+        """
+        """
+        raise NotImplementedError
+
+
+    def load_af_episodes(self,):
+        """
+        """
+        raise NotImplementedError
+
+
+    def plot(self) -> NoReturn:
+        """
+        """
+        raise NotImplementedError
