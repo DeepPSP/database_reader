@@ -109,7 +109,7 @@ class CPSC2021(OtherDataBase):
         # self.palette = {"spb": "yellow", "pvc": "red",}
 
 
-        def _ls_rec(self) -> NoReturn:
+    def _ls_rec(self) -> NoReturn:
         """ finished, checked,
 
         list all the records and load into `self._all_records`,
