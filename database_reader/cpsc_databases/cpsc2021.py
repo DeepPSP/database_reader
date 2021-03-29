@@ -14,6 +14,7 @@ np.set_printoptions(precision=5, suppress=True)
 import pandas as pd
 from scipy.signal import resample, resample_poly
 from easydict import EasyDict as ED
+import wfdb
 
 from ..utils.common import (
     ArrayLike,
@@ -99,8 +100,19 @@ class CPSC2021(OtherDataBase):
         self.fs = 200
         self.spacing = 1000/self.fs
         self.rec_ext = "dat"
-        self.ann_ext = "hea"
+        self.ann_ext = "atr"
         self.all_leads = ["I", "II"]
+
+        self._labels_f2a = { # fullname to abbreviation
+            "non atrial fibrillation": "N",
+            "paroxysmal atrial fibrillation": "AFp",
+            "persistent atrial fibrillation": "AFf",
+        }
+        self._labels_f2n = { # fullname to number
+            "non atrial fibrillation": 0,
+            "paroxysmal atrial fibrillation": 1,
+            "persistent atrial fibrillation": 2,
+        }
 
         self._ls_rec()
 
@@ -149,7 +161,7 @@ class CPSC2021(OtherDataBase):
 
 
     def load_data(self, rec:str, leads:Optional[Union[str, List[str]]]=None, data_format:str="channel_first", units:str="mV", fs:Optional[Real]=None) -> np.ndarray:
-        """ NOT finished, NOT checked,
+        """ finished, checked,
 
         load physical (converted from digital) ecg data,
         which is more understandable for humans
@@ -167,7 +179,7 @@ class CPSC2021(OtherDataBase):
         units: str, default "mV",
             units of the output signal, can also be "μV", with an alias of "uV"
         fs: real number, optional,
-            if not None, the loaded data will be resampled to this frequency
+            if not None, the loaded data will be resampled to this sampling frequency
         
         Returns:
         --------
@@ -199,22 +211,69 @@ class CPSC2021(OtherDataBase):
         return data
 
     
-    def load_ann(self,):
+    def load_ann(self, rec:str):
         """
         """
         raise NotImplementedError
 
 
-    def load_rpeaks(self,) -> np.ndarray:
+    def load_rpeaks(self, rec:str, fs:Optional[Real]=None) -> np.ndarray:
+        """ finished, checked,
+
+        load position (in terms of samples) of rpeaks
+
+        Parameters:
+        -----------
+        rec: str,
+            name of the record
+        fs: real number, optional,
+            if not None, positions of the loaded rpeaks will be ajusted according to this sampling frequency
+        """
+        rpeaks = wfdb.rdann(os.path.join(self.db_dir, rec), extension=self.ann_ext).sample
+        if fs is not None and fs!=self.fs:
+            rpeaks = np.round(rpeaks * fs / self.fs).astype(int)
+        return rpeaks
+
+
+    def load_af_episodes(self, rec:str, fmt:str="intervals"):
         """
         """
         raise NotImplementedError
 
 
-    def load_af_episodes(self,):
+    def load_labels(self, rec:str, fmt:str="a") -> str:
+        """ finished, checked,
+
+        load (classifying) label of the record,
+        among the following three classes:
+        "non atrial fibrillation",
+        "paroxysmal atrial fibrillation",
+        "persistent atrial fibrillation",
+
+        Parameters:
+        -----------
+        rec: str,
+            name of the record
+        fmt: str, default "a",
+            format of the label, case in-sensitive, can be one of:
+            "f", "fullname": the full name of the label
+            "a", "abbr", "abbrevation": abbreviation for the label
+            "n", "num", "number": class number of the label (in accordance with the settings of the offical class map)
+
+        Returns:
+        --------
+        label: str,
+            classifying label of the record
         """
-        """
-        raise NotImplementedError
+        header = wfdb.rdheader(os.path.join(self.db_dir, rec))
+        label = header.comments[0]
+        if fmt.lower() in ["a", "abbr", "abbreviation"]:
+            label = self._labels_f2a[label]
+        elif fmt.lower() in ["n", "num", "number"]:
+            label = self._labels_f2n[label]
+        elif not fmt.lower() in ["f", "fullname"]:
+            raise ValueError(f"format `{fmt}` of labels is not supported!")
+        return label
 
 
     def plot(self) -> NoReturn:
