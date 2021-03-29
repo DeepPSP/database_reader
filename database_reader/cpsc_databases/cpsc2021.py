@@ -5,6 +5,7 @@ import os
 import random
 import math
 import time
+import warnings
 from datetime import datetime
 from typing import Union, Optional, Any, List, Tuple, Dict, Sequence, NoReturn
 from numbers import Real
@@ -23,6 +24,7 @@ from ..utils.common import (
     ms2samples, samples2ms,
     DEFAULT_FIG_SIZE_PER_SEC,
 )
+from ..utils.utils_universal import generalized_intervals_intersection
 from ..base import OtherDataBase
 
 
@@ -85,7 +87,7 @@ class CPSC2021(OtherDataBase):
     [2] https://archive.physionet.org/physiobank/annotations.shtml
     """
     def __init__(self, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
-        """ NOT finished,
+        """ finished, checked,
 
         Parameters:
         -----------
@@ -116,7 +118,7 @@ class CPSC2021(OtherDataBase):
 
         self._ls_rec()
 
-        # self.nb_records = 10
+        self._epsilon = 1e-7  # dealing with round(0.5) = 0, hence keeping accordance with output length of `resample_poly`
 
         # self.palette = {"spb": "yellow", "pvc": "red",}
 
@@ -193,6 +195,7 @@ class CPSC2021(OtherDataBase):
             _leads = [leads]
         else:
             _leads = leads
+        assert all([l in self.all_leads for l in _leads])
 
         rec_fp = os.path.join(self.db_dir, rec)
         wfdb_rec = wfdb.rdrecord(rec_fp, physical=True, channel_names=_leads)
@@ -211,10 +214,50 @@ class CPSC2021(OtherDataBase):
         return data
 
     
-    def load_ann(self, rec:str):
+    def load_ann(self, rec:str, field:Optional[str]=None, **kwargs:Any) -> Union[dict, np.ndarray, List[List[int]], str]:
+        """ finished, checked,
+
+        load annotations of the record
+
+        Parameters:
+        -----------
+        rec: str,
+            name of the record
+        field: str, optional
+            field of the annotation, can be one of "rpeaks", "af_episodes", "label",
+            if not specified, all fields of the annotation will be returned in the form of a dict
+        kwargs: dict,
+            key word arguments for functions loading rpeaks, af_episodes, and label respectively,
+            including:
+            fs: int, optional,
+                the resampling frequency
+            fmt: str,
+                format of af_episodes, or format of label,
+                for more details, ref. corresponding functions
+            used only when field is specified,
+
+        Returns:
+        --------
+        ann: dict, or list, or ndarray, or str,
+            annotaton of the record
         """
-        """
-        raise NotImplementedError
+        func = {
+            "rpeaks": self.load_rpeaks,
+            "af_episodes": self.load_af_episodes,
+            "label": self.load_label,
+        }
+        if field is None:
+            ann = {k: f(rec) for k,f in func.items()}
+            if kwargs:
+                warnings.warn(f"key word arguments {list(kwargs.keys())} ignored when field is not specified!")
+            return ann
+
+        try:
+            f = func[field.lower()]
+        except:
+            raise ValueError(f"invalid field")
+        ann = f(rec, **kwargs)
+        return ann
 
 
     def load_rpeaks(self, rec:str, fs:Optional[Real]=None) -> np.ndarray:
@@ -228,20 +271,71 @@ class CPSC2021(OtherDataBase):
             name of the record
         fs: real number, optional,
             if not None, positions of the loaded rpeaks will be ajusted according to this sampling frequency
+
+        Returns:
+        --------
+        rpeaks: ndarray,
+            position (in terms of samples) of rpeaks of the record
         """
         rpeaks = wfdb.rdann(os.path.join(self.db_dir, rec), extension=self.ann_ext).sample
         if fs is not None and fs!=self.fs:
-            rpeaks = np.round(rpeaks * fs / self.fs).astype(int)
+            rpeaks = np.round(rpeaks * fs / self.fs + self._epsilon).astype(int)
         return rpeaks
 
 
-    def load_af_episodes(self, rec:str, fmt:str="intervals"):
+    def load_af_episodes(self, rec:str, fs:Optional[Real]=None, fmt:str="intervals") -> Union[List[List[int]], np.ndarray]:
+        """ finished, checked,
+
+        load the episodes of atrial fibrillation, in terms of intervals or mask
+
+        Paramters:
+        ----------
+        rec: str,
+            name of the record
+        fs: real number, optional,
+            if not None, positions of the loaded intervals or mask will be ajusted according to this sampling frequency
+        fmt: str, default "intervals",
+            format of the episodes of atrial fibrillation, can be one of "intervals", "mask"
+
+        Returns:
+        --------
+        af_episodes: list or ndarray,
+            episodes of atrial fibrillation, in terms of intervals or mask
         """
-        """
-        raise NotImplementedError
+        header = wfdb.rdheader(os.path.join(self.db_dir, rec))
+        label = self._labels_f2a[header.comments[0]]
+        siglen = header.sig_len
+        ann = wfdb.rdann(os.path.join(self.db_dir, rec), extension=self.ann_ext)
+        aux_note = np.array(ann.aux_note)
+        rpeaks = ann.sample
+        af_start_inds = np.where((aux_note=="(AFIB") | (aux_note=="(AFL"))[0]
+        af_end_inds = np.where(aux_note=="(N")[0]
+        assert len(af_start_inds) == len(af_end_inds), "unequal number of af period start indices and af period end indices"
+        intervals = []
+        for start, end in zip(af_start_inds, af_end_inds):
+            itv = [rpeaks[start], rpeaks[end]]
+            intervals.append(itv)
+        if fs is not None and fs != self.fs:
+            if label == "AFf":
+                # ref. NOTE. 1 of the class docstring
+                # the `ann.sample` does not always satify this point after resampling
+                intervals = [[0, self._round(siglen*fs/self.fs)-1]]
+            else:
+                intervals = [[self._round(itv[0]*fs/self.fs), self._round(itv[1]*fs/self.fs)] for itv in intervals]
+        af_episodes = intervals
+
+        if fmt.lower() in ["mask",]:
+            if fs is not None and fs != self.fs:
+                siglen = self._round(siglen*fs/self.fs)
+            mask = np.zeros((siglen,), dtype=int)
+            for itv in intervals:
+                mask[itv[0]:itv[1]] = 1
+            af_episodes = mask
+
+        return af_episodes
 
 
-    def load_labels(self, rec:str, fmt:str="a") -> str:
+    def load_label(self, rec:str, fmt:str="a") -> str:
         """ finished, checked,
 
         load (classifying) label of the record,
@@ -276,7 +370,203 @@ class CPSC2021(OtherDataBase):
         return label
 
 
-    def plot(self) -> NoReturn:
+    def plot(self, rec:str, data:Optional[np.ndarray]=None, ann:Optional[Dict[str, np.ndarray]]=None, ticks_granularity:int=0, leads:Optional[Union[str, List[str]]]=None, waves:Optional[Dict[str, Sequence[int]]]=None, **kwargs) -> NoReturn:
+        """ finished, checked, to improve,
+
+        plot the signals of a record or external signals (units in μV),
+        with metadata (labels, episodes of atrial fibrillation, etc.),
+        possibly also along with wave delineations
+
+        Parameters:
+        -----------
+        rec: str,
+            name of the record
+        data: ndarray, optional,
+            (2-lead) ecg signal to plot,
+            should be of the format "channel_first", and compatible with `leads`
+            if given, data of `rec` will not be used,
+            this is useful when plotting filtered data
+        ann: dict, optional,
+            annotations for `data`,
+            ignored if `data` is None
+        ticks_granularity: int, default 0,
+            the granularity to plot axis ticks, the higher the more,
+            0 (no ticks) --> 1 (major ticks) --> 2 (major + minor ticks)
+        leads: str or list of str, optional,
+            the leads to plot
+        waves: dict, optional,
+            indices of the wave critical points, including
+            "p_onsets", "p_peaks", "p_offsets",
+            "q_onsets", "q_peaks", "r_peaks", "s_peaks", "s_offsets",
+            "t_onsets", "t_peaks", "t_offsets"
+        kwargs: dict,
+
+        TODO:
+        -----
+        1. slice too long records, and plot separately for each segment
+        2. plot waves using `axvspan`
+
+        NOTE:
+        -----
+        1. `Locator` of `plt` has default `MAXTICKS` equal to 1000,
+        if not modifying this number, at most 40 seconds of signal could be plotted once
+        2. raw data usually have very severe baseline drifts,
+        hence the isoelectric line is not plotted
+
+        Contributors: Jeethan, and WEN Hao
         """
+        if "plt" not in dir():
+            import matplotlib.pyplot as plt
+            plt.MultipleLocator.MAXTICKS = 3000
+        if leads is None or leads == "all":
+            _leads = self.all_leads
+        elif isinstance(leads, str):
+            _leads = [leads]
+        else:
+            _leads = leads
+        assert all([l in self.all_leads for l in _leads])
+
+        if data is None:
+            _data = self.load_data(rec, leads=_leads, data_format="channel_first", units="μV")
+        else:
+            units = self._auto_infer_units(data)
+            print(f"input data is auto detected to have units in {units}")
+            if units.lower() == "mv":
+                _data = 1000 * data
+            else:
+                _data = data
+            assert _data.shape[0] == len(_leads), \
+                f"number of leads from data of shape ({_data.shape[0]}) does not match the length ({len(_leads)}) of `leads`"
+
+        if waves:
+            if waves.get("p_onsets", None) and waves.get("p_offsets", None):
+                p_waves = [
+                    [onset, offset] \
+                        for onset, offset in zip(waves["p_onsets"], waves["p_offsets"])
+                ]
+            elif waves.get("p_peaks", None):
+                p_waves = [
+                    [
+                        max(0, p + ms2samples(PlotCfg.p_onset, fs=self.get_fs(rec))),
+                        min(_data.shape[1], p + ms2samples(PlotCfg.p_offset, fs=self.get_fs(rec)))
+                    ] for p in waves["p_peaks"]
+                ]
+            else:
+                p_waves = []
+            if waves.get("q_onsets", None) and waves.get("s_offsets", None):
+                qrs = [
+                    [onset, offset] for onset, offset in zip(waves["q_onsets"], waves["s_offsets"])
+                ]
+            elif waves.get("q_peaks", None) and waves.get("s_peaks", None):
+                qrs = [
+                    [
+                        max(0, q + ms2samples(PlotCfg.q_onset, fs=self.get_fs(rec))),
+                        min(_data.shape[1], s + ms2samples(PlotCfg.s_offset, fs=self.get_fs(rec)))
+                    ] for q,s in zip(waves["q_peaks"], waves["s_peaks"])
+                ]
+            elif waves.get("r_peaks", None):
+                qrs = [
+                    [
+                        max(0, r + ms2samples(PlotCfg.qrs_radius, fs=self.get_fs(rec))),
+                        min(_data.shape[1], r + ms2samples(PlotCfg.qrs_radius, fs=self.get_fs(rec)))
+                    ] for r in waves["r_peaks"]
+                ]
+            else:
+                qrs = []
+            if waves.get("t_onsets", None) and waves.get("t_offsets", None):
+                t_waves = [
+                    [onset, offset] for onset, offset in zip(waves["t_onsets"], waves["t_offsets"])
+                ]
+            elif waves.get("t_peaks", None):
+                t_waves = [
+                    [
+                        max(0, t + ms2samples(PlotCfg.t_onset, fs=self.get_fs(rec))),
+                        min(_data.shape[1], t + ms2samples(PlotCfg.t_offset, fs=self.get_fs(rec)))
+                    ] for t in waves["t_peaks"]
+                ]
+            else:
+                t_waves = []
+        else:
+            p_waves, qrs, t_waves = [], [], []
+        palette = {"p_waves": "green", "qrs": "yellow", "t_waves": "pink",}
+        plot_alpha = 0.4
+
+        if ann is None or data is None:
+            _ann = self.load_ann(rec)
+            rpeaks = _ann["rpeaks"]
+            af_episodes = _ann["af_episodes"]
+            label = _ann["label"]
+        else:
+            rpeaks = ann.get("rpeaks", [])
+            af_episodes = ann.get("af_episodes", [])
+            label = ann["label"]
+
+        nb_leads = len(_leads)
+
+        line_len = self.fs * 25  # 25 seconds
+        nb_lines = math.ceil(_data.shape[1]/line_len)
+
+        bias_thr = 0.1
+        winL = 0.06
+        winR = 0.08
+
+        for idx in range(nb_lines):
+            seg = _data[..., idx*line_len: (idx+1)*line_len]
+            secs = (np.arange(seg.shape[1]) + idx*line_len) / self.fs
+            fig_sz_w = int(round(DEFAULT_FIG_SIZE_PER_SEC * seg.shape[1] / self.fs))
+            # if same_range:
+            #     y_ranges = np.ones((seg.shape[0],)) * np.max(np.abs(seg)) + 100
+            # else:
+            #     y_ranges = np.max(np.abs(seg), axis=1) + 100
+            # fig_sz_h = 6 * y_ranges / 1500
+            fig_sz_h = 6 * sum([seg_lead.max() - seg_lead.min() + 200 for seg_lead in seg]) / 1500
+            fig, axes = plt.subplots(nb_leads, 1, sharex=True, figsize=(fig_sz_w, np.sum(fig_sz_h)))
+            if nb_leads == 1:
+                axes = [axes]
+        
+            for ax_idx in range(nb_leads):
+                axes[ax_idx].plot(secs, seg[ax_idx], color="black", label=f"lead - {_leads[ax_idx]}")
+                # axes[ax_idx].axhline(y=0, linestyle="-", linewidth="1.0", color="red")
+                # NOTE that `Locator` has default `MAXTICKS` equal to 1000
+                if ticks_granularity >= 1:
+                    axes[ax_idx].xaxis.set_major_locator(plt.MultipleLocator(0.2))
+                    axes[ax_idx].yaxis.set_major_locator(plt.MultipleLocator(500))
+                    axes[ax_idx].grid(which="major", linestyle="-", linewidth="0.5", color="red")
+                if ticks_granularity >= 2:
+                    axes[ax_idx].xaxis.set_minor_locator(plt.MultipleLocator(0.04))
+                    axes[ax_idx].yaxis.set_minor_locator(plt.MultipleLocator(100))
+                    axes[ax_idx].grid(which="minor", linestyle=":", linewidth="0.5", color="black")
+                # add extra info. to legend
+                # https://stackoverflow.com/questions/16826711/is-it-possible-to-add-a-string-as-a-legend-item-in-matplotlib
+                axes[ax_idx].plot([], [], " ", label=f"label - {label}")
+                seg_rpeaks = [r/self.fs for r in rpeaks if idx*line_len <= r < (idx+1)*line_len]
+                for r in seg_rpeaks:
+                    axes[ax_idx].axvspan(
+                    max(secs[0], r-bias_thr), min(secs[-1], r+bias_thr),
+                    color=palette["qrs"], alpha=0.3
+                )
+                seg_af_episodes = generalized_intervals_intersection(
+                    af_episodes,
+                    [[idx*line_len, (idx+1)*line_len]],
+                )
+                seg_af_episodes = [[itv[0]-idx*line_len, itv[1]-idx*line_len] for itv in seg_af_episodes]
+                for itv_start, itv_end in seg_af_episodes:
+                    axes[ax_idx].plot(secs[itv_start:itv_end], seg[ax_idx,itv_start:itv_end], color="red")
+                for w in ["p_waves", "qrs", "t_waves"]:
+                    for itv in eval(w):
+                        axes[ax_idx].axvspan(itv[0], itv[1], color=palette[w], alpha=plot_alpha)
+                axes[ax_idx].legend(loc="upper left")
+                axes[ax_idx].set_xlim(secs[0], secs[-1])
+                # axes[ax_idx].set_ylim(-y_ranges[ax_idx], y_ranges[ax_idx])
+                axes[ax_idx].set_xlabel("Time [s]")
+                axes[ax_idx].set_ylabel("Voltage [μV]")
+            plt.subplots_adjust(hspace=0.2)
+        plt.show()
+
+
+    def _round(self, n:Real) -> int:
+        """ finished, checked,
+
+        dealing with round(0.5) = 0, hence keeping accordance with output length of `resample_poly`
         """
-        raise NotImplementedError
+        return int(round(n + self._epsilon))
