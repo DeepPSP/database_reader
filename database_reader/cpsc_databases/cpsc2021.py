@@ -18,7 +18,6 @@ from easydict import EasyDict as ED
 import wfdb
 
 from ..utils.common import (
-    ArrayLike,
     get_record_list_recursive,
     get_record_list_recursive3,
     ms2samples, samples2ms,
@@ -461,8 +460,8 @@ class CPSC2021(OtherDataBase):
             elif waves.get("p_peaks", None):
                 p_waves = [
                     [
-                        max(0, p + ms2samples(PlotCfg.p_onset, fs=self.get_fs(rec))),
-                        min(_data.shape[1], p + ms2samples(PlotCfg.p_offset, fs=self.get_fs(rec)))
+                        max(0, p + ms2samples(PlotCfg.p_onset, fs=self.fs)),
+                        min(_data.shape[1], p + ms2samples(PlotCfg.p_offset, fs=self.fs))
                     ] for p in waves["p_peaks"]
                 ]
             else:
@@ -474,15 +473,15 @@ class CPSC2021(OtherDataBase):
             elif waves.get("q_peaks", None) and waves.get("s_peaks", None):
                 qrs = [
                     [
-                        max(0, q + ms2samples(PlotCfg.q_onset, fs=self.get_fs(rec))),
-                        min(_data.shape[1], s + ms2samples(PlotCfg.s_offset, fs=self.get_fs(rec)))
+                        max(0, q + ms2samples(PlotCfg.q_onset, fs=self.fs)),
+                        min(_data.shape[1], s + ms2samples(PlotCfg.s_offset, fs=self.fs))
                     ] for q,s in zip(waves["q_peaks"], waves["s_peaks"])
                 ]
             elif waves.get("r_peaks", None):
                 qrs = [
                     [
-                        max(0, r + ms2samples(PlotCfg.qrs_radius, fs=self.get_fs(rec))),
-                        min(_data.shape[1], r + ms2samples(PlotCfg.qrs_radius, fs=self.get_fs(rec)))
+                        max(0, r + ms2samples(PlotCfg.qrs_radius, fs=self.fs)),
+                        min(_data.shape[1], r + ms2samples(PlotCfg.qrs_radius, fs=self.fs))
                     ] for r in waves["r_peaks"]
                 ]
             else:
@@ -494,8 +493,8 @@ class CPSC2021(OtherDataBase):
             elif waves.get("t_peaks", None):
                 t_waves = [
                     [
-                        max(0, t + ms2samples(PlotCfg.t_onset, fs=self.get_fs(rec))),
-                        min(_data.shape[1], t + ms2samples(PlotCfg.t_offset, fs=self.get_fs(rec)))
+                        max(0, t + ms2samples(PlotCfg.t_onset, fs=self.fs)),
+                        min(_data.shape[1], t + ms2samples(PlotCfg.t_offset, fs=self.fs))
                     ] for t in waves["t_peaks"]
                 ]
             else:
