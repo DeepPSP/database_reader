@@ -81,6 +81,7 @@ class CPSC2021(OtherDataBase):
     -----
     1. if an ECG record is classified as AFf, the provided onset and offset locations should be the first and last record points. If an ECG record is classified as N, the answer should be an empty list
     2. it can be inferred from the classification scoring matrix that the punishment of false negatives of AFf is very heavy, while mixing-up of AFf and AFp is not punished
+    3. flag of atrial fibrillation and atrial flutter ("AFIB" and "AFL") in annotated information are seemed as the same type when scoring the method
 
     ISSUES:
     -------
@@ -321,9 +322,10 @@ class CPSC2021(OtherDataBase):
         ann = wfdb.rdann(os.path.join(self.db_dir, rec), extension=self.ann_ext)
         aux_note = np.array(ann.aux_note)
         rpeaks = ann.sample
-        af_start_inds = np.where((aux_note=="(AFIB") | (aux_note=="(AFL"))[0]
+        af_start_inds = np.where((aux_note=="(AFIB") | (aux_note=="(AFL"))[0]  # ref. NOTE 3.
         af_end_inds = np.where(aux_note=="(N")[0]
-        assert len(af_start_inds) == len(af_end_inds), "unequal number of af period start indices and af period end indices"
+        assert len(af_start_inds) == len(af_end_inds), \
+            "unequal number of af period start indices and af period end indices"
         intervals = []
         for start, end in zip(af_start_inds, af_end_inds):
             itv = [rpeaks[start], rpeaks[end]]
@@ -519,9 +521,9 @@ class CPSC2021(OtherDataBase):
         line_len = self.fs * 25  # 25 seconds
         nb_lines = math.ceil(_data.shape[1]/line_len)
 
-        bias_thr = 0.1
-        winL = 0.06
-        winR = 0.08
+        bias_thr = 0.07
+        # winL = 0.06
+        # winR = 0.08
 
         for idx in range(nb_lines):
             seg = _data[..., idx*line_len: (idx+1)*line_len]
