@@ -280,6 +280,7 @@ class CINC2021(PhysioNetDataBase):
             print(f"Done in {time.time() - start:.5f} seconds!")
             with open(os.path.join(self.db_dir_base, fn), "w") as f:
                 json.dump(to_save, f)
+        self._all_records = ED(self._all_records)
 
 
     def _ls_diagnoses_records(self) -> NoReturn:
@@ -305,7 +306,6 @@ class CINC2021(PhysioNetDataBase):
             print(f"Done in {time.time() - start:.5f} seconds!")
             with open(dr_fp, "w") as f:
                 json.dump(self._diagnoses_records_list, f)
-        self._all_records = ED(self._all_records)
 
 
     @property
