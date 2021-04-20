@@ -293,7 +293,7 @@ class CINC2021(PhysioNetDataBase):
 
         stats_fn = "stats.csv"
         list_sep = ";"
-        stats_file_fp = os.path.join(self.db_dir, stats_file)
+        stats_file_fp = os.path.join(self.db_dir_base, stats_file)
         if os.path.isfile(stats_file_fp):
             self._stats = pd.read_csv(stats_file_fp)
         if self._stats.empty or self._stats_columns != set(self._stats.columns):
