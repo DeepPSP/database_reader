@@ -6,6 +6,7 @@ import random
 import math
 import time
 import warnings
+import json
 from datetime import datetime
 from typing import Union, Optional, Any, List, Tuple, Dict, Sequence, NoReturn
 from numbers import Real
@@ -83,6 +84,7 @@ class CPSC2021(OtherDataBase):
     2. it can be inferred from the classification scoring matrix that the punishment of false negatives of AFf is very heavy, while mixing-up of AFf and AFp is not punished
     3. flag of atrial fibrillation and atrial flutter ("AFIB" and "AFL") in annotated information are seemed as the same type when scoring the method
     4. initially stage 1 and 2 both have a "RECORDS" file, containing corresponding list of file names, which are merged and overwritten at the instantiation of this class
+    5. the 3 classes can coexist in ONE subject (not one record). For example, subject 61 has 6 records with label "N", 1 with label "AFp", and 2 with label "AFf"
 
     ISSUES:
     -------
@@ -132,7 +134,14 @@ class CPSC2021(OtherDataBase):
         }
 
         self.nb_records = 716 + 707
+        self._all_subjects = None
+        self._subject_records = None
+        self._stats = pd.DataFrame()
+        self._stats_columns = {"record", "subject_id", "label",}
         self._ls_rec()
+
+        self._diagnoses_records_list
+        self._ls
 
         self._epsilon = 1e-7  # dealing with round(0.5) = 0, hence keeping accordance with output length of `resample_poly`
 
@@ -153,7 +162,7 @@ class CPSC2021(OtherDataBase):
         else:
             self._all_records = []
         if len(self._all_records) == self.nb_records:
-            return
+            pass
         else:
             print("Please wait patiently to let the reader find all records...")
             start = time.time()
@@ -163,6 +172,80 @@ class CPSC2021(OtherDataBase):
             print(f"Done in {time.time() - start:.5f} seconds!")
             with open(record_list_fp, "w") as f:
                 f.write("\n".join(self._all_records))
+
+        self._all_subjects = sorted([rec.split("_")[1] for rec in self._all_records])
+        self._subject_records = ED({sid: [rec for rec in self._all_records if rec.split("_")[1]==sid] for sid in self._all_subjects})
+        
+        stats_file = "stats.csv"
+        stats_file_fp = os.path.join(self.db_dir, stats_file)
+        stats_file_fp_aux = os.path.join(base_dir, "utils", stats_file)
+        if os.path.isfile(stats_file_fp):
+            self._stats = pd.read_csv(stats_file_fp)
+        elif os.path.isfile(stats_file_fp_aux):
+            self._stats = pd.read_csv(stats_file_fp_aux)
+        
+        if self._stats.empty or self._stats_columns != set(self._stats.columns):
+            self._stats = pd.DataFrame(self._all_records)
+            self._stats.columns = ["record"]
+            self._stats["subject_id"] = self._stats["record"].apply(lambda s:s.split("_")[1])
+            self._stats["label"] = self._stats["record"].apply(lambda s:self.load_label(s))
+            self._stats.to_csv(stats_file_fp, index=False)
+            self._stats.to_csv(stats_file_fp_aux, index=False)
+        else:
+            pass  # currently no need to parse the loaded csv file
+    
+
+    @property
+    def all_subjects(self):
+        """
+        """
+        return self._all_subjects
+
+
+    @property
+    def subject_records(self):
+        """
+        """
+        return self._subject_records
+
+
+    @property
+    def df_stats(self):
+        """
+        """
+        return self._stats
+
+
+    def _ls_diagnoses_records(self) -> NoReturn:
+        """ finished, checked,
+
+        list all the records for all diagnoses
+        """
+        fn = "diagnoses_records_list.json"
+        dr_fp = os.path.join(self.db_dir, fn)
+        if os.path.isfile(dr_fp):
+            with open(dr_fp, "r") as f:
+                self._diagnoses_records_list = json.load(f)
+        else:
+            print("Please wait several minutes patiently to let the reader list records for each diagnosis...")
+            start = time.time()
+            self._diagnoses_records_list = {d: [] for d in self._labels_f2a.values()}
+            for rec in self._all_records:
+                lb = self.load_label(rec)
+                self._diagnoses_records_list[lb].append(rec)
+            print(f"Done in {time.time() - start:.5f} seconds!")
+            with open(dr_fp, "w") as f:
+                json.dump(self._diagnoses_records_list, f)
+        self._diagnoses_records_list = ED(self._diagnoses_records_list)
+
+
+    @property
+    def diagnoses_records_list(self):
+        """ finished, checked
+        """
+        if self._diagnoses_records_list is None:
+            self._ls_diagnoses_records()
+        return self._diagnoses_records_list
 
 
     def get_subject_id(self, rec:str) -> int:
