@@ -178,19 +178,14 @@ class CPSC2021(OtherDataBase):
         
         stats_file = "stats.csv"
         stats_file_fp = os.path.join(self.db_dir, stats_file)
-        stats_file_fp_aux = os.path.join(base_dir, "utils", stats_file)
         if os.path.isfile(stats_file_fp):
             self._stats = pd.read_csv(stats_file_fp)
-        elif os.path.isfile(stats_file_fp_aux):
-            self._stats = pd.read_csv(stats_file_fp_aux)
         
         if self._stats.empty or self._stats_columns != set(self._stats.columns):
-            self._stats = pd.DataFrame(self._all_records)
-            self._stats.columns = ["record"]
+            self._stats = pd.DataFrame(self._all_records, columns=["record"])
             self._stats["subject_id"] = self._stats["record"].apply(lambda s:s.split("_")[1])
             self._stats["label"] = self._stats["record"].apply(lambda s:self.load_label(s))
             self._stats.to_csv(stats_file_fp, index=False)
-            self._stats.to_csv(stats_file_fp_aux, index=False)
         else:
             pass  # currently no need to parse the loaded csv file
     
