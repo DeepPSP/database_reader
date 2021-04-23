@@ -291,15 +291,17 @@ class CINC2021(PhysioNetDataBase):
                 json.dump(to_save, f)
         self._all_records = ED(self._all_records)
 
-        stats_fn = "stats.csv"
+        stats_file = "stats.csv"
         list_sep = ";"
         stats_file_fp = os.path.join(self.db_dir_base, stats_file)
         if os.path.isfile(stats_file_fp):
             self._stats = pd.read_csv(stats_file_fp)
         if self._stats.empty or self._stats_columns != set(self._stats.columns):
+            print("Please wait patiently to let the reader collect statistics on the whole dataset...")
+            start = time.time()
             self._stats = pd.DataFrame(list_sum(self._all_records.values()), columns=["record"])
             self._stats["tranche"] = self._stats["record"].apply(lambda rec: self._get_tranche(rec))
-            self._stats["tranche_name"] = self._stats["tranche"].apply(lambda t: self.tranche_names[t]))
+            self._stats["tranche_name"] = self._stats["tranche"].apply(lambda t: self.tranche_names[t])
             for idx, row in self._stats.iterrows():
                 ann_dict = self.load_ann(row["record"])
                 for k in ["age", "sex", "medical_prescription", "history", "symptom_or_surgery",]:
@@ -310,6 +312,7 @@ class CINC2021(PhysioNetDataBase):
             for k in ["diagnosis", "diagnosis_scored",]:
                 _stats_to_save[k] = _stats_to_save[k].apply(lambda l: list_sep.join(l))
             _stats_to_save.to_csv(stats_file_fp, index=False)
+            print(f"Done in {time.time() - start:.5f} seconds!")
         else:
             for k in ["diagnosis", "diagnosis_scored",]:
                 for idx, row in self._stats.iterrows():
