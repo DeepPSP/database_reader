@@ -68,8 +68,10 @@ class CINC2021(PhysioNetDataBase):
     ---------------
     0. goal: build an algorithm that can classify cardiac abnormalities from either
         - twelve-lead (I, II, III, aVR, aVL, aVF, V1, V2, V3, V4, V5, V6)
-        - six-lead (I, II, III, aVL, aVR, and aVF),
-        - two-lead (II and V5)
+        - six-lead (I, II, III, aVL, aVR, aVF),
+        - four-lead (I, II, III, V2)
+        - three-lead (I, II, V2)
+        - two-lead (I, II)
     ECG recordings.
     1. tranches of data:
         - CPSC2018 (tranches A and B of CINC2020):
@@ -96,6 +98,10 @@ class CINC2021(PhysioNetDataBase):
             all retained as test data,
             geographically distinct from the Georgia database.
             Perhaps is the main part of the hidden test set of CINC2020
+        - CUSPHNFH (NEW, the Chapman University, Shaoxing People’s Hospital and Ningbo First Hospital database)
+            contains 45,152 ECGS,
+            all shared as training data.
+            Each recording is 10 seconds long with a sampling frequency of 500 Hz
     2. only a part of diagnosis_abbr (diseases that appear in the labels of the 6 tranches of training data) are used in the scoring function, while others are ignored. The scored diagnoses were chosen based on prevalence of the diagnoses in the training data, the severity of the diagnoses, and the ability to determine the diagnoses from ECG recordings. The ignored diagnosis_abbr can be put in a a "non-class" group.
     3. the (updated) scoring function has a scoring matrix with nonzero off-diagonal elements. This scoring function reflects the clinical reality that some misdiagnoses are more harmful than others and should be scored accordingly. Moreover, it reflects the fact that confusing some classes is much less harmful than confusing other classes.
     4. all data are recorded in the leads ordering of
@@ -183,7 +189,7 @@ class CINC2021(PhysioNetDataBase):
         self.rec_ext = "mat"
         self.ann_ext = "hea"
 
-        self.db_tranches = list("ABCDEF")
+        self.db_tranches = list("ABCDEFG")
         self.tranche_names = ED({
             "A": "CPSC",
             "B": "CPSC-Extra",
@@ -191,9 +197,10 @@ class CINC2021(PhysioNetDataBase):
             "D": "PTB",
             "E": "PTB-XL",
             "F": "Georgia",
+            "G": "CUSPHNFH",
         })
         self.rec_prefix = ED({
-            "A": "A", "B": "Q", "C": "I", "D": "S", "E": "HR", "F": "E",
+            "A": "A", "B": "Q", "C": "I", "D": "S", "E": "HR", "F": "E", "G": "JS",
         })
 
         self.db_dir_base = db_dir
@@ -202,11 +209,13 @@ class CINC2021(PhysioNetDataBase):
         self._stats = pd.DataFrame()
         self._stats_columns = {
             "record", "tranche", "tranche_name",
+            "nb_leads", "fs", "nb_samples",
             "age", "sex",
             "medical_prescription", "history", "symptom_or_surgery",
             "diagnosis", "diagnosis_scored",  # in the form of abbreviations
         }
         self._ls_rec()  # loads file system structures into self.db_dirs and self._all_records
+        self._aggregate_stats()
 
         self._diagnoses_records_list = None
         self._ls_diagnoses_records()
@@ -245,7 +254,7 @@ class CINC2021(PhysioNetDataBase):
         sid: int,
             the `subject_id` corr. to `rec`
         """
-        s2d = {"A":"11", "B":"12", "C":"21", "D":"31", "E":"32", "F":"41"}
+        s2d = {"A":"11", "B":"12", "C":"21", "D":"31", "E":"32", "F":"41", "G":"51",}
         s2d = {self.rec_prefix[k]:v for k,v in s2d.items()}
         prefix = "".join(re.findall(r"[A-Z]", rec))
         n = rec.replace(prefix,"")
@@ -271,7 +280,7 @@ class CINC2021(PhysioNetDataBase):
             print("Please wait patiently to let the reader find all records of all the tranches...")
             start = time.time()
             rec_patterns_with_ext = {
-                tranche: f"{self.rec_prefix[tranche]}(?:\d+).{self.rec_ext}" \
+                tranche: f"^{self.rec_prefix[tranche]}(?:\d+).{self.rec_ext}$" \
                     for tranche in self.db_tranches
             }
             self._all_records = \
@@ -291,6 +300,12 @@ class CINC2021(PhysioNetDataBase):
                 json.dump(to_save, f)
         self._all_records = ED(self._all_records)
 
+
+    def _aggregate_stats(self) -> NoReturn:
+        """ finished, checked,
+
+        aggregate stats on the whole dataset
+        """
         stats_file = "stats.csv"
         list_sep = ";"
         stats_file_fp = os.path.join(self.db_dir_base, stats_file)
@@ -306,7 +321,7 @@ class CINC2021(PhysioNetDataBase):
                 self._stats[k] = ""  # otherwise cells in the first row would be str instead of list
             for idx, row in self._stats.iterrows():
                 ann_dict = self.load_ann(row["record"])
-                for k in ["age", "sex", "medical_prescription", "history", "symptom_or_surgery",]:
+                for k in ["nb_leads", "fs", "nb_samples", "age", "sex", "medical_prescription", "history", "symptom_or_surgery",]:
                     self._stats.at[idx, k] = ann_dict[k]
                 for k in ["diagnosis", "diagnosis_scored",]:
                     self._stats.at[idx, k] = ann_dict[k]["diagnosis_abbr"]
@@ -694,31 +709,37 @@ class CINC2021(PhysioNetDataBase):
             the scored items in `diag_dict`
         """
         diag_dict, diag_scored_dict = {}, {}
-        try:
-            diag_dict["diagnosis_code"] = [item for item in l_Dx]
-            # selection = dx_mapping_all["SNOMED CT Code"].isin(diag_dict["diagnosis_code"])
-            # diag_dict["diagnosis_abbr"] = dx_mapping_all[selection]["Abbreviation"].tolist()
+        # try:
+        diag_dict["diagnosis_code"] = [item for item in l_Dx if item in dx_mapping_all["SNOMED CT Code"].tolist()]
+        # in case not listed in dx_mapping_all
+        left = [item for item in l_Dx if item not in dx_mapping_all["SNOMED CT Code"].tolist()]
+        # selection = dx_mapping_all["SNOMED CT Code"].isin(diag_dict["diagnosis_code"])
+        # diag_dict["diagnosis_abbr"] = dx_mapping_all[selection]["Abbreviation"].tolist()
+        # diag_dict["diagnosis_fullname"] = dx_mapping_all[selection]["Dx"].tolist()
+        diag_dict["diagnosis_abbr"] = \
+            [ dx_mapping_all[dx_mapping_all["SNOMED CT Code"]==dc]["Abbreviation"].values[0] \
+                for dc in diag_dict["diagnosis_code"] ] + left
+        diag_dict["diagnosis_fullname"] = \
+            [ dx_mapping_all[dx_mapping_all["SNOMED CT Code"]==dc]["Dx"].values[0] \
+                for dc in diag_dict["diagnosis_code"] ] + left
+        diag_dict["diagnosis_code"] = diag_dict["diagnosis_code"] + left
+        scored_indices = np.isin(
+            diag_dict["diagnosis_code"],
+            dx_mapping_scored["SNOMED CT Code"].values
+        )
+        diag_scored_dict["diagnosis_code"] = \
+            [ item for idx, item in enumerate(diag_dict["diagnosis_code"]) \
+                if scored_indices[idx] ]
+        diag_scored_dict["diagnosis_abbr"] = \
+            [ item for idx, item in enumerate(diag_dict["diagnosis_abbr"]) \
+                if scored_indices[idx] ]
+        diag_scored_dict["diagnosis_fullname"] = \
+            [ item for idx, item in enumerate(diag_dict["diagnosis_fullname"]) \
+                if scored_indices[idx] ]
+        # except:  # the old version, the Dx's are abbreviations, deprecated
+            # diag_dict["diagnosis_abbr"] = diag_dict["diagnosis_code"]
+            # selection = dx_mapping_all["Abbreviation"].isin(diag_dict["diagnosis_abbr"])
             # diag_dict["diagnosis_fullname"] = dx_mapping_all[selection]["Dx"].tolist()
-            diag_dict["diagnosis_abbr"] = \
-                [ dx_mapping_all[dx_mapping_all["SNOMED CT Code"]==dc]["Abbreviation"].values[0] \
-                    for dc in diag_dict["diagnosis_code"] ]
-            diag_dict["diagnosis_fullname"] = \
-                [ dx_mapping_all[dx_mapping_all["SNOMED CT Code"]==dc]["Dx"].values[0] \
-                    for dc in diag_dict["diagnosis_code"] ]
-            scored_indices = np.isin(diag_dict["diagnosis_code"], dx_mapping_scored["SNOMED CT Code"].values)
-            diag_scored_dict["diagnosis_code"] = \
-                [ item for idx, item in enumerate(diag_dict["diagnosis_code"]) \
-                    if scored_indices[idx] ]
-            diag_scored_dict["diagnosis_abbr"] = \
-                [ item for idx, item in enumerate(diag_dict["diagnosis_abbr"]) \
-                    if scored_indices[idx] ]
-            diag_scored_dict["diagnosis_fullname"] = \
-                [ item for idx, item in enumerate(diag_dict["diagnosis_fullname"]) \
-                    if scored_indices[idx] ]
-        except:  # the old version, the Dx"s are abbreviations
-            diag_dict["diagnosis_abbr"] = diag_dict["diagnosis_code"]
-            selection = dx_mapping_all["Abbreviation"].isin(diag_dict["diagnosis_abbr"])
-            diag_dict["diagnosis_fullname"] = dx_mapping_all[selection]["Dx"].tolist()
         # if not keep_original:
         #     for idx, d in enumerate(ann_dict["diagnosis_abbr"]):
         #         if d in ["Normal", "NSR"]:
