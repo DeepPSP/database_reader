@@ -58,7 +58,7 @@ class CPSC2021(OtherDataBase):
     1. source ECG data are recorded from 12-lead Holter or 3-lead wearable ECG monitoring devices
     2. dataset provides variable-length ECG fragments extracted from lead I and lead II of the long-term source ECG data, each sampled at 200 Hz
     3. AF event is limited to be no less than 5 heart beats
-    4. training set in the 1st stage consists of 716 records, extracted from the Holter records from 12 AF patients and 42 non-AF patients (usually including other abnormal and normal rhythms); training set in the 2nd stage consists of 707 records from 37 AF patients (18 PAF patients) and 14 non-AF patients
+    4. training set in the 1st stage consists of 730 records, extracted from the Holter records from 12 AF patients and 42 non-AF patients (usually including other abnormal and normal rhythms); training set in the 2nd stage consists of 706 records from 37 AF patients (18 PAF patients) and 14 non-AF patients
     5. test set comprises data from the same source as the training set as well as DIFFERENT data source, which are NOT to be released at any point
     6. annotations are standardized according to PhysioBank Annotations (Ref. [2] or PhysioNetDataBase.helper), and include the beat annotations (R peak location and beat type), the rhythm annotations (rhythm change flag and rhythm type) and the diagnosis of the global rhythm
     7. classification of a record is stored in corresponding .hea file, which can be accessed via the attribute `comments` of a wfdb Record obtained using `wfdb.rdheader`, `wfdb.rdrecord`, and `wfdb.rdsamp`; beat annotations and rhythm annotations can be accessed using the attributes `symbol`, `aux_note` of a wfdb Annotation obtained using `wfdb.rdann`, corresponding indices in the signal can be accessed via the attribute `sample`
@@ -83,8 +83,7 @@ class CPSC2021(OtherDataBase):
     1. if an ECG record is classified as AFf, the provided onset and offset locations should be the first and last record points. If an ECG record is classified as N, the answer should be an empty list
     2. it can be inferred from the classification scoring matrix that the punishment of false negatives of AFf is very heavy, while mixing-up of AFf and AFp is not punished
     3. flag of atrial fibrillation and atrial flutter ("AFIB" and "AFL") in annotated information are seemed as the same type when scoring the method
-    4. initially stage 1 and 2 both have a "RECORDS" file, containing corresponding list of file names, which are merged and overwritten at the instantiation of this class
-    5. the 3 classes can coexist in ONE subject (not one record). For example, subject 61 has 6 records with label "N", 1 with label "AFp", and 2 with label "AFf"
+    4. the 3 classes can coexist in ONE subject (not one record). For example, subject 61 has 6 records with label "N", 1 with label "AFp", and 2 with label "AFf"
 
     ISSUES:
     -------
@@ -116,6 +115,10 @@ class CPSC2021(OtherDataBase):
         """
         super().__init__(db_name="CPSC2021", db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
 
+        self.db_dir_base = db_dir
+        self.db_tranches = ["training_I", "training_II",]
+        self.db_dirs = ED({t:"" for t in self.db_tranches})
+
         self.fs = 200
         self.spacing = 1000/self.fs
         self.rec_ext = "dat"
@@ -133,20 +136,32 @@ class CPSC2021(OtherDataBase):
             "persistent atrial fibrillation": 2,
         }
 
-        self.nb_records = 716 + 707
-        self._all_subjects = None
-        self._subject_records = None
+         self.nb_records = ED({"training_I":730, "training_II":706})
+        self._all_records = ED({t:[] for t in self.db_tranches})
+        self.__all_records = None
+        self._all_subjects = ED({t:[] for t in self.db_tranches})
+        self.__all_subjects = None
+        self._subject_records = ED({t:[] for t in self.db_tranches})
         self._stats = pd.DataFrame()
-        self._stats_columns = {"record", "subject_id", "label",}
+        self._stats_columns = ["record", "tranche", "subject_id", "record_id", "label", "fs", "sig_len",]
         self._ls_rec()
         self._aggregate_stats()
 
-        self._diagnoses_records_list
-        self._ls
+        self._diagnoses_records_list = None
+        self._ls_diagnoses_records()
 
         self._epsilon = 1e-7  # dealing with round(0.5) = 0, hence keeping accordance with output length of `resample_poly`
 
         # self.palette = {"spb": "yellow", "pvc": "red",}
+
+
+    @property
+    def all_records(self):
+        """
+        """
+        if self.__all_records is None:
+            self._ls_rec()
+        return self.__all_records
 
 
     def _ls_rec(self) -> NoReturn:
@@ -155,27 +170,44 @@ class CPSC2021(OtherDataBase):
         list all the records and load into `self._all_records`,
         facilitating further uses
         """
-        fn = "RECORDS"
-        record_list_fp = os.path.join(self.db_dir, fn)
-        if os.path.isfile(record_list_fp):
-            with open(record_list_fp, "r") as f:
-                self._all_records = f.read().splitlines()
-        else:
-            self._all_records = []
-        if len(self._all_records) == self.nb_records:
-            pass
-        else:
-            print("Please wait patiently to let the reader find all records...")
-            start = time.time()
-            rec_patterns_with_ext = f"data_(?:\d+)_(?:\d+).{self.rec_ext}"
-            self._all_records = \
-                get_record_list_recursive3(self.db_dir, rec_patterns_with_ext)
-            print(f"Done in {time.time() - start:.5f} seconds!")
-            with open(record_list_fp, "w") as f:
-                f.write("\n".join(self._all_records))
+        self._all_records = ED({t:[] for t in self.db_tranches})
+        self._all_subjects = ED({t:[] for t in self.db_tranches})
+        self._subject_records = ED({t:[] for t in self.db_tranches})
 
-        self._all_subjects = sorted([rec.split("_")[1] for rec in self._all_records])
-        self._subject_records = ED({sid: [rec for rec in self._all_records if rec.split("_")[1]==sid] for sid in self._all_subjects})
+        fn = "RECORDS"
+        for t in self.db_tranches:
+            dir_candidate = os.path.join(self.db_dir_base, t, t)
+            if os.path.isdir(dir_candidate):
+                dir_tranche = dir_candidate
+            else:
+                dir_tranche = os.path.dirname(dir_candidate)
+            self.db_dirs[t] = dir_tranche
+
+            record_list_fp = os.path.join(dir_tranche, fn)
+            if os.path.isfile(record_list_fp):
+                with open(record_list_fp, "r") as f:
+                    self._all_records[t] = f.read().splitlines()
+            else:
+                self._all_records[t] = []
+            if len(self._all_records[t]) == self.nb_records[t]:
+                pass
+            else:
+                print("Please wait patiently to let the reader find all records...")
+                start = time.time()
+                rec_patterns_with_ext = f"^data_(?:\d+)_(?:\d+).{self.rec_ext}$"
+                self._all_records[t] = \
+                    get_record_list_recursive3(dir_tranche, rec_patterns_with_ext)
+                print(f"Done in {time.time() - start:.5f} seconds!")
+                with open(record_list_fp, "w") as f:
+                    f.write("\n".join(self._all_records[t]))
+
+            self._all_subjects[t] = sorted([rec.split("_")[1] for rec in self._all_records[t]])
+            self._subject_records[t] = \
+                ED({sid: [rec for rec in self._all_records[t] if rec.split("_")[1]==sid] for sid in self._all_subjects[t]})
+        self._all_records_inv = {r:t for t, l_r in self._all_records.items() for r in l_r}
+        self._all_subjects_inv = {s:t for t, l_s in self._all_subjects.items() for s in l_s}
+        self.__all_records = sorted(list_sum(self._all_records.values()))
+        self.__all_subjects = sorted(list_sum(self._all_subjects.values()), key=lambda s: int(s))
 
 
     def _aggregate_stats(self) -> NoReturn:
@@ -184,24 +216,38 @@ class CPSC2021(OtherDataBase):
         aggregate stats on the whole dataset
         """
         stats_file = "stats.csv"
-        stats_file_fp = os.path.join(self.db_dir, stats_file)
+        stats_file_fp = os.path.join(self.db_dir_base, stats_file)
+        stats_file_fp_aux = os.path.join(_BASE_DIR, "utils", stats_file)
         if os.path.isfile(stats_file_fp):
             self._stats = pd.read_csv(stats_file_fp)
+        elif os.path.isfile(stats_file_fp_aux):
+            self._stats = pd.read_csv(stats_file_fp_aux)
         
-        if self._stats.empty or self._stats_columns != set(self._stats.columns):
-            self._stats = pd.DataFrame(self._all_records, columns=["record"])
-            self._stats["subject_id"] = self._stats["record"].apply(lambda s:s.split("_")[1])
-            self._stats["label"] = self._stats["record"].apply(lambda s:self.load_label(s))
+        if self._stats.empty or set(self._stats_columns) != set(self._stats.columns):
+            print("Please wait patiently to let the reader aggregate statistics on the whole dataset...")
+            start = time.time()
+            self._stats = pd.DataFrame(self.all_records, columns=["record"])  # use self.all_records to ensure it's computed
+            self._stats["tranche"] = self._stats["record"].apply(lambda s: self._all_records_inv[s])
+            self._stats["subject_id"] = self._stats["record"].apply(lambda s: int(s.split("_")[1]))
+            self._stats["record_id"] = self._stats["record"].apply(lambda s: int(s.split("_")[2]))
+            self._stats["label"] = self._stats["record"].apply(lambda s: self.load_label(s))
+            self._stats["fs"] = self.fs
+            self._stats["sig_len"] = self._stats["record"].apply(lambda s: wfdb.rdheader(self._get_path(s)).sig_len)
+            self._stats = self._stats.sort_values(by=["subject_id", "record_id"], ignore_index=True)
+            self._stats = self._stats[self._stats_columns]
             self._stats.to_csv(stats_file_fp, index=False)
+            self._stats.to_csv(stats_file_fp_aux, index=False)
+            print(f"Done in {time.time() - start:.5f} seconds!")
         else:
             pass  # currently no need to parse the loaded csv file
+        self.__all_records = self._stats["record"].tolist()
     
 
     @property
     def all_subjects(self):
         """
         """
-        return self._all_subjects
+        return self.__all_subjects
 
 
     @property
@@ -224,18 +270,22 @@ class CPSC2021(OtherDataBase):
         list all the records for all diagnoses
         """
         fn = "diagnoses_records_list.json"
-        dr_fp = os.path.join(self.db_dir, fn)
+        dr_fp = os.path.join(self.db_dir_base, fn)
         if os.path.isfile(dr_fp):
             with open(dr_fp, "r") as f:
                 self._diagnoses_records_list = json.load(f)
         else:
-            print("Please wait several minutes patiently to let the reader list records for each diagnosis...")
             start = time.time()
-            self._diagnoses_records_list = {d: [] for d in self._labels_f2a.values()}
-            for rec in self._all_records:
-                lb = self.load_label(rec)
-                self._diagnoses_records_list[lb].append(rec)
-            print(f"Done in {time.time() - start:.5f} seconds!")
+            if self.df_stats.empty:
+                print("Please wait several minutes patiently to let the reader list records for each diagnosis...")
+                self._diagnoses_records_list = {d: [] for d in self._labels_f2a.values()}
+                for rec in self.all_records:
+                    lb = self.load_label(rec)
+                    self._diagnoses_records_list[lb].append(rec)
+                print(f"Done in {time.time() - start:.5f} seconds!")
+            else:
+                self._diagnoses_records_list = \
+                    {d: self.df_stats[self.df_stats["label"]==d]["record"].tolist() for d in self._labels_f2a.values()}
             with open(dr_fp, "w") as f:
                 json.dump(self._diagnoses_records_list, f)
         self._diagnoses_records_list = ED(self._diagnoses_records_list)
@@ -265,6 +315,15 @@ class CPSC2021(OtherDataBase):
         """
         sid = int(rec.split("_")[1])
         return sid
+
+
+    def _get_path(self, rec:str, ext:Optional[str]=None) -> str:
+        """
+        """
+        p = os.path.join(self.db_dirs[self._all_records_inv[rec]], rec)
+        if ext:
+            p += f".{ext}"
+        return p
 
 
     def load_data(self, rec:str, leads:Optional[Union[str, List[str]]]=None, data_format:str="channel_first", units:str="mV", fs:Optional[Real]=None) -> np.ndarray:
@@ -302,7 +361,7 @@ class CPSC2021(OtherDataBase):
             _leads = leads
         assert all([l in self.all_leads for l in _leads])
 
-        rec_fp = os.path.join(self.db_dir, rec)
+        rec_fp = self._get_path(rec)
         wfdb_rec = wfdb.rdrecord(rec_fp, physical=True, channel_names=_leads)
         data = np.asarray(wfdb_rec.p_signal.T)
         # lead_units = np.vectorize(lambda s: s.lower())(wfdb_rec.units)
@@ -382,7 +441,7 @@ class CPSC2021(OtherDataBase):
         rpeaks: ndarray,
             position (in terms of samples) of rpeaks of the record
         """
-        rpeaks = wfdb.rdann(os.path.join(self.db_dir, rec), extension=self.ann_ext).sample
+        rpeaks = wfdb.rdann(self._get_path(rec), extension=self.ann_ext).sample
         if fs is not None and fs!=self.fs:
             rpeaks = np.round(rpeaks * fs / self.fs + self._epsilon).astype(int)
         return rpeaks
@@ -407,10 +466,10 @@ class CPSC2021(OtherDataBase):
         af_episodes: list or ndarray,
             episodes of atrial fibrillation, in terms of intervals or mask
         """
-        header = wfdb.rdheader(os.path.join(self.db_dir, rec))
+        header = wfdb.rdheader(self._get_path(rec))
         label = self._labels_f2a[header.comments[0]]
         siglen = header.sig_len
-        ann = wfdb.rdann(os.path.join(self.db_dir, rec), extension=self.ann_ext)
+        ann = wfdb.rdann(self._get_path(rec), extension=self.ann_ext)
         aux_note = np.array(ann.aux_note)
         rpeaks = ann.sample
         af_start_inds = np.where((aux_note=="(AFIB") | (aux_note=="(AFL"))[0]  # ref. NOTE 3.
@@ -465,7 +524,7 @@ class CPSC2021(OtherDataBase):
         label: str,
             classifying label of the record
         """
-        header = wfdb.rdheader(os.path.join(self.db_dir, rec))
+        header = wfdb.rdheader(self._get_path(rec))
         label = header.comments[0]
         if fmt.lower() in ["a", "abbr", "abbreviation"]:
             label = self._labels_f2a[label]
