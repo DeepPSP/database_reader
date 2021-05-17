@@ -551,9 +551,14 @@ class PhysioNetDataBase(_DataBase):
         print corr. meanings of symbols belonging to `items`
 
         Parameters:
+        -----------
         items: str, or list of str, optional,
             the items to print,
             if not specified, then a comprehensive printing of meanings of all symbols will be performed
+
+        References:
+        -----------
+        [1] https://archive.physionet.org/physiobank/annotations.shtml
         """
         attrs = vars(self)
         methods = [func for func in dir(self) if callable(getattr(self, func)) and not (func.startswith("__") and func.endswith("__"))]
@@ -656,7 +661,7 @@ class NSRRDataBase(_DataBase):
         self.kwargs = kwargs
 
 
-    def safe_edf_file_operation(self, operation:str="close", full_file_path:Optional[str]=None) -> Union[EdfReader, NoReturn]:
+    def safe_edf_file_operation(self, operation:str="close", full_file_path:Optional[str]=None) -> NoReturn:
         """ finished, checked,
 
         Parameters:
@@ -666,10 +671,6 @@ class NSRRDataBase(_DataBase):
         full_file_path: str, optional,
             path of the file which contains the psg data,
             if not given, default path will be used
-        
-        Returns:
-        --------
-
         """
         if operation == "open":
             if self.file_opened is not None:
