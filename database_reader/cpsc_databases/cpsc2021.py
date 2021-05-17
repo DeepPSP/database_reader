@@ -25,7 +25,10 @@ from ..utils.common import (
     DEFAULT_FIG_SIZE_PER_SEC,
 )
 from ..utils.utils_universal import generalized_intervals_intersection
-from ..base import OtherDataBase
+from ..base import (
+    OtherDataBase,
+    WFDB_Beat_Annotations, WFDB_Non_Beat_Annotations, WFDB_Rhythm_Annotations,
+)
 
 
 __all__ = [
@@ -84,6 +87,8 @@ class CPSC2021(OtherDataBase):
     2. it can be inferred from the classification scoring matrix that the punishment of false negatives of AFf is very heavy, while mixing-up of AFf and AFp is not punished
     3. flag of atrial fibrillation and atrial flutter ("AFIB" and "AFL") in annotated information are seemed as the same type when scoring the method
     4. the 3 classes can coexist in ONE subject (not one record). For example, subject 61 has 6 records with label "N", 1 with label "AFp", and 2 with label "AFf"
+    5. rhythm change annotations ("(AFIB", "(AFL", "(N" in the `aux_note` field or "+" in the `symbol` field of the annotation files) are inserted 0.15s ahead of or behind (onsets or offset resp.) of corresponding R peaks.
+    6. some records are revised if there are heart beats of the AF episode or the pause between adjacent AF episodes less than 5. The id numbers of the revised records are summarized in the attached REVISED_RECORDS
 
     ISSUES:
     -------
@@ -139,6 +144,7 @@ class CPSC2021(OtherDataBase):
          self.nb_records = ED({"training_I":730, "training_II":706})
         self._all_records = ED({t:[] for t in self.db_tranches})
         self.__all_records = None
+        self.__revised_records = []
         self._all_subjects = ED({t:[] for t in self.db_tranches})
         self.__all_subjects = None
         self._subject_records = ED({t:[] for t in self.db_tranches})
@@ -217,11 +223,8 @@ class CPSC2021(OtherDataBase):
         """
         stats_file = "stats.csv"
         stats_file_fp = os.path.join(self.db_dir_base, stats_file)
-        stats_file_fp_aux = os.path.join(_BASE_DIR, "utils", stats_file)
         if os.path.isfile(stats_file_fp):
             self._stats = pd.read_csv(stats_file_fp)
-        elif os.path.isfile(stats_file_fp_aux):
-            self._stats = pd.read_csv(stats_file_fp_aux)
         
         if self._stats.empty or set(self._stats_columns) != set(self._stats.columns):
             print("Please wait patiently to let the reader aggregate statistics on the whole dataset...")
@@ -233,10 +236,10 @@ class CPSC2021(OtherDataBase):
             self._stats["label"] = self._stats["record"].apply(lambda s: self.load_label(s))
             self._stats["fs"] = self.fs
             self._stats["sig_len"] = self._stats["record"].apply(lambda s: wfdb.rdheader(self._get_path(s)).sig_len)
+            self._stats["revised"] = self._stats["record"].apply(lambda s: 1 if s in self.__revised_records else 0)
             self._stats = self._stats.sort_values(by=["subject_id", "record_id"], ignore_index=True)
             self._stats = self._stats[self._stats_columns]
             self._stats.to_csv(stats_file_fp, index=False)
-            self._stats.to_csv(stats_file_fp_aux, index=False)
             print(f"Done in {time.time() - start:.5f} seconds!")
         else:
             pass  # currently no need to parse the loaded csv file
@@ -338,7 +341,44 @@ class CPSC2021(OtherDataBase):
         return p
 
 
-    def load_data(self, rec:str, leads:Optional[Union[str, List[str]]]=None, data_format:str="channel_first", units:str="mV", fs:Optional[Real]=None) -> np.ndarray:
+    def _validate_samp_interval(self,
+                                rec: str,
+                                sampfrom:Optional[int]=None,
+                                sampto:Optional[int]=None,) -> Tuple[int, int]:
+        """ finished, checked,
+        validate `sampfrom` and `sampto` so that they are reasonable
+
+        Parameters:
+        -----------
+        rec: str,
+            name of the record
+        sampfrom: int, optional,
+            start index of the data to be loaded
+        sampto: int, optional,
+            end index of the data to be loaded
+
+        Returns:
+        --------
+        (sf, st): tuple of int,
+        sf: int,
+            index sampling from
+        st: int,
+            index sampling to
+        """
+        sf, st = sampfrom or 0, sampto or self.df_stats[self.df_stats.record==rec].iloc[0].sig_len
+        if sf >= st:
+            raise ValueError("Invalid `sampfrom` and `sampto`")
+        return sf, st
+
+
+    def load_data(self,
+                  rec:str,
+                  leads:Optional[Union[str, List[str]]]=None,
+                  data_format:str="channel_first",
+                  units:str="mV",
+                  sampfrom:Optional[int]=None,
+                  sampto:Optional[int]=None,
+                  fs:Optional[Real]=None) -> np.ndarray:
         """ finished, checked,
 
         load physical (converted from digital) ecg data,
@@ -356,6 +396,10 @@ class CPSC2021(OtherDataBase):
             "channel_first" (alias "lead_first")
         units: str, default "mV",
             units of the output signal, can also be "μV", with an alias of "uV"
+        sampfrom: int, optional,
+            start index of the data to be loaded
+        sampto: int, optional,
+            end index of the data to be loaded
         fs: real number, optional,
             if not None, the loaded data will be resampled to this sampling frequency
         
@@ -374,7 +418,8 @@ class CPSC2021(OtherDataBase):
         assert all([l in self.all_leads for l in _leads])
 
         rec_fp = self._get_path(rec)
-        wfdb_rec = wfdb.rdrecord(rec_fp, physical=True, channel_names=_leads)
+        sf, st = self._validate_samp_interval(rec, sampfrom, sampto)
+        wfdb_rec = wfdb.rdrecord(rec_fp, sampfrom=sf, sampto=st, physical=True, channel_names=_leads)
         data = np.asarray(wfdb_rec.p_signal.T)
         # lead_units = np.vectorize(lambda s: s.lower())(wfdb_rec.units)
 
@@ -390,7 +435,12 @@ class CPSC2021(OtherDataBase):
         return data
 
     
-    def load_ann(self, rec:str, field:Optional[str]=None, **kwargs:Any) -> Union[dict, np.ndarray, List[List[int]], str]:
+    def load_ann(self,
+                 rec:str,
+                 field:Optional[str]=None,
+                 sampfrom:Optional[int]=None,
+                 sampto:Optional[int]=None,
+                 **kwargs:Any) -> Union[dict, np.ndarray, List[List[int]], str]:
         """ finished, checked,
 
         load annotations of the record
@@ -400,8 +450,13 @@ class CPSC2021(OtherDataBase):
         rec: str,
             name of the record
         field: str, optional
-            field of the annotation, can be one of "rpeaks", "af_episodes", "label",
-            if not specified, all fields of the annotation will be returned in the form of a dict
+            field of the annotation, can be one of "rpeaks", "af_episodes", "label", "raw", "wfdb",
+            if not specified, all fields of the annotation will be returned in the form of a dict,
+            if is "raw" or "wfdb", then the corresponding wfdb "Annotation" will be returned
+        sampfrom: int, optional,
+            start index of the data to be loaded
+        sampto: int, optional,
+            end index of the data to be loaded
         kwargs: dict,
             key word arguments for functions loading rpeaks, af_episodes, and label respectively,
             including:
@@ -417,26 +472,37 @@ class CPSC2021(OtherDataBase):
         ann: dict, or list, or ndarray, or str,
             annotaton of the record
         """
+        sf, st = self._validate_samp_interval(rec, sampfrom, sampto)
+        ann = wfdb.rdann(self._get_path(rec), extension=self.ann_ext, sampfrom=sf, sampto=st)
+        # `load_af_episodes` should not use sampfrom, sampto
         func = {
             "rpeaks": self.load_rpeaks,
             "af_episodes": self.load_af_episodes,
             "label": self.load_label,
         }
         if field is None:
-            ann = {k: f(rec) for k,f in func.items()}
+            ann = {k: f(rec, ann, sf, st) for k,f in func.items()}
             if kwargs:
                 warnings.warn(f"key word arguments {list(kwargs.keys())} ignored when field is not specified!")
+            return ann
+        elif field.lower() in ["raw", "wfdb",]:
             return ann
 
         try:
             f = func[field.lower()]
         except:
             raise ValueError(f"invalid field")
-        ann = f(rec, **kwargs)
+        ann = f(rec, ann, sf, st, **kwargs)
         return ann
 
 
-    def load_rpeaks(self, rec:str, fs:Optional[Real]=None) -> np.ndarray:
+    def load_rpeaks(self,
+                    rec:str,
+                    ann:Optional[wfdb.Annotation]=None,
+                    sampfrom:Optional[int]=None,
+                    sampto:Optional[int]=None,
+                    zero_start:bool=False,
+                    fs:Optional[Real]=None) -> np.ndarray:
         """ finished, checked,
 
         load position (in terms of samples) of rpeaks
@@ -445,6 +511,17 @@ class CPSC2021(OtherDataBase):
         -----------
         rec: str,
             name of the record
+        ann: Annotation, optional,
+            the wfdb Annotation of the record,
+            if None, corresponding annotation file will be read
+        sampfrom: int, optional,
+            start index of the data to be loaded
+        sampto: int, optional,
+            end index of the data to be loaded
+        zero_start: bool, default False,
+            if True, (relative) start index is zero,
+            otherwise, (relative) start index is `sampfrom`,
+            works only when `sampfrom` is positive
         fs: real number, optional,
             if not None, positions of the loaded rpeaks will be ajusted according to this sampling frequency
 
@@ -453,13 +530,28 @@ class CPSC2021(OtherDataBase):
         rpeaks: ndarray,
             position (in terms of samples) of rpeaks of the record
         """
-        rpeaks = wfdb.rdann(self._get_path(rec), extension=self.ann_ext).sample
+        if ann is None:
+            sf, st = self._validate_samp_interval(rec, sampfrom, sampto)
+            ann = wfdb.rdann(self._get_path(rec), extension=self.ann_ext, sampfrom=sf, sampto=st)
+        critical_points = ann.sample
+        symbols = ann.symbol
+        rpeaks_valid = np.isin(symbols, list(WFDB_Beat_Annotations.keys()))
+        if sampfrom and zero_start:
+            critical_points = critical_points - sampfrom
         if fs is not None and fs!=self.fs:
-            rpeaks = np.round(rpeaks * fs / self.fs + self._epsilon).astype(int)
+            critical_points = np.round(critical_points * fs / self.fs + self._epsilon).astype(int)
+        rpeaks = critical_points[rpeaks_valid]
         return rpeaks
 
 
-    def load_af_episodes(self, rec:str, fs:Optional[Real]=None, fmt:str="intervals") -> Union[List[List[int]], np.ndarray]:
+    def load_af_episodes(self,
+                         rec:str,
+                         ann:Optional[wfdb.Annotation]=None,
+                         sampfrom:Optional[int]=None,
+                         sampto:Optional[int]=None,
+                         zero_start:bool=False,
+                         fs:Optional[Real]=None,
+                         fmt:str="intervals") -> Union[List[List[int]], np.ndarray]:
         """ finished, checked,
 
         load the episodes of atrial fibrillation, in terms of intervals or mask
@@ -468,10 +560,23 @@ class CPSC2021(OtherDataBase):
         ----------
         rec: str,
             name of the record
+        ann: Annotation, optional,
+            the wfdb Annotation of the record,
+            if None, corresponding annotation file will be read
+        sampfrom: int, optional,
+            start index of the data to be loaded,
+            not used when `fmt` is "c_intervals"
+        sampto: int, optional,
+            end index of the data to be loaded,
+            not used when `fmt` is "c_intervals"
+        zero_start: bool, default False,
+            if True, (relative) start index is zero,
+            otherwise, (relative) start index is `sampfrom`,
+            works only when `sampfrom` is positive and `fmt` is not "c_intervals"
         fs: real number, optional,
             if not None, positions of the loaded intervals or mask will be ajusted according to this sampling frequency
         fmt: str, default "intervals",
-            format of the episodes of atrial fibrillation, can be one of "intervals", "mask"
+            format of the episodes of atrial fibrillation, can be one of "intervals", "mask", "c_intervals"
 
         Returns:
         --------
@@ -481,38 +586,62 @@ class CPSC2021(OtherDataBase):
         header = wfdb.rdheader(self._get_path(rec))
         label = self._labels_f2a[header.comments[0]]
         siglen = header.sig_len
-        ann = wfdb.rdann(self._get_path(rec), extension=self.ann_ext)
-        aux_note = np.array(ann.aux_note)
-        rpeaks = ann.sample
+        # if ann is None or fmt.lower() in ["c_intervals",]:
+        #     _ann = wfdb.rdann(self._get_path(rec), extension=self.ann_ext)
+        # else:
+        #     _ann = ann
+        _ann = wfdb.rdann(self._get_path(rec), extension=self.ann_ext)
+        sf, st = self._validate_samp_interval(rec, sampfrom, sampto)
+        aux_note = np.array(_ann.aux_note)
+        critical_points = _ann.sample
         af_start_inds = np.where((aux_note=="(AFIB") | (aux_note=="(AFL"))[0]  # ref. NOTE 3.
         af_end_inds = np.where(aux_note=="(N")[0]
         assert len(af_start_inds) == len(af_end_inds), \
             "unequal number of af period start indices and af period end indices"
+
+        if fmt.lower() in ["c_intervals",]:
+            if sf > 0 or st < siglen:
+                raise ValueError(f"when `fmt` is `c_intervals`, `sampfrom` and `sampto` should never be used!")
+            af_episodes = [[start, end] for start, end in zip(af_start_inds, af_end_inds)]
+            return af_episodes
+
         intervals = []
         for start, end in zip(af_start_inds, af_end_inds):
-            itv = [rpeaks[start], rpeaks[end]]
+            itv = [critical_points[start], critical_points[end]]
             intervals.append(itv)
+        intervals = generalized_intervals_intersection(intervals, [[sf, st]])
+
+        siglen = st - sf
         if fs is not None and fs != self.fs:
+            siglen = self._round(siglen*fs/self.fs)
+            sf = self._round(sf*fs/self.fs)
             if label == "AFf":
                 # ref. NOTE. 1 of the class docstring
                 # the `ann.sample` does not always satify this point after resampling
-                intervals = [[0, self._round(siglen*fs/self.fs)-1]]
+                intervals = [[sf, siglen-1]]
             else:
                 intervals = [[self._round(itv[0]*fs/self.fs), self._round(itv[1]*fs/self.fs)] for itv in intervals]
+
+        if zero_start:
+            intervals = [[itv[0]-sf, itv[1]-sf] for itv in intervals]
+            sf = 0
         af_episodes = intervals
 
         if fmt.lower() in ["mask",]:
-            if fs is not None and fs != self.fs:
-                siglen = self._round(siglen*fs/self.fs)
             mask = np.zeros((siglen,), dtype=int)
             for itv in intervals:
-                mask[itv[0]:itv[1]] = 1
+                mask[itv[0]-sf:itv[1]-sf] = 1
             af_episodes = mask
 
         return af_episodes
 
 
-    def load_label(self, rec:str, fmt:str="a") -> str:
+    def load_label(self,
+                   rec:str,
+                   ann:Optional[wfdb.Annotation]=None,
+                   sampfrom:Optional[int]=None,
+                   sampto:Optional[int]=None,
+                   fmt:str="a") -> str:
         """ finished, checked,
 
         load (classifying) label of the record,
@@ -525,6 +654,12 @@ class CPSC2021(OtherDataBase):
         -----------
         rec: str,
             name of the record
+        ann: Annotation, optional,
+            not used, to keep in accordance with other methods
+        sampfrom: int, optional,
+            not used, to keep in accordance with other methods
+        sampto: int, optional,
+            not used, to keep in accordance with other methods
         fmt: str, default "a",
             format of the label, case in-sensitive, can be one of:
             "f", "fullname": the full name of the label
@@ -547,7 +682,16 @@ class CPSC2021(OtherDataBase):
         return label
 
 
-    def plot(self, rec:str, data:Optional[np.ndarray]=None, ann:Optional[Dict[str, np.ndarray]]=None, ticks_granularity:int=0, leads:Optional[Union[str, List[str]]]=None, waves:Optional[Dict[str, Sequence[int]]]=None, **kwargs) -> NoReturn:
+    def plot(self,
+             rec:str,
+             data:Optional[np.ndarray]=None,
+             ann:Optional[Dict[str, np.ndarray]]=None,
+             ticks_granularity:int=0,
+             sampfrom:Optional[int]=None,
+             sampto:Optional[int]=None, 
+             leads:Optional[Union[str, List[str]]]=None,
+             waves:Optional[Dict[str, Sequence[int]]]=None,
+             **kwargs) -> NoReturn:
         """ finished, checked, to improve,
 
         plot the signals of a record or external signals (units in μV),
@@ -569,6 +713,10 @@ class CPSC2021(OtherDataBase):
         ticks_granularity: int, default 0,
             the granularity to plot axis ticks, the higher the more,
             0 (no ticks) --> 1 (major ticks) --> 2 (major + minor ticks)
+        sampfrom: int, optional,
+            start index of the data to plot
+        sampto: int, optional,
+            end index of the data to plot
         leads: str or list of str, optional,
             the leads to plot
         waves: dict, optional,
@@ -604,7 +752,14 @@ class CPSC2021(OtherDataBase):
         assert all([l in self.all_leads for l in _leads])
 
         if data is None:
-            _data = self.load_data(rec, leads=_leads, data_format="channel_first", units="μV")
+            _data = self.load_data(
+                rec,
+                leads=_leads,
+                data_format="channel_first",
+                units="μV",
+                sampfrom=sampfrom,
+                sampto=sampto,
+            )
         else:
             units = self._auto_infer_units(data)
             print(f"input data is auto detected to have units in {units}")
@@ -614,6 +769,8 @@ class CPSC2021(OtherDataBase):
                 _data = data
             assert _data.shape[0] == len(_leads), \
                 f"number of leads from data of shape ({_data.shape[0]}) does not match the length ({len(_leads)}) of `leads`"
+
+        sf, st = (sampfrom or 0), (sampto or len(_data))
 
         if waves:
             if waves.get("p_onsets", None) and waves.get("p_offsets", None):
@@ -669,9 +826,10 @@ class CPSC2021(OtherDataBase):
         plot_alpha = 0.4
 
         if ann is None or data is None:
-            _ann = self.load_ann(rec)
+            _ann = self.load_ann(rec, sampfrom=sampfrom, sampto=sampto)
             rpeaks = _ann["rpeaks"]
             af_episodes = _ann["af_episodes"]
+            af_episodes = [[itv[0]-sf, itv[1]-sf] for itv in af_episodes]
             label = _ann["label"]
         else:
             rpeaks = ann.get("rpeaks", [])
@@ -689,7 +847,7 @@ class CPSC2021(OtherDataBase):
 
         for idx in range(nb_lines):
             seg = _data[..., idx*line_len: (idx+1)*line_len]
-            secs = (np.arange(seg.shape[1]) + idx*line_len) / self.fs
+            secs = (sf + np.arange(seg.shape[1]) + idx*line_len) / self.fs
             fig_sz_w = int(round(DEFAULT_FIG_SIZE_PER_SEC * seg.shape[1] / self.fs))
             # if same_range:
             #     y_ranges = np.ones((seg.shape[0],)) * np.max(np.abs(seg)) + 100
