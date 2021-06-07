@@ -5,7 +5,7 @@ import os, io, sys
 import re
 import json
 import time
-# import pprint
+import warnings
 from copy import deepcopy
 from datetime import datetime
 from typing import Union, Optional, Any, List, Dict, Tuple, Set, Sequence, NoReturn
@@ -311,16 +311,24 @@ class CINC2021(PhysioNetDataBase):
         self._all_records = ED(self._all_records)
 
 
-    def _aggregate_stats(self) -> NoReturn:
+    def _aggregate_stats(self, fast:bool=False) -> NoReturn:
         """ finished, checked,
 
         aggregate stats on the whole dataset
+
+        Parameters:
+        -----------
+        fast: bool, default False,
+            if True, only load the cached stats,
+            otherwise aggregate from scratch
         """
         stats_file = "stats.csv"
         list_sep = ";"
         stats_file_fp = os.path.join(self.db_dir_base, stats_file)
         if os.path.isfile(stats_file_fp):
             self._stats = pd.read_csv(stats_file_fp)
+        if fast:
+            return
         if self._stats.empty or self._stats_columns != set(self._stats.columns):
             print("Please wait patiently to let the reader collect statistics on the whole dataset...")
             start = time.time()
@@ -385,6 +393,8 @@ class CINC2021(PhysioNetDataBase):
     def df_stats(self):
         """
         """
+        if self._stats.empty:
+            warnings.warn("the dataframe of stats is empty, try using _aggregate_stats")
         return self._stats
 
 
