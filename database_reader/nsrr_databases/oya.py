@@ -31,27 +31,27 @@ class OYA(NSRRDataBase):
 
     One Year of Actigraphy
 
-    ABOUT oya:
-    ----------
+    ABOUT oya
+    ---------
     to write
 
-    NOTE:
-    -----
+    NOTE
+    ----
 
-    ISSUES:
-    -------
-
-    Usage:
+    ISSUES
     ------
 
-    References:
-    -----------
+    Usage
+    -----
+
+    References
+    ----------
     [1] https://sleepdata.org/datasets/oya
     """
     def __init__(self, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
-        Parameters:
-        -----------
+        Parameters
+        ----------
         db_dir: str,
             storage path of the database
         working_dir: str, optional,
@@ -65,13 +65,13 @@ class OYA(NSRRDataBase):
         """
         Attach a `subject_id` to the record, in order to facilitate further uses
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: str,
             record name
 
-        Returns:
-        --------
+        Returns
+        -------
         int, a `subject_id` attached to the record `rec`
         """
         raise NotImplementedError

@@ -34,32 +34,32 @@ class LTAFDB(PhysioNetDataBase):
 
     Long Term AF Database
 
-    ABOUT ltafdb:
-    -------------
+    ABOUT ltafdb
+    ------------
     1. contains 84 long-term ECG recordings of subjects with paroxysmal or sustained atrial fibrillation
     2. each record contains two simultaneously recorded ECG signals digitized at 128 Hz
     3. records have duration 24 - 25 hours
     4. qrs annotations (.qrs files) were produced by an automated QRS detector, in which detected beats (including occasional ventricular ectopic beats) are labelled "N", detected artifacts are labelled "|", and AF terminations are labelled "T" (inserted manually)
     5. atr annotations (.atr files) were obtained by manual review of the output of an automated ECG analysis system; in these annotation files, all detected beats are labelled by type ('"', "+", "A", "N", "Q", "V"), and rhythm changes ("\x01 Aux", "(AB", "(AFIB", "(B", "(IVR", "(N", "(SBR", "(SVTA", "(T", "(VT", "M", "MB", "MISSB", "PSE") are also annotated
 
-    NOTE:
-    -----
+    NOTE
+    ----
     1. both channels of the signals have name "ECG"
     2. the automatically generated qrs annotations (.qrs files) contains NO rhythm annotations
     3. `aux_note` of .atr files of all but one ("64") record start with valid rhythms, all but one end with "" ("30" ends with "\x01 Aux")
     4. for more statistics on the whole database, see ref. [3]
 
-    ISSUES:
-    -------
-
-    Usage:
+    ISSUES
     ------
+
+    Usage
+    -----
     1. AF detection
     2. (3 or 4) beat type classification
     3. rhythm classification
 
-    References:
-    -----------
+    References
+    ----------
     [1] https://physionet.org/content/ltafdb/1.0.0/
     [2] Petrutiu S, Sahakian AV, Swiryn S. Abrupt changes in fibrillatory wave characteristics at the termination of paroxysmal atrial fibrillation in humans. Europace 9:466-470 (2007).
     [3] https://physionet.org/files/ltafdb/1.0.0/tables.shtml
@@ -67,8 +67,8 @@ class LTAFDB(PhysioNetDataBase):
     def __init__(self, db_dir:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """ finished, checked,
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         db_dir: str, optional,
             storage path of the database
             if not specified, data will be fetched from Physionet
@@ -111,13 +111,13 @@ class LTAFDB(PhysioNetDataBase):
     def get_subject_id(self, rec:str) -> int:
         """ NOT finished,
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: str,
             name of the record
 
-        Returns:
-        --------
+        Returns
+        -------
         sid: int,
             the `get_subject_id` corr. to `rec`
         """
@@ -130,8 +130,8 @@ class LTAFDB(PhysioNetDataBase):
         load physical (converted from digital) ecg data,
         which is more understandable for humans
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: str,
             name of the record
         leads: int or list of int, optional,
@@ -149,8 +149,8 @@ class LTAFDB(PhysioNetDataBase):
         fs: real number, optional,
             if not None, the loaded data will be resampled to this frequency
         
-        Returns:
-        --------
+        Returns
+        -------
         data: ndarray,
             the ecg data
         """
@@ -186,8 +186,8 @@ class LTAFDB(PhysioNetDataBase):
         which are stored in the `aux_note` attribute of corresponding annotation files.
         NOTE that qrs annotations (.qrs files) do NOT contain any rhythm annotations
         
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: str,
             name of the record
         sampfrom: int, optional,
@@ -200,8 +200,8 @@ class LTAFDB(PhysioNetDataBase):
             if True, indices will keep the same with the annotation file
             otherwise subtract `sampfrom` if specified
         
-        Returns:
-        --------
+        Returns
+        -------
         ann, dict or ndarray,
             the annotations in the format of intervals, or in the format of mask
 
@@ -270,8 +270,8 @@ class LTAFDB(PhysioNetDataBase):
         load beat annotations,
         which are stored in the `symbol` attribute of corresponding annotation files
         
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: str,
             name of the record
         sampfrom: int, optional,
@@ -282,8 +282,8 @@ class LTAFDB(PhysioNetDataBase):
             if True, indices will keep the same with the annotation file
             otherwise subtract `sampfrom` if specified
         
-        Returns:
-        --------
+        Returns
+        -------
         ann, dict,
             locations (indices) of the all the beat types ("A", "N", "Q", "V",)
         """
@@ -319,8 +319,8 @@ class LTAFDB(PhysioNetDataBase):
         which are stored in the `symbol` attribute of corresponding annotation files,
         regardless of their beat types,
         
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: str,
             name of the record
         sampfrom: int, optional,
@@ -334,8 +334,8 @@ class LTAFDB(PhysioNetDataBase):
             if True, indices will keep the same with the annotation file
             otherwise subtract `sampfrom` if specified
         
-        Returns:
-        --------
+        Returns
+        -------
         ann, ndarray,
             locations (indices) of the all the rpeaks (qrs complexes)
         """
@@ -363,8 +363,8 @@ class LTAFDB(PhysioNetDataBase):
         with metadata (fs, labels, tranche, etc.),
         possibly also along with wave delineations
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: str,
             name of the record
         data: ndarray, optional,

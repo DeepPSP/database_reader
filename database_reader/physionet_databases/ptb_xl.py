@@ -28,8 +28,8 @@ class PTB_XL(PhysioNetDataBase):
 
     PTB-XL, a large publicly available electrocardiography dataset
 
-    ABOUT ptb-xl:
-    -------------
+    ABOUT ptb-xl
+    ------------
     1. consists of 21837 clinical 12-lead ECGs from 18885 patients of 10 second length between October 1989 and June 1996
     2. data was annotated by up to two cardiologists, who assigned potentially multiple ECG statements to each record. The in total 71 different ECG statements conform to the SCP-ECG standard and cover diagnostic, form, and rhythm statements
     3. original sampling frequency is 500Hz (stored in the folder ./records500); 100Hz down-sampled data are stored in the folder ./records100
@@ -53,26 +53,26 @@ class PTB_XL(PhysioNetDataBase):
     6. the "scp_codes" are organized in the form of dict with "statement: likelihood" as key, value pairs
     7. the file ./scp_statements.csv stores mappings to other annotation standards such as AHA, aECGREFID, CDISC and DICOM, and side-information such as the category each statement can be assigned to (diagnostic, form and/or rhythm). For diagnostic statements, a proposed hierarchical organization into "diagnostic_class" and "diagnostic_subclass" is provided.
 
-    NOTE:
-    -----
+    NOTE
+    ----
     1. in the "scp_codes" column, which is of the form "statement: likelihood", the likelihood is set to 0 if unknown
 
-    ISSUES:
-    -------
-
-    Usage:
+    ISSUES
     ------
+
+    Usage
+    -----
     1. ECG arrhythmia detection
 
-    References:
-    -----------
+    References
+    ----------
     [1] https://physionet.org/content/ptb-xl/1.0.1/
     [2] https://physionetchallenges.github.io/2020/
     """
     def __init__(self, db_dir:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
-        Parameters:
-        -----------
+        Parameters
+        ----------
         db_dir: str, optional,
             storage path of the database
             if not specified, data will be fetched from Physionet

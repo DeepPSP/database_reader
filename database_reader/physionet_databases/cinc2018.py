@@ -28,8 +28,8 @@ class CINC2018(PhysioNetDataBase):
 
     You Snooze You Win - The PhysioNet Computing in Cardiology Challenge 2018
 
-    ABOUT CINC2018:
-    ---------------
+    ABOUT CINC2018
+    --------------
     1. includes 1,985 subjects, partitioned into balanced training (n = 994), and test sets (n = 989)
     2. signals include
         electrocardiogram (ECG),
@@ -62,26 +62,26 @@ class CINC2018(PhysioNetDataBase):
         Cheyne-Stokes breathing,
         partial airway obstructions
 
-    NOTE:
-    -----
+    NOTE
+    ----
 
-    ISSUES:
-    -------
-
-    Usage:
+    ISSUES
     ------
+
+    Usage
+    -----
     1. sleep stage
     2. sleep apnea
 
-    References:
-    -----------
+    References
+    ----------
     [1] https://physionet.org/content/challenge-2018/1.0.0/
     """
     def __init__(self, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """ NOT finished, NOT checked,
         
-        Parameters:
-        -----------
+        Parameters
+        ----------
         db_dir: str, optional,
             storage path of the database
         working_dir: str, optional,
@@ -100,13 +100,13 @@ class CINC2018(PhysioNetDataBase):
     def get_subject_id(self, rec:str) -> int:
         """ finished, checked,
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: str,
             name of the record
 
-        Returns:
-        --------
+        Returns
+        -------
         pid: int,
             the `subject_id` corr. to `rec`
         """

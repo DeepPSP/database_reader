@@ -40,8 +40,8 @@ class CPSC2018(OtherDataBase):
     The China Physiological Signal Challenge 2018:
     Automatic identification of the rhythm/morphology abnormalities in 12-lead ECGs
 
-    ABOUT CPSC2018:
-    ---------------
+    ABOUT CPSC2018
+    --------------
     1. training set contains 6,877 (female: 3178; male: 3699) 12 leads ECG recordings lasting from 6 s to just 60 s
     2. ECG recordings were sampled as 500 Hz
     3. the training data can be downloaded using links in Ref.[1], but the link in Ref.[2] is recommended. File structure will be assumed to follow Ref.[2]
@@ -62,23 +62,23 @@ class CPSC2018(OtherDataBase):
     7. meanings in the .hea files: to write
     8. knowledge about the abnormal rhythms: ref. cls.get_disease_knowledge
 
-    Update:
-    -------
+    Update
+    ------
     CINC2020 (ref. [2]) released totally 3453 unused training data of CPSC2018, whose filenames start with "Q". These file names are not "continuous". The last record is "Q3581"
 
-    NOTE:
-    -----
+    NOTE
+    ----
     1. Ages of records A0608, A1549, A1876, A2299, A5990 are "NaN"
 
-    ISSUES:
-    -------
-
-    Usage:
+    ISSUES
     ------
+
+    Usage
+    -----
     1. ecg arrythmia detection
 
-    References:
-    -----------
+    References
+    ----------
     [1] http://2018.icbeb.org/#
     [2] https://physionetchallenges.github.io/2020/
     [3] 
@@ -86,8 +86,8 @@ class CPSC2018(OtherDataBase):
     def __init__(self, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """ finished, to be improved,
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         db_dir: str,
             storage path of the database
         working_dir: str, optional,
@@ -136,13 +136,13 @@ class CPSC2018(OtherDataBase):
     def get_subject_id(self, rec_no:Union[int,str]) -> int:
         """ not finished,
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec_no: int or str,
             number of the record, NOTE that rec_no starts from 1; or name of the record
 
-        Returns:
-        --------
+        Returns
+        -------
         pid: int,
             the `subject_id` corr. to `rec_no`
         """
@@ -160,8 +160,8 @@ class CPSC2018(OtherDataBase):
 
         print the information about the database
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         detailed: bool, default False,
             if False, an short introduction of the database will be printed,
             if True, then docstring of the class will be printed additionally
@@ -177,16 +177,16 @@ class CPSC2018(OtherDataBase):
     def load_data(self, rec_no:Union[int,str], data_format="channels_last") -> np.ndarray:
         """ finished, checked,
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec_no: int or str,
             number of the record, NOTE that rec_no starts from 1; or name of the record,
             int only supported for the original CPSC2018 dataset
         data_format: str, default "channels_last",
             format of the ecg data, "channels_last" or "channels_first" (original)
         
-        Returns:
-        --------
+        Returns
+        -------
         data: ndarray,
             the ecg data
         """
@@ -205,8 +205,8 @@ class CPSC2018(OtherDataBase):
     def load_ann(self, rec_no:Union[int,str], keep_original:bool=True) -> dict:
         """ finished, checked,
         
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec_no: int or str,
             number of the record, NOTE that rec_no starts from 1; or name of the record,
             int only supported for the original CPSC2018 dataset
@@ -214,8 +214,8 @@ class CPSC2018(OtherDataBase):
             keep the original annotations or not,
             mainly concerning "N" and "Normal" ("SNR" for the newer version)
         
-        Returns:
-        --------
+        Returns
+        -------
         ann_dict, dict,
             the annotations with items: ref. self.ann_items
         """
@@ -265,13 +265,13 @@ class CPSC2018(OtherDataBase):
     def _parse_diagnosis(self, l_Dx:List[str]) -> Tuple[dict, dict]:
         """ finished, checked,
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         l_Dx: list of str,
             raw information of diagnosis, read from a header file
 
-        Returns:
-        --------
+        Returns
+        -------
         diag_dict:, dict,
             diagnosis, including SNOMED CT Codes, fullnames and abbreviations of each diagnosis
         diag_scored_dict: dict,
@@ -313,13 +313,13 @@ class CPSC2018(OtherDataBase):
     def _parse_leads(self, l_leads_data:List[str]) -> pd.DataFrame:
         """ finished, checked,
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         l_leads_data: list of str,
             raw information of each lead, read from a header file
 
-        Returns:
-        --------
+        Returns
+        -------
         df_leads: DataFrame,
             infomation of each leads in the format of DataFrame
         """
@@ -341,8 +341,8 @@ class CPSC2018(OtherDataBase):
     def get_labels(self, rec_no:Union[int,str], keep_original:bool=False) -> List[str]:
         """ finished, checked,
         
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec_no: int or str,
             number of the record, NOTE that rec_no starts from 1; or name of the record,
             int only supported for the original CPSC2018 dataset
@@ -350,8 +350,8 @@ class CPSC2018(OtherDataBase):
             keep the original annotations or not,
             mainly concerning "N" and "Normal"
         
-        Returns:
-        --------
+        Returns
+        -------
         labels, list,
             the list of labels (abbr. diagnosis)
         """
@@ -363,16 +363,16 @@ class CPSC2018(OtherDataBase):
     def get_diagnosis(self, rec_no:Union[int,str], full_name:bool=True) -> List[str]:
         """ finished, checked,
         
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec_no: int or str,
             number of the record, NOTE that rec_no starts from 1; or name of the record,
             int only supported for the original CPSC2018 dataset
         full_name: bool, default True,
             full name of the diagnosis or short name of it (ref. self.diagnosis_abbr_to_full)
         
-        Returns:
-        --------
+        Returns
+        -------
         diagonosis, list,
             the list of (full) diagnosis
         """
@@ -385,16 +385,16 @@ class CPSC2018(OtherDataBase):
     def get_patient_info(self, rec_no:Union[int,str], items:Optional[List[str]]=None) -> dict:
         """ finished, checked,
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec_no: int or str,
             number of the record, NOTE that rec_no starts from 1; or name of the record,
             int only supported for the original CPSC2018 dataset
         items: list of str, optional,
             items of the patient information (e.g. sex, age, etc.)
         
-        Returns:
-        --------
+        Returns
+        -------
         patient_info, dict,
         """
         if items is None or len(items) == 0:
@@ -412,8 +412,8 @@ class CPSC2018(OtherDataBase):
     def save_challenge_predictions(self, rec_no:Union[int,str], output_dir:str, scores:List[Real], labels:List[int], classes:List[str]) -> NoReturn:
         """ finished, checked,
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec_no: int or str,
             number of the record, NOTE that rec_no starts from 1; or name of the record,
             int only supported for the original CPSC2018 dataset
@@ -447,8 +447,8 @@ class CPSC2018(OtherDataBase):
     def plot(self, rec_no:Union[int,str], leads:Optional[Union[str, List[str]]]=None, **kwargs):
         """ not finished, not checked,
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec_no: int or str,
             number of the record, NOTE that rec_no starts from 1; or name of the record,
             int only supported for the original CPSC2018 dataset
@@ -503,13 +503,13 @@ class CPSC2018(OtherDataBase):
 
         knowledge about ECG features of specific diseases,
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         diseases: str, or list of str,
             the disease(s) to check
 
-        Returns:
-        --------
+        Returns
+        -------
         to write
         """
         if isinstance(diseases, str):

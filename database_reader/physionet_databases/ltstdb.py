@@ -28,8 +28,8 @@ class LTSTDB(PhysioNetDataBase):
 
     Long Term ST Database
 
-    ABOUT ltstdb:
-    -------------
+    ABOUT ltstdb
+    ------------
     1. contains 86 lengthy ECG recordings of 80 human subjects
     2. all records are between 21 and 24 hours in duration, and contain two or three ECG signals
     3. digitized at 250 samples per second with 12-bit resolution over a range of ±10 millivolts
@@ -38,24 +38,24 @@ class LTSTDB(PhysioNetDataBase):
     6. for annotations: experts examine the time series of ST level measurements in order to locate and to mark a set of local reference points, which are used to construct a piecewise linear baseline ST level function
     7. measurements in .16a files were used to construct ST level and deviation functions for each signal
 
-    NOTE:
-    -----
+    NOTE
+    ----
 
-    ISSUES:
-    -------
-
-    Usage:
+    ISSUES
     ------
+
+    Usage
+    -----
     1. ST segment
 
-    References:
-    -----------
+    References
+    ----------
     [1] https://physionet.org/content/ltstdb/1.0.0/
     """
     def __init__(self, db_dir:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
-        Parameters:
-        -----------
+        Parameters
+        ----------
         db_dir: str, optional,
             storage path of the database
             if not specified, data will be fetched from Physionet
@@ -276,8 +276,8 @@ class LTSTDB(PhysioNetDataBase):
         find all records (relative path without file extension),
         and save into `self._all_records` for further use
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         local: bool, default True,
             if True, read from local storage, prior to using `wfdb.get_record_list`
         """

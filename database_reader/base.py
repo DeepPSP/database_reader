@@ -114,8 +114,8 @@ class _DataBase(object):
     """
     def __init__(self, db_name:str, db_dir:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
-        Parameters:
-        -----------
+        Parameters
+        ----------
         db_name: str,
             name of the database
         db_dir: str, optional,
@@ -149,15 +149,15 @@ class _DataBase(object):
         automatically infer the units of `sig`,
         under the assumption that `sig` not being raw signal, with baseline removed
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         sig: ndarray,
             the signal to infer its units
         sig_type: str, default "ECG", case insensitive,
             type of the signal
 
-        Returns:
-        --------
+        Returns
+        -------
         units: str,
             units of `sig`, "μV" or "mV"
         """
@@ -175,8 +175,8 @@ class _DataBase(object):
     def _set_logger(self, prefix:Optional[str]=None) -> NoReturn:
         """
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         prefix: str, optional,
             prefix (for each line) of the logger, and its file name
         """
@@ -232,8 +232,8 @@ class PhysioNetDataBase(_DataBase):
     """
     def __init__(self, db_name:str, db_dir:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
-        Parameters:
-        -----------
+        Parameters
+        ----------
         db_name: str,
             name of the database
         db_dir: str, optional,
@@ -244,8 +244,8 @@ class PhysioNetDataBase(_DataBase):
         verbose: int, default 2,
         kwargs: dict,
 
-        NOTE:
-        -----
+        NOTE
+        ----
 
         typical `db_dir`:
         ------------------
@@ -452,8 +452,8 @@ class PhysioNetDataBase(_DataBase):
         find all records (relative path without file extension),
         and save into `self._all_records` for further use
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         db_name: str, optional,
             name of the database for using `wfdb.get_record_list`,
             if not set, `self.db_name` will be used
@@ -492,13 +492,13 @@ class PhysioNetDataBase(_DataBase):
         """
         Attach a `subject_id` to the record, in order to facilitate further uses
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: str,
             record name
 
-        Returns:
-        --------
+        Returns
+        -------
         int, a `subject_id` attached to the record `rec`
         """
         raise NotImplementedError
@@ -550,8 +550,8 @@ class PhysioNetDataBase(_DataBase):
 
         print corr. meanings of symbols belonging to `items`
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         items: str, or list of str, optional,
             the items to print,
             if not specified, then a comprehensive printing of meanings of all symbols will be performed
@@ -621,8 +621,8 @@ class NSRRDataBase(_DataBase):
     """
     def __init__(self, db_name:str, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
-        Parameters:
-        -----------
+        Parameters
+        ----------
         db_name: str,
             name of the database
         db_dir: str,
@@ -664,8 +664,8 @@ class NSRRDataBase(_DataBase):
     def safe_edf_file_operation(self, operation:str="close", full_file_path:Optional[str]=None) -> NoReturn:
         """ finished, checked,
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         operation: str, default "close",
             operation name, can be "open" and "close"
         full_file_path: str, optional,
@@ -688,13 +688,13 @@ class NSRRDataBase(_DataBase):
         """
         Attach a `subject_id` to the record, in order to facilitate further uses
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: str,
             record name
 
-        Returns:
-        --------
+        Returns
+        -------
         int, a `subject_id` attached to the record `rec`
         """
         raise NotImplementedError
@@ -711,8 +711,8 @@ class NSRRDataBase(_DataBase):
         """
         print the statistics about the record `rec`
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: str,
             record name
         """
@@ -771,8 +771,8 @@ class ImageDataBase(_DataBase):
     """
     def __init__(self, db_name:str, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
-        Parameters:
-        -----------
+        Parameters
+        ----------
         db_name: str,
             name of the database
         db_dir: str,
@@ -817,8 +817,8 @@ class AudioDataBase(_DataBase):
     """
     def __init__(self, db_name:str, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
-        Parameters:
-        -----------
+        Parameters
+        ----------
         db_name: str,
             name of the database
         db_dir: str,
@@ -863,8 +863,8 @@ class OtherDataBase(_DataBase):
     """
     def __init__(self, db_name:str, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         r"""
-        Parameters:
-        -----------
+        Parameters
+        ----------
         db_name: str,
             name of the database
         db_dir: str,
@@ -893,13 +893,13 @@ class OtherDataBase(_DataBase):
         """
         Attach a `subject_id` to the record, in order to facilitate further uses
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: str,
             record name
 
-        Returns:
-        --------
+        Returns
+        -------
         int, a `subject_id` attached to the record `rec`
         """
         raise NotImplementedError

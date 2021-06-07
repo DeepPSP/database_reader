@@ -63,8 +63,8 @@ class CINC2020(PhysioNetDataBase):
 
     Classification of 12-lead ECGs: the PhysioNet/Computing in Cardiology Challenge 2020
 
-    ABOUT CINC2020:
-    ---------------
+    ABOUT CINC2020
+    --------------
     0. There are 6 difference tranches of training data, listed as follows:
         A. 6,877
         recordings from China Physiological Signal Challenge in 2018 (CPSC2018): PhysioNetChallenge2020_Training_CPSC.tar.gz in ref. [6]
@@ -111,8 +111,8 @@ class CINC2020(PhysioNetDataBase):
     ...     if leads not in set_leads:
     ...         set_leads.append(leads)
 
-    NOTE:
-    -----
+    NOTE
+    ----
     1. The datasets have been roughly processed to have a uniform format, hence differ from their original resource (e.g. differe in sampling frequency, sample duration, etc.)
     2. The original datasets might have richer metadata (especially those from PhysioNet), which can be fetched from corresponding reader's docstring or website of the original source
     3. Each sub-dataset might have its own organizing scheme of data, which should be carefully dealt with
@@ -142,8 +142,8 @@ class CINC2020(PhysioNetDataBase):
         (RBBB, CRBBB), (PAC, SVPB), (PVC, VPB)
     11. in the newly (Feb., 2021) created dataset (ref. [7]), header files of each subset were gathered into one separate compressed file. This is due to the fact that updates on the dataset are almost always done in the header files. The correct usage of ref. [7], after uncompressing, is replacing the header files in the folder `All_training_WFDB` by header files from the 6 folders containing all header files from the 6 subsets.
 
-    ISSUES:
-    -------
+    ISSUES
+    ------
     1. reading the .hea files, baselines of all records are 0, however it is not the case if one plot the signal
     2. about half of the LAD records satisfy the "2-lead" criteria, but fail for the "3-lead" criteria, which means that their axis is (-30°, 0°) which is not truely LAD
     3. (Aug. 15, 2020; resolved, and changed to 1000) tranche F, the Georgia subset, has ADC gain 4880 which might be too high. Thus obtained voltages are too low. 1000 might be a suitable (correct) value of ADC gain for this tranche just as the other tranches.
@@ -151,12 +151,12 @@ class CINC2020(PhysioNetDataBase):
     >>> rec = "E04603"
     >>> dr.plot(rec, dr.load_data(rec, backend="scipy", units="uv"))  # currently raising error
 
-    Usage:
-    ------
+    Usage
+    -----
     1. ECG arrhythmia detection
 
-    References:
-    -----------
+    References
+    ----------
     [1] https://physionetchallenges.github.io/2020/
     [2] http://2018.icbeb.org/#
     [3] https://physionet.org/content/incartdb/1.0.0/
@@ -167,8 +167,8 @@ class CINC2020(PhysioNetDataBase):
     """
     def __init__(self, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
-        Parameters:
-        -----------
+        Parameters
+        ----------
         db_dir: str,
             storage path of the database
         working_dir: str, optional,
@@ -226,13 +226,13 @@ class CINC2020(PhysioNetDataBase):
     def get_subject_id(self, rec:str) -> int:
         """ finished, checked,
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: str,
             name of the record
 
-        Returns:
-        --------
+        Returns
+        -------
         sid: int,
             the `subject_id` corr. to `rec`
         """
@@ -322,13 +322,13 @@ class CINC2020(PhysioNetDataBase):
 
         get the tranche"s symbol (one of "A","B","C","D","E","F") of a record via its name
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: str,
             name of the record
 
-        Returns:
-        --------
+        Returns
+        -------
         tranche, str,
             symbol of the tranche, ref. `self.rec_prefix`
         """
@@ -342,8 +342,8 @@ class CINC2020(PhysioNetDataBase):
 
         get the absolute file path of the data file of `rec`
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: str,
             name of the record
         with_ext: bool, default True,
@@ -351,8 +351,8 @@ class CINC2020(PhysioNetDataBase):
             otherwise without file extension,
             which is useful for `wfdb` functions
 
-        Returns:
-        --------
+        Returns
+        -------
         fp: str,
             absolute file path of the data file of the record
         """
@@ -368,8 +368,8 @@ class CINC2020(PhysioNetDataBase):
 
         get the absolute file path of the header file of `rec`
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: str,
             name of the record
         with_ext: bool, default True,
@@ -377,8 +377,8 @@ class CINC2020(PhysioNetDataBase):
             otherwise without file extension,
             which is useful for `wfdb` functions
 
-        Returns:
-        --------
+        Returns
+        -------
         fp: str,
             absolute file path of the header file of the record
         """
@@ -403,8 +403,8 @@ class CINC2020(PhysioNetDataBase):
         load physical (converted from digital) ecg data,
         which is more understandable for humans
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: str,
             name of the record
         leads: str or list of str, optional,
@@ -420,8 +420,8 @@ class CINC2020(PhysioNetDataBase):
         fs: real number, optional,
             if not None, the loaded data will be resampled to this frequency
         
-        Returns:
-        --------
+        Returns
+        -------
         data: ndarray,
             the ecg data
         """
@@ -475,8 +475,8 @@ class CINC2020(PhysioNetDataBase):
 
         load annotations (header) stored in the .hea files
         
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: str,
             name of the record
         raw: bool, default False,
@@ -485,8 +485,8 @@ class CINC2020(PhysioNetDataBase):
             if is "wfdb", `wfdb.rdheader` will be used to load the annotations;
             if is "naive", annotations will be parsed from the lines read from the header files
         
-        Returns:
-        --------
+        Returns
+        -------
         ann_dict, dict or str,
             the annotations with items: ref. `self.ann_items`
         """
@@ -511,8 +511,8 @@ class CINC2020(PhysioNetDataBase):
     def _load_ann_wfdb(self, rec:str, header_data:List[str]) -> dict:
         """ finished, checked,
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: str,
             name of the record
         header_data: list of str,
@@ -520,8 +520,8 @@ class CINC2020(PhysioNetDataBase):
             complementary to data read using `wfdb.rdheader` if applicable,
             this data will be used, since `datetime` is not well parsed by `wfdb.rdheader`
 
-        Returns:
-        --------
+        Returns
+        -------
         ann_dict, dict,
             the annotations with items: ref. `self.ann_items`
         """
@@ -580,13 +580,13 @@ class CINC2020(PhysioNetDataBase):
 
         load annotations (header) using raw data read directly from a header file
         
-        Parameters:
-        -----------
+        Parameters
+        ----------
         header_data: list of str,
             list of lines read directly from a header file
         
-        Returns:
-        --------
+        Returns
+        -------
         ann_dict, dict,
             the annotations with items: ref. `self.ann_items`
         """
@@ -629,13 +629,13 @@ class CINC2020(PhysioNetDataBase):
     def _parse_diagnosis(self, l_Dx:List[str]) -> Tuple[dict, dict]:
         """ finished, checked,
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         l_Dx: list of str,
             raw information of diagnosis, read from a header file
 
-        Returns:
-        --------
+        Returns
+        -------
         diag_dict:, dict,
             diagnosis, including SNOMED CT Codes, fullnames and abbreviations of each diagnosis
         diag_scored_dict: dict,
@@ -677,13 +677,13 @@ class CINC2020(PhysioNetDataBase):
     def _parse_leads(self, l_leads_data:List[str]) -> pd.DataFrame:
         """ finished, checked,
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         l_leads_data: list of str,
             raw information of each lead, read from a header file
 
-        Returns:
-        --------
+        Returns
+        -------
         df_leads: DataFrame,
             infomation of each leads in the format of DataFrame
         """
@@ -714,8 +714,8 @@ class CINC2020(PhysioNetDataBase):
 
         read labels (diagnoses or arrhythmias) of a record
         
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: str,
             name of the record
         scored_only: bool, default True,
@@ -729,8 +729,8 @@ class CINC2020(PhysioNetDataBase):
             if True, the labels will be transformed into their equavalents,
             which are defined in `utils.utils_misc.cinc2020_aux_data.py`
         
-        Returns:
-        --------
+        Returns
+        -------
         labels, list,
             the list of labels
         """
@@ -757,13 +757,13 @@ class CINC2020(PhysioNetDataBase):
 
         get the sampling frequency of a record
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: str,
             name of the record
 
-        Returns:
-        --------
+        Returns
+        -------
         fs: real number,
             sampling frequency of the record `rec`
         """
@@ -777,15 +777,15 @@ class CINC2020(PhysioNetDataBase):
 
         read auxiliary information of a subject (a record) stored in the header files
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: str,
             name of the record
         items: list of str, optional,
             items of the subject's information (e.g. sex, age, etc.)
         
-        Returns:
-        --------
+        Returns
+        -------
         subject_info: dict,
             information about the subject, including
             "age", "sex", "medical_prescription", "history", "symptom_or_surgery",
@@ -807,8 +807,8 @@ class CINC2020(PhysioNetDataBase):
         
         TODO: update for the official phase
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: str,
             name of the record
         output_dir: str,
@@ -841,8 +841,8 @@ class CINC2020(PhysioNetDataBase):
         with metadata (fs, labels, tranche, etc.),
         possibly also along with wave delineations
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: str,
             name of the record
         data: ndarray, optional,
@@ -872,8 +872,8 @@ class CINC2020(PhysioNetDataBase):
         1. slice too long records, and plot separately for each segment
         2. plot waves using `axvspan`
 
-        NOTE:
-        -----
+        NOTE
+        ----
         `Locator` of `plt` has default `MAXTICKS` equal to 1000,
         if not modifying this number, at most 40 seconds of signal could be plotted once
 
@@ -1025,15 +1025,15 @@ class CINC2020(PhysioNetDataBase):
     def get_tranche_class_distribution(self, tranches:Sequence[str], scored_only:bool=True) -> Dict[str, int]:
         """ finished, checked,
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         tranches: sequence of str,
             tranche symbols (A-F)
         scored_only: bool, default True,
             only get class distributions that are scored in the CINC2020 official phase
         
-        Returns:
-        --------
+        Returns
+        -------
         distribution: dict,
             keys are abbrevations of the classes, values are appearance of corr. classes in the tranche.
         """
@@ -1053,8 +1053,8 @@ class CINC2020(PhysioNetDataBase):
 
         knowledge about ECG features of specific arrhythmias,
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         arrhythmias: str, or list of str,
             the arrhythmia(s) to check, in abbreviations or in SNOMED CT Code
         """
@@ -1080,8 +1080,8 @@ class CINC2020(PhysioNetDataBase):
         resample the data of `rec` to 500Hz,
         or load the resampled data in 500Hz, if the corr. data file already exists
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: str,
             name of the record
         data_format: str, default "channel_first",
@@ -1093,8 +1093,8 @@ class CINC2020(PhysioNetDataBase):
             if set, signal with length longer will be sliced to the length of `siglen`
             used for example when preparing/doing model training
 
-        Returns:
-        --------
+        Returns
+        -------
         data: ndarray,
             the resampled (and perhaps sliced) signal data
         """
@@ -1130,8 +1130,8 @@ class CINC2020(PhysioNetDataBase):
         load raw data from corresponding files with no further processing,
         in order to facilitate feeding data into the `run_12ECG_classifier` function
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: str,
             name of the record
         backend: str, default "scipy",
@@ -1139,8 +1139,8 @@ class CINC2020(PhysioNetDataBase):
             note that "scipy" provides data in the format of "lead_first",
             while "wfdb" provides data in the format of "lead_last",
 
-        Returns:
-        --------
+        Returns
+        -------
         raw_data: ndarray,
             raw data (d_signal) loaded from corresponding data file,
             without subtracting baseline nor dividing adc gain
@@ -1165,8 +1165,8 @@ class CINC2020(PhysioNetDataBase):
         if exceptionally large values are encountered,
         this could help detect abnormal records as well
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         tranches: str or sequence of str,
             tranches to check
         """
@@ -1184,8 +1184,8 @@ from ..utils.utils_misc.cinc2020_aux_data import load_weights
 def compute_all_metrics(classes:List[str], truth:Sequence, binary_pred:Sequence, scalar_pred:Sequence) -> Tuple[float]:
     """ finished, checked,
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     classes: list of str,
         list of all the classes, in the format of abbrevations
     truth: sequence,
@@ -1195,8 +1195,8 @@ def compute_all_metrics(classes:List[str], truth:Sequence, binary_pred:Sequence,
     scalar_pred: sequence,
         probability predictions, of shape (n_records, n_classes), with values within [0,1]
 
-    Returns:
-    --------
+    Returns
+    -------
     auroc: float,
     auprc: float,
     accuracy: float,

@@ -35,8 +35,8 @@ class CPSC2020(OtherDataBase):
     The 3rd China Physiological Signal Challenge 2020:
     Searching for Premature Ventricular Contraction (PVC) and Supraventricular Premature Beat (SPB) from Long-term ECGs
 
-    ABOUT CPSC2020:
-    ---------------
+    ABOUT CPSC2020
+    --------------
     1. training data consists of 10 single-lead ECG recordings collected from arrhythmia patients, each of the recording last for about 24 hours
     2. data and annotations are stored in v5 .mat files
     3. A02, A03, A08 are patient with atrial fibrillation
@@ -57,8 +57,8 @@ class CPSC2020(OtherDataBase):
     6. challenging factors for accurate detection of SPB and PVC:
         amplitude variation; morphological variation; noise
 
-    NOTE:
-    -----
+    NOTE
+    ----
     1. the records can roughly be classified into 4 groups:
         N:  A01, A03, A05, A06
         V:  A02, A08
@@ -124,8 +124,8 @@ class CPSC2020(OtherDataBase):
     ... A10: min dist among PVC = 708
     ... A10: min dist between SPB and PVC = 177
 
-    ISSUES:
-    -------
+    ISSUES
+    ------
     1. currently, using `xqrs` as qrs detector,
        a lot more (more than 1000) rpeaks would be detected for A02, A07, A08,
        which might be caused by motion artefacts (or AF?);
@@ -160,25 +160,25 @@ class CPSC2020(OtherDataBase):
        this is caused by the 13882273-th sample, which is contained in "PVC_indices",
        however, whether it is a PVC beat, or just motion artefact, is in doubt!
 
-    TODO:
-    -----
+    TODO
+    ----
     1. use SNR to filter out too noisy segments?
     2. for ML, consider more features
 
-    Usage:
-    ------
+    Usage
+    -----
     1. ecg arrhythmia (PVC, SPB) detection
 
-    References:
-    -----------
+    References
+    ----------
     [1] http://www.icbeb.org/CPSC2020.html
     [2] https://github.com/PIA-Group/BioSPPy
     """
     def __init__(self, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """ finished, to be improved,
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         db_dir: str,
             storage path of the database
         working_dir: str, optional,
@@ -227,14 +227,14 @@ class CPSC2020(OtherDataBase):
     def get_subject_id(self, rec:Union[int,str]) -> int:
         """ not finished,
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: int or str,
             number of the record, NOTE that rec_no starts from 1,
             or the record name
 
-        Returns:
-        --------
+        Returns
+        -------
         pid: int,
             the `subject_id` corr. to `rec_no`
         """
@@ -247,8 +247,8 @@ class CPSC2020(OtherDataBase):
 
         print the information about the database
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         detailed: bool, default False,
             if False, an short introduction of the database will be printed,
             if True, then docstring of the class will be printed additionally
@@ -264,8 +264,8 @@ class CPSC2020(OtherDataBase):
     def load_data(self, rec:Union[int,str], units:str="mV", sampfrom:Optional[int]=None, sampto:Optional[int]=None, keep_dim:bool=True) -> np.ndarray:
         """ finished, checked,
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: int or str,
             number of the record, NOTE that rec_no starts from 1,
             or the record name
@@ -278,8 +278,8 @@ class CPSC2020(OtherDataBase):
         keep_dim: bool, default True,
             whether or not to flatten the data of shape (n,1)
         
-        Returns:
-        --------
+        Returns
+        -------
         data: ndarray,
             the ecg data
         """
@@ -298,8 +298,8 @@ class CPSC2020(OtherDataBase):
     def load_ann(self, rec:Union[int,str], sampfrom:Optional[int]=None, sampto:Optional[int]=None) -> Dict[str, np.ndarray]:
         """ finished, checked,
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: int or str,
             number of the record, NOTE that rec_no starts from 1,
             or the record name
@@ -308,8 +308,8 @@ class CPSC2020(OtherDataBase):
         sampto: int, optional,
             end index of the data to be loaded
         
-        Returns:
-        --------
+        Returns
+        -------
         ann: dict,
             with items (ndarray) "SPB_indices" and "PVC_indices",
             which record the indices of SPBs and PVCs
@@ -336,14 +336,14 @@ class CPSC2020(OtherDataBase):
     def _get_ann_name(self, rec:Union[int,str]) -> str:
         """ finished, checked,
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: int or str,
             number of the record, NOTE that rec_no starts from 1,
             or the record name
 
-        Returns:
-        --------
+        Returns
+        -------
         ann_name: str,
             filename of the annotation file
         """
@@ -359,14 +359,14 @@ class CPSC2020(OtherDataBase):
     def _get_rec_name(self, rec:Union[int,str]) -> str:
         """ finished, checked,
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: int or str,
             number of the record, NOTE that rec_no starts from 1,
             or the record name
 
-        Returns:
-        --------
+        Returns
+        -------
         rec_name: str,
             filename of the record
         """
@@ -384,13 +384,13 @@ class CPSC2020(OtherDataBase):
 
         split the records into train set and test set
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         test_rec_num: int,
             number of records for the test set
 
-        Returns:
-        --------
+        Returns
+        -------
         split_res: dict,
             with items `train`, `test`, both being list of record names
         """
@@ -419,8 +419,8 @@ class CPSC2020(OtherDataBase):
     def locate_premature_beats(self, rec:Union[int,str], premature_type:Optional[str]=None, window:int=10000, sampfrom:Optional[int]=None, sampto:Optional[int]=None) -> List[List[int]]:
         """ finished, checked,
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: int or str,
             number of the record, NOTE that rec_no starts from 1,
             or the record name
@@ -433,8 +433,8 @@ class CPSC2020(OtherDataBase):
         sampto: int, optional,
             end index of the premature beats to locate
 
-        Returns:
-        --------
+        Returns
+        -------
         premature_intervals: list,
             list of intervals of premature beats
         """
@@ -464,8 +464,8 @@ class CPSC2020(OtherDataBase):
     def plot(self, rec:Union[int,str], data:Optional[np.ndarray]=None, ann:Optional[Dict[str, np.ndarray]]=None, ticks_granularity:int=0, sampfrom:Optional[int]=None, sampto:Optional[int]=None, rpeak_inds:Optional[Union[Sequence[int],np.ndarray]]=None) -> NoReturn:
         """ finished, checked,
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: int or str,
             number of the record, NOTE that rec_no starts from 1,
             or the record name
@@ -596,8 +596,8 @@ def _ann_to_beat_ann_epoch_v1(rpeaks:np.ndarray, ann:Dict[str, np.ndarray], bias
 
     the naive method to label beat types using annotations provided by the dataset
     
-    Parameters:
-    -----------
+    Parameters
+    ----------
     rpeaks: ndarray,
         rpeaks for forming beats
     ann: dict,
@@ -607,8 +607,8 @@ def _ann_to_beat_ann_epoch_v1(rpeaks:np.ndarray, ann:Dict[str, np.ndarray], bias
         tolerance for using annotations (PVC, SPB indices provided by the dataset),
         to label the type of beats given by `rpeaks`
 
-    Returns:
-    --------
+    Returns
+    -------
     retval: dict, with the following items
         - ann_matched: dict of ndarray,
             indices of annotations ("SPB_indices" and "PVC_indices")
@@ -638,8 +638,8 @@ def _ann_to_beat_ann_epoch_v2(rpeaks:np.ndarray, ann:Dict[str, np.ndarray], bias
     however, the comparison process (the block inside the outer `for` loop)
     is not quite correct
     
-    Parameters:
-    -----------
+    Parameters
+    ----------
     rpeaks: ndarray,
         rpeaks for forming beats
     ann: dict,
@@ -649,8 +649,8 @@ def _ann_to_beat_ann_epoch_v2(rpeaks:np.ndarray, ann:Dict[str, np.ndarray], bias
         tolerance for using annotations (PVC, SPB indices provided by the dataset),
         to label the type of beats given by `rpeaks`
 
-    Returns:
-    --------
+    Returns
+    -------
     retval: dict, with the following items
         - ann_matched: dict of ndarray,
             indices of annotations ("SPB_indices" and "PVC_indices")
@@ -698,8 +698,8 @@ def _ann_to_beat_ann_epoch_v3(rpeaks:np.ndarray, ann:Dict[str, np.ndarray], bias
     
     similar to `_ann_to_beat_ann_epoch_v2`, but more reasonable
     
-    Parameters:
-    -----------
+    Parameters
+    ----------
     rpeaks: ndarray,
         rpeaks for forming beats
     ann: dict,
@@ -709,8 +709,8 @@ def _ann_to_beat_ann_epoch_v3(rpeaks:np.ndarray, ann:Dict[str, np.ndarray], bias
         tolerance for using annotations (PVC, SPB indices provided by the dataset),
         to label the type of beats given by `rpeaks`
 
-    Returns:
-    --------
+    Returns
+    -------
     retval: dict, with the following items
         - ann_matched: dict of ndarray,
             indices of annotations ("SPB_indices" and "PVC_indices")
@@ -747,13 +747,13 @@ def compute_metrics(sbp_true:List[np.ndarray], pvc_true:List[np.ndarray], sbp_pr
 
     Score Function for all (test) records
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     sbp_true, pvc_true, sbp_pred, pvc_pred: list of ndarray,
     verbose: int
 
-    Returns:
-    --------
+    Returns
+    -------
     retval: tuple or dict,
         tuple of (negative) scores for each ectopic beat type (SBP, PVC), or
         dict of more scoring details, including

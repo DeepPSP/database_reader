@@ -24,8 +24,8 @@ __all__ = [
 class SleepAccel(OtherDataBase):
     """
 
-    ABOUT sleep_accel:
-    ------------------
+    ABOUT sleep_accel
+    -----------------
     1. sleep stages in the records:
         wake = 0
         n1 = 1
@@ -36,19 +36,19 @@ class SleepAccel(OtherDataBase):
         unscored = -1
     2. 
 
-    NOTE:
-    -----
+    NOTE
+    ----
 
-    ISSUES:
-    -------
+    ISSUES
+    ------
     1. 
 
-    Usage:
-    ------
+    Usage
+    -----
     1. sleep stage
 
-    References:
-    -----------
+    References
+    ----------
     [1] Walch O, Huang Y, Forger D, et al. Sleep stage prediction with raw acceleration and photoplethysmography heart rate data derived from a consumer wearable device[J]. Sleep, 2019, 42(12): zsz180.
     [2] https://github.com/ojwalch/sleep_classifiers/
     [3] https://alpha.physionet.org/content/sleep-accel/1.0.0/
@@ -57,8 +57,8 @@ class SleepAccel(OtherDataBase):
     def __init__(self, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """ not finished,
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         db_dir: str,
             storage path of the database
         working_dir: str, optional,
@@ -116,13 +116,13 @@ class SleepAccel(OtherDataBase):
 
         load labels of sleep stages
 
-        Parameters:
+        Parameters
         ----------
         subject_id: str,
             subject id in `self.all_subjects`
         
-        Returns:
-        --------
+        Returns
+        -------
         df_lb: DataFrame, with columns "sec","sleep_stage"
         """
         fp = os.path.join(self.lb_dir, subject_id+self.lb_file_suffix)
@@ -137,13 +137,13 @@ class SleepAccel(OtherDataBase):
 
         load motion (accelerometer) data
 
-        Parameters:
+        Parameters
         ----------
         subject_id: str,
             subject id in `self.all_subjects`
         
-        Returns:
-        --------
+        Returns
+        -------
         df_mt: DataFrame, with columns "sec","x","y","z"
         """
         mt_fp = os.path.join(self.motion_dir, subject_id+self.motion_file_suffix)
@@ -159,13 +159,13 @@ class SleepAccel(OtherDataBase):
 
         load heart rate data
 
-        Parameters:
+        Parameters
         ----------
         subject_id: str,
             subject id in `self.all_subjects`
         
-        Returns:
-        --------
+        Returns
+        -------
         df_hr: DataFrame, with columns "sec","hr"
         """
         hr_fp = os.path.join(self.hr_dir, subject_id+self.hr_file_suffix)
@@ -181,13 +181,13 @@ class SleepAccel(OtherDataBase):
 
         load step count data
 
-        Parameters:
+        Parameters
         ----------
         subject_id: str,
             subject id in `self.all_subjects`
         
-        Returns:
-        --------
+        Returns
+        -------
         df_sp: DataFrame, with columns "sec","step_count"
         """
         sp_fp = os.path.join(self.steps_dir, subject_id+self.steps_file_suffix)
@@ -203,15 +203,15 @@ class SleepAccel(OtherDataBase):
 
         plot labels of sleep stages
 
-        Parameters:
+        Parameters
         ----------
         subject_id: str,
             subject id in `self.all_subjects`
         style: str,
             to be implemented
         
-        Returns:
-        --------
+        Returns
+        -------
         df_lb: DataFrame,
             ref. `self.load_labels`
         """
@@ -231,7 +231,7 @@ class SleepAccel(OtherDataBase):
 
         plot labels of sleep stages together with the triaxial motion data
 
-        Parameters:
+        Parameters
         ----------
         subject_id: str,
             subject id in `self.all_subjects`
@@ -244,8 +244,8 @@ class SleepAccel(OtherDataBase):
             the time for `df_mt` to expand out from the time range of `df_lb`,
             if is None, time range of `df_mt` will be set the full time range of the motion data (which usually much wider)
         
-        Returns:
-        --------
+        Returns
+        -------
         df_lb, df_mt: DataFrame,
             ref. `self.load_labels` and `self.load_motion_data`
         """
@@ -282,7 +282,7 @@ class SleepAccel(OtherDataBase):
 
         plot labels of sleep stages together with the actigraph count data
 
-        Parameters:
+        Parameters
         ----------
         subject_id: str,
             subject id in `self.all_subjects`
@@ -295,8 +295,8 @@ class SleepAccel(OtherDataBase):
             the time for `df_mt` to expand out from the time range of `df_lb`,
             if is None, time range of `df_mt` will be set the full time range of the motion data (which usually much wider)
         
-        Returns:
-        --------
+        Returns
+        -------
         df_lb, df_ct, df_rsmpl, df_stats: DataFrame,
             ref. `self.load_labels` and `self.load_motion_data`
         """
@@ -347,11 +347,11 @@ class SleepAccel(OtherDataBase):
     def resample_motion_data(self, df_mt:pd.DataFrame, output_fs:Real) -> pd.DataFrame:
         """
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
 
-        Returns:
-        --------
+        Returns
+        -------
 
         """
         acc_data = df_mt[["sec","x","y","z"]].values
@@ -371,11 +371,11 @@ class SleepAccel(OtherDataBase):
     def acc_to_count(self, df_acc:pd.DataFrame, acc_fs:Real, epoch_len:Real, **kwargs) -> np.ndarray:
         """
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
 
-        Returns:
-        --------
+        Returns
+        -------
         
         """
         raise NotImplementedError

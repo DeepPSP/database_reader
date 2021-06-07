@@ -29,8 +29,8 @@ class ApneaECG(PhysioNetDataBase):
 
     Apnea-ECG Database
 
-    ABOUT apnea-ecg (CinC 2000):
-    --------------------------------------
+    ABOUT apnea-ecg (CinC 2000)
+    ---------------------------
     1. consist of 70 single lead ECG records, divided into a learning set of 35 records (a01 through a20, b01 through b05, and c01 through c10), and a test set of 35 records (x01 through x35)
     2. recordings vary in length from slightly less than 7 hours to nearly 10 hours (401 - 578 min) each
     3. control group (c01 through c10): records having fewer than 5 min of disorder breathing
@@ -45,25 +45,25 @@ class ApneaECG(PhysioNetDataBase):
         10.2. *er.* files only contain annotations
         10.3. annotations for the respiration signals are identical to the corresponding ECG signals
 
-    NOTE:
-    -----
+    NOTE
+    ----
 
-    ISSUES:
-    -------
-
-    Usage:
+    ISSUES
     ------
+
+    Usage
+    -----
     1. sleep apnea
 
-    References:
-    -----------
+    References
+    ----------
     [1] https://physionet.org/content/apnea-ecg/1.0.0/
     [2] T Penzel, GB Moody, RG Mark, AL Goldberger, JH Peter. The Apnea-ECG Database. Computers in Cardiology 2000;27:255-258
     """
     def __init__(self, db_dir:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
-        Parameters:
-        -----------
+        Parameters
+        ----------
         db_dir: str, optional,
             storage path of the database
             if not specified, data will be fetched from Physionet
@@ -100,8 +100,8 @@ class ApneaECG(PhysioNetDataBase):
         find all records (relative path without file extension),
         and save into `self._all_records` for further use
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         local: bool, default True,
             if True, read from local storage, prior to using `wfdb.get_record_list`
         """
@@ -125,8 +125,8 @@ class ApneaECG(PhysioNetDataBase):
     def get_subject_id(self, rec:str) -> int:
         """
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: str,
             record name
         """
@@ -137,8 +137,8 @@ class ApneaECG(PhysioNetDataBase):
     def database_info(self, detailed:bool=False) -> NoReturn:
         """
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         detailed: bool, default False,
             if False, physionet"s "db_description" will be printed,
             if True, then docstring of the class will be printed additionally
@@ -153,8 +153,8 @@ class ApneaECG(PhysioNetDataBase):
     def load_data(self, rec:str, lead:int=0, rec_path:Optional[str]=None) -> np.ndarray:
         """
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: str,
             record name
         lead: int, default 0
@@ -198,16 +198,16 @@ class ApneaECG(PhysioNetDataBase):
     def load_ann(self, rec:str, ann_path:Optional[str]=None, **kwargs) -> list:
         """
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: str,
             record name
         ann_path: str, optional,
             path of the file which contains the annotations,
             if not given, default path will be used
 
-        Returns:
-        --------
+        Returns
+        -------
         detailed_ann: list,
             annotations of the form [idx, ann]
         """
@@ -221,16 +221,16 @@ class ApneaECG(PhysioNetDataBase):
     def load_apnea_event_ann(self, rec:str, ann_path:Optional[str]=None) -> pd.DataFrame:
         """
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: str,
             record name
         ann_path: str, optional,
             path of the file which contains the annotations,
             if not given, default path will be used
 
-        Returns:
-        --------
+        Returns
+        -------
         df_apnea_ann: DataFrame,
             apnea annotations with columns "event_start","event_end", "event_name", "event_duration"
         """
@@ -275,8 +275,8 @@ class ApneaECG(PhysioNetDataBase):
     def plot_ann(self, rec, ann_path:Optional[str]=None) -> NoReturn:
         """
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: str,
             record name
         ann_path: str, optional,
@@ -290,7 +290,7 @@ class ApneaECG(PhysioNetDataBase):
     def _plot_ann(self, df_apnea_ann:pd.DataFrame) -> NoReturn:
         """
 
-        Parameters:
+        Parameters
         df_apnea_ann: DataFrame,
             apnea events with columns `self.sleep_event_keys`
         """

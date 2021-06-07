@@ -28,30 +28,30 @@ class QTDB(PhysioNetDataBase):
 
     QT Database
 
-    ABOUT qtdb:
-    -----------
+    ABOUT qtdb
+    ----------
     1. contains 105 fifteen-minute two-lead ECG recordings
     2. contains onset, peak, and end markers for P, QRS, T, and (where present) U waves of from 30 to 50 selected beats in each recording
 
-    NOTE:
-    -----
+    NOTE
+    ----
 
-    ISSUES:
-    -------
-
-    Usage:
+    ISSUES
     ------
+
+    Usage
+    -----
     1. ecg wave delineation
     2. ST segment
 
-    References:
-    -----------
+    References
+    ----------
     [1] https://www.physionet.org/content/qtdb/1.0.0/
     """
     def __init__(self, db_dir:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
-        Parameters:
-        -----------
+        Parameters
+        ----------
         db_dir: str, optional,
             storage path of the database
             if not specified, data will be fetched from Physionet
@@ -87,8 +87,8 @@ class QTDB(PhysioNetDataBase):
         find all records (relative path without file extension),
         and save into `self._all_records` for further use
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         local: bool, default True,
             if True, read from local storage, prior to using `wfdb.get_record_list`
         """

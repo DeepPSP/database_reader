@@ -30,8 +30,8 @@ class MIMIC3WDB(PhysioNetDataBase):
 
     MIMIC-III Waveform Database
 
-    ABOUT mimic3wdb:
-    ----------------
+    ABOUT mimic3wdb
+    ---------------
     1. contains 67,830 record sets (totally 6.7 TB) for approximately 30,000 ICU patients
     2. almost all record sets include a waveform record (usually multi-record consisting of multiple continuous segments) containing digitized signals (typically including ECG, ABP, respiration, and PPG, and frequently other signals) digitized at 125 Hz with 8-, 10-, or (occasionally) 12-bit resolution and a "numerics" record containing time series of vital signs (HR, RESP, SpO2, BP, etc.) of periodic measurements sampled once per second or once per minute
     3. a subset (the matched subset) of mimic3wdb contains waveform and numerics records that have been matched and time-aligned with MIMIC-III Clinical Database records
@@ -39,19 +39,19 @@ class MIMIC3WDB(PhysioNetDataBase):
     5. the record directories are distributed among ten intermediate-level directories (30-39)
     6. in each record directory, there are files of patterns "3[\d]{6}.hea", "3[\d]{6}_[\d]{4}.dat", "3[\d]{6}_[\d]{4}.hea", "3[\d]{6}n.dat", "3[\d]{6}n.hea", "3[\d]{6}_layout.hea"
 
-    NOTE:
-    -----
+    NOTE
+    ----
 
-    ISSUES:
-    -------
+    ISSUES
+    ------
     ref. [3]
 
-    Usage:
-    ------
+    Usage
+    -----
     1. 
 
-    References:
-    -----------
+    References
+    ----------
     [1] https://mimic.physionet.org/
     [2] https://github.com/MIT-LCP/mimic-code
     [3] https://www.physionet.org/content/mimiciii/1.4/
@@ -60,8 +60,8 @@ class MIMIC3WDB(PhysioNetDataBase):
     """
     def __init__(self, db_dir:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
-        Parameters:
-        -----------
+        Parameters
+        ----------
         db_dir: str, optional,
             storage path of the database
             if not specified, data will be fetched from Physionet

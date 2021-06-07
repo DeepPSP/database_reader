@@ -28,26 +28,26 @@ class MIMIC3(PhysioNetDataBase):
 
     MIMIC-III Critical Care Database
 
-    ABOUT mimic3:
-    -------------
+    ABOUT mimic3
+    ------------
     1. comprising deidentified health-related data associated with over 4000 patients who stayed in critical care units of the Beth Israel Deaconess Medical Center between 2001 and 2012
     2. includes information such as demographics, vital sign measurements made at the bedside (~1 data point per hour), laboratory test results, procedures, medications, caregiver notes, imaging reports, and mortality (both in and out of hospital)
 
-    NOTE:
-    -----
+    NOTE
+    ----
 
-    ISSUES:
-    -------
+    ISSUES
+    ------
     ref. [3]
 
-    Usage:
-    ------
+    Usage
+    -----
     1. epidemiology
     2. clinical decision-rule improvement
     3. electronic tool development
 
-    References:
-    -----------
+    References
+    ----------
     [1] https://mimic.physionet.org/
     [2] https://github.com/MIT-LCP/mimic-code
     [3] https://www.physionet.org/content/mimiciii/1.4/
@@ -56,8 +56,8 @@ class MIMIC3(PhysioNetDataBase):
     """
     def __init__(self, db_dir:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
-        Parameters:
-        -----------
+        Parameters
+        ----------
         db_dir: str, optional,
             storage path of the database
             if not specified, data will be fetched from Physionet

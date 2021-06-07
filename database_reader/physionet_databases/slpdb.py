@@ -28,8 +28,8 @@ class SLPDB(PhysioNetDataBase):
 
     MIT-BIH Polysomnographic Database
 
-    ABOUT slpdb:
-    ------------
+    ABOUT slpdb
+    -----------
     1. slpdb contains over 80 hours" worth of four-, six-, and seven-channel polysomnographic (PSG) records
     2. each record has an ECG signal annotated beat-by-beat, and EEG and respiration signals annotated w.r.t. sleep stages and apnea
     3. all 16 subjects were male, aged 32 to 56 (mean age 43), with weights ranging from 89 to 152 kg (mean weight 119 kg)
@@ -37,26 +37,26 @@ class SLPDB(PhysioNetDataBase):
     5. Data files have an attribute "comments" which contains age, gender, and weight (in kg) of the subjects
     6. calibration originally provided for the BP signal of record slp37 is incorrect (since it yielded negative BPs). slp37.hea now contains an estimated BP calibration that yields more plausible BPs; these should not be regarded as accurate
 
-    NOTE:
-    -----
+    NOTE
+    ----
 
-    ISSUES:
-    -------
+    ISSUES
+    ------
     1. it is weird that record "slp45" has annotations "M\x00" which is not in the table, should be "MT"?
 
-    Usage:
-    ------
+    Usage
+    -----
     1. sleep stage
     2. sleep apnea
 
-    References:
-    -----------
+    References
+    ----------
     [1] https://physionet.org/content/slpdb/1.0.0/
     """
     def __init__(self, db_dir:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
-        Parameters:
-        -----------
+        Parameters
+        ----------
         db_dir: str, optional,
             storage path of the database
             if not specified, data will be fetched from Physionet
@@ -127,8 +127,8 @@ class SLPDB(PhysioNetDataBase):
         find all records (relative path without file extension),
         and save into `self._all_records` for further use
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         local: bool, default True,
             if True, read from local storage, prior to using `wfdb.get_record_list`
         """

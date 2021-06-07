@@ -29,8 +29,8 @@ class INCARTDB(PhysioNetDataBase):
 
     St Petersburg INCART 12-lead Arrhythmia Database
 
-    ABOUT incartdb:
-    ---------------
+    ABOUT incartdb
+    --------------
     1. consists of 75 annotated recordings extracted from 32 Holter records, each of 12 leads and of length 30 minutes.
     2. sampling frequency is 257 Hz
     3. ADC gain ranges from 250 to 1100
@@ -48,25 +48,25 @@ class INCARTDB(PhysioNetDataBase):
         AV block                                        1
         Bundle branch block                             3
 
-    NOTE:
-    -----
+    NOTE
+    ----
 
-    ISSUES:
-    -------
-
-    Usage:
+    ISSUES
     ------
+
+    Usage
+    -----
     1. ECG arrhythmia detection
 
-    References:
-    -----------
+    References
+    ----------
     [1] https://physionet.org/content/incartdb/1.0.0/
     [2] https://physionetchallenges.github.io/2020/
     """
     def __init__(self, db_dir:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
-        Parameters:
-        -----------
+        Parameters
+        ----------
         db_dir: str, optional,
             storage path of the database
             if not specified, data will be fetched from Physionet
@@ -107,15 +107,15 @@ class INCARTDB(PhysioNetDataBase):
     def load_data(self, rec:str, data_format="channels_last") -> np.ndarray:
         """ finished, checked,
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: str,
             name of the record
         data_format: str, default "channels_last",
             format of the ecg data, "channels_last" or "channels_first" (original)
         
-        Returns:
-        --------
+        Returns
+        -------
         data: ndarray,
             the ecg data
         """
@@ -124,13 +124,13 @@ class INCARTDB(PhysioNetDataBase):
     def load_ann(self, rec:str) -> dict:
         """ finished, checked,
         
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: str,
             name of the record
         
-        Returns:
-        --------
+        Returns
+        -------
         ann_dict, dict,
             the annotations with items: ref. self.ann_items
         """

@@ -33,8 +33,8 @@ class AFDB(PhysioNetDataBase):
 
     MIT-BIH Atrial Fibrillation Database
 
-    ABOUT afdb:
-    -----------
+    ABOUT afdb
+    ----------
     1. contains 25 long-term (each 10 hours) ECG recordings of human subjects with atrial fibrillation (mostly paroxysmal)
     2. 23 records out of 25 include the two ECG signals, the left 2 records 00735 and 03665 are represented only by the rhythm (.atr) and unaudited beat (.qrs) annotation files
     3. signals are sampled at 250 samples per second with 12-bit resolution over a range of ±10 millivolts, with a typical recording bandwidth of approximately 0.1 Hz to 40 Hz
@@ -45,29 +45,29 @@ class AFDB(PhysioNetDataBase):
         - N:     all other rhythms
     5. rhythm annotations almost all start with "(N", except for 4 which start with '(AFIB', which are all within 1 second (250 samples)
 
-    NOTE:
-    -----
+    NOTE
+    ----
     1. beat annotation files (.qrs files) were prepared using an automated detector and have NOT been corrected manually
     2. for some records, manually corrected beat annotation files (.qrsc files) are available
     3. one should never use wfdb.rdann with arguments `sampfrom`, since one has to know the `aux_note` (with values in ["(N", "(J", "(AFL", "(AFIB"]) before the index at `sampfrom`
 
-    ISSUES:
-    -------
-
-    Usage:
+    ISSUES
     ------
+
+    Usage
+    -----
     1. AF detection
 
-    References:
-    -----------
+    References
+    ----------
     [1] https://physionet.org/content/afdb/1.0.0/
     [2] Moody GB, Mark RG. A new method for detecting atrial fibrillation using R-R intervals. Computers in Cardiology. 10:227-230 (1983).
     """
     def __init__(self, db_dir:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """ finished, checked,
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         db_dir: str, optional,
             storage path of the database
             if not specified, data will be fetched from Physionet
@@ -106,8 +106,8 @@ class AFDB(PhysioNetDataBase):
         load physical (converted from digital) ecg data,
         which is more understandable for humans
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: str,
             name of the record
         leads: str or list of str, optional,
@@ -125,8 +125,8 @@ class AFDB(PhysioNetDataBase):
         fs: real number, optional,
             if not None, the loaded data will be resampled to this frequency
         
-        Returns:
-        --------
+        Returns
+        -------
         data: ndarray,
             the ecg data
         """
@@ -160,8 +160,8 @@ class AFDB(PhysioNetDataBase):
 
         load annotations (header) stored in the .hea files
         
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: str,
             name of the record
         sampfrom: int, optional,
@@ -175,8 +175,8 @@ class AFDB(PhysioNetDataBase):
             intervals (in the form [a,b]) will keep the same with the annotation file
             otherwise subtract `sampfrom` if specified
         
-        Returns:
-        --------
+        Returns
+        -------
         ann, dict or ndarray,
             the annotations in the format of intervals, or in the format of mask
         """
@@ -223,8 +223,8 @@ class AFDB(PhysioNetDataBase):
 
         load beat annotations stored in corresponding annotation files
         
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: str,
             name of the record
         sampfrom: int, optional,
@@ -238,8 +238,8 @@ class AFDB(PhysioNetDataBase):
             if True, indices will keep the same with the annotation file
             otherwise subtract `sampfrom` if specified
         
-        Returns:
-        --------
+        Returns
+        -------
         ann, ndarray,
             locations (indices) of the qrs complexes
         """
@@ -274,8 +274,8 @@ class AFDB(PhysioNetDataBase):
         with metadata (fs, labels, tranche, etc.),
         possibly also along with wave delineations
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: str,
             name of the record
         data: ndarray, optional,

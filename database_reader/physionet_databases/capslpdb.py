@@ -28,33 +28,33 @@ class CAPSLPDB(PhysioNetDataBase):
 
     CAP Sleep Database
 
-    ABOUT capslpdb:
-    ---------------
+    ABOUT capslpdb
+    --------------
     1. contains 108 polysomnographic (PSG) recordings, including 16 healthy subjects and 92 pathological recordings, in EDF format, NOT the usual wfdb .dat format
     2. The 92 pathological recordings include 40 recordings of patients diagnosed with nocturnal frontal lobe epilepsy (NFLE), 22 affected by REM behavior disorder (RBD), 10 with periodic leg movements (PLM), 9 insomniac, 5 narcoleptic, 4 affected by sleep-disordered breathing (SDB) and 2 by bruxism
     3. 
 
-    NOTE:
-    -----
+    NOTE
+    ----
     1. background knowledge aboute CAP:
     The Cyclic Alternating Pattern (CAP) is a periodic EEG activity occurring during NREM sleep. It is characterized by cyclic sequences of cerebral activation (phase A) followed by periods of deactivation (phase B) which separate two successive phase A periods with an interval <1 min. A phase A period and the following phase B period define a CAP cycle, and at least two CAP cycles are required to form a CAP sequence
 
-    ISSUES:
-    -------
-
-    Usage:
+    ISSUES
     ------
+
+    Usage
+    -----
     1. sleep stage
     1. sleep cyclic alternating pattern
 
-    References:
-    -----------
+    References
+    ----------
     [1] https://physionet.org/content/capslpdb/1.0.0/
     """
     def __init__(self, db_dir:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
-        Parameters:
-        -----------
+        Parameters
+        ----------
         db_dir: str, optional,
             storage path of the database
             if not specified, data will be fetched from Physionet
@@ -77,8 +77,8 @@ class CAPSLPDB(PhysioNetDataBase):
         find all records (relative path without file extension),
         and save into `self._all_records` for further use
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         local: bool, default True,
             if True, read from local storage, prior to using `wfdb.get_record_list`
         """

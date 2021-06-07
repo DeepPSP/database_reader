@@ -28,30 +28,30 @@ class STDB(PhysioNetDataBase):
 
     MIT-BIH ST Change Database
 
-    ABOUT stdb:
-    -----------
+    ABOUT stdb
+    ----------
     1. includes 28 ECG recordings of varying lengths, most of which were recorded during exercise stress tests and which exhibit transient ST depression
     2. the last five records (323 through 327) are excerpts of long-term ECG recordings and exhibit ST elevation
     3. annotation files contain only beat labels; they do not include ST change annotations
 
-    NOTE:
-    -----
+    NOTE
+    ----
 
-    ISSUES:
-    -------
-
-    Usage:
+    ISSUES
     ------
+
+    Usage
+    -----
     1. ST segment
 
-    References:
-    -----------
+    References
+    ----------
     [1] https://physionet.org/content/stdb/1.0.0/
     """
     def __init__(self, db_dir:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
-        Parameters:
-        -----------
+        Parameters
+        ----------
         db_dir: str, optional,
             storage path of the database
             if not specified, data will be fetched from Physionet
@@ -75,8 +75,8 @@ class STDB(PhysioNetDataBase):
         find all records (relative path without file extension),
         and save into `self._all_records` for further use
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         local: bool, default True,
             if True, read from local storage, prior to using `wfdb.get_record_list`
         """

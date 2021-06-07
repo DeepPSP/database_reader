@@ -25,8 +25,8 @@ __all__ = [
 class PPGBP(OtherDataBase):
     """
 
-    ABOUT PPG_BP (ref. [1]):
-    ------------------------
+    ABOUT PPG_BP (ref. [1])
+    -----------------------
     1. the PPG sensor:
         1.1. sensor model was SEP9AF-2 (SMPLUS Company, Korea)
         1.2. contains dual LED with 660nm (Red light) and 905 nm (Infrared) wavelengths
@@ -34,20 +34,20 @@ class PPGBP(OtherDataBase):
         1.4. hardware filter design is 0.5‒12Hz bandpass
     more to be written
 
-    NOTE:
-    -----
+    NOTE
+    ----
     1. PPG analysis tips (ref. [1],[2]):
         1.1. Taking the first and second derivatives of the PPG signals may help in detecting the informative inflection points more accurately
 
-    ISSUES:
-    -------
-
-    Usage:
+    ISSUES
     ------
+
+    Usage
+    -----
     1. blood pressure prediction from PPG
 
-    References:
-    -----------
+    References
+    ----------
     [1] Liang Y, Chen Z, Liu G, et al. A new, short-recorded photoplethysmogram dataset for blood pressure monitoring in China[J]. Scientific data, 2018, 5: 180020.
     [2] Allen J. Photoplethysmography and its application in clinical physiological measurement[J]. Physiological measurement, 2007, 28(3): R1.
     [3] Elgendi M. On the analysis of fingertip photoplethysmogram signals[J]. Current cardiology reviews, 2012, 8(1): 14-25.
@@ -57,8 +57,8 @@ class PPGBP(OtherDataBase):
     def __init__(self, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """ finished, to be improved,
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         db_dir: str,
             storage path of the database
         working_dir: str, optional,
@@ -100,13 +100,13 @@ class PPGBP(OtherDataBase):
     def get_subject_id(self, rec_no:int) -> int:
         """ not finished,
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec_no: int,
             number of the record, or "subject_ID"
 
-        Returns:
-        --------
+        Returns
+        -------
         int, the `subject_id` corr. to `rec_no`
         """
         return int(self._all_records[rec_no])
@@ -132,15 +132,15 @@ class PPGBP(OtherDataBase):
     def load_ppg_data(self, rec_no:int, seg_no:int, verbose: int=None) -> np.ndarray:
         """ finished, checked,
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec_no: int,
             number of the record, or "subject_ID"
         seg_no: int,
             number of the segment measured from the subject
         
-        Returns:
-        --------
+        Returns
+        -------
         data: ndarray,
             the ppg data
         """
@@ -163,14 +163,14 @@ class PPGBP(OtherDataBase):
     def load_ann(self, rec_no:Optional[int]=None) -> pd.DataFrame:
         """ finished, checked,
         
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec_no: int, optional,
             number of the record, or "subject_ID",
             if not specified, then all annotations will be returned
         
-        Returns:
-        --------
+        Returns
+        -------
         df_ann: DataFrame,
             the annotations
         """
@@ -188,13 +188,13 @@ class PPGBP(OtherDataBase):
     def load_diagnosis(self, rec_no:int) -> Union[List[str],list]:
         """ finished, checked,
         
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec_no: int,
             number of the record, or "subject_ID"
         
-        Returns:
-        --------
+        Returns
+        -------
         diagonosis: list,
             the list of diagnosis or empty list for the normal subjects
         """
@@ -209,15 +209,15 @@ class PPGBP(OtherDataBase):
     def get_patient_info(self, rec_no:int, items:Optional[List[str]]=None) -> Union[Real,str,pd.DataFrame]:
         """ not finished,
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec_no: int,
             number of the record, or "subject_ID"
         items: list of str, optional,
             items of the patient information (e.g. sex, age, etc.)
         
-        Returns:
-        --------
+        Returns
+        -------
         if `items` contains only one item, then value of this item in the subject"s information will be returned,
         otherwise, a dataframe of all information of the subject will be returned
         """

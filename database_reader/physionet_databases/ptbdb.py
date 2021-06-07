@@ -28,8 +28,8 @@ class PTBDB(PhysioNetDataBase):
 
     PTB (Physikalisch-Technische Bundesanstalt) Diagnostic ECG Database
 
-    ABOUT ptbdb:
-    ------------
+    ABOUT ptbdb
+    -----------
     1. contains 549 records from 290 subjects, with each subject represented by 1-5 records
     2. aach record includes 15 simultaneously measured signals:
         the conventional 12 leads (i, ii, iii, avr, avl, avf, v1, v2, v3, v4, v5, v6),
@@ -47,27 +47,27 @@ class PTBDB(PhysioNetDataBase):
         Miscellaneous                   4
         Healthy controls                52
 
-    NOTE:
-    -----
+    NOTE
+    ----
     1. no subjects numbered 124, 132, 134, or 161
     2. clinical summary (.hea files) is not available for 22 subjects
 
-    ISSUES:
-    -------
-
-    Usage:
+    ISSUES
     ------
+
+    Usage
+    -----
     1.
 
-    References:
-    -----------
+    References
+    ----------
     [1] https://physionet.org/content/ptbdb/1.0.0/
     [2] https://physionetchallenges.github.io/2020/
     """
     def __init__(self, db_dir:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
-        Parameters:
-        -----------
+        Parameters
+        ----------
         db_dir: str, optional,
             storage path of the database
             if not specified, data will be fetched from Physionet

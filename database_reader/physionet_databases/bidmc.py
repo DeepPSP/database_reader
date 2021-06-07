@@ -28,29 +28,29 @@ class BIDMC(PhysioNetDataBase):
 
     BIDMC PPG and Respiration Dataset
 
-    ABOUT bidmc:
-    ------------
+    ABOUT bidmc
+    -----------
     1. contains signals and numerics extracted from the much larger MIMIC II matched waveform Database
     2. with manual breath annotations
 
-    NOTE:
-    -----
+    NOTE
+    ----
 
-    ISSUES:
-    -------
-
-    Usage:
+    ISSUES
     ------
+
+    Usage
+    -----
     1. respiration
 
-    References:
-    -----------
+    References
+    ----------
     [1] https://physionet.org/content/bidmc/1.0.0/
     """
     def __init__(self, db_dir:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
-        Parameters:
-        -----------
+        Parameters
+        ----------
         db_dir: str, optional,
             storage path of the database
             if not specified, data will be fetched from Physionet
@@ -71,8 +71,8 @@ class BIDMC(PhysioNetDataBase):
         find all records (relative path without file extension),
         and save into `self._all_records` for further use
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         local: bool, default True,
             if True, read from local storage, prior to using `wfdb.get_record_list`
         """

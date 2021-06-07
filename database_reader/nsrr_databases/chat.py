@@ -28,27 +28,27 @@ class CHAT(NSRRDataBase):
 
     Childhood Adenotonsillectomy Trial
 
-    ABOUT chat:
-    -----------
+    ABOUT chat
+    ----------
     to write
 
-    NOTE:
-    -----
+    NOTE
+    ----
 
-    ISSUES:
-    -------
-
-    Usage:
+    ISSUES
     ------
 
-    References:
-    -----------
+    Usage
+    -----
+
+    References
+    ----------
     [1] https://sleepdata.org/datasets/chat
     """
     def __init__(self, db_dir:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
-        Parameters:
-        -----------
+        Parameters
+        ----------
         db_dir: str,
             storage path of the database
         working_dir: str, optional,

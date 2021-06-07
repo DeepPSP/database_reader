@@ -31,17 +31,17 @@ class CPSC2019(OtherDataBase):
     The 2nd China Physiological Signal Challenge (CPSC 2019):
     Challenging QRS Detection and Heart Rate Estimation from Single-Lead ECG Recordings
 
-    ABOUT CPSC2019:
-    ---------------
+    ABOUT CPSC2019
+    --------------
     1. Training data consists of 2,000 single-lead ECG recordings collected from patients with cardiovascular disease (CVD)
     2. Each of the recording last for 10 s
     3. Sampling rate = 500 Hz
 
-    NOTE:
-    -----
+    NOTE
+    ----
 
-    ISSUES:
-    -------
+    ISSUES
+    ------
     1. there're 13 records with unusual large values (> 20 mV):
         data_00098, data_00167, data_00173, data_00223, data_00224, data_00245, data_00813,
         data_00814, data_00815, data_00833, data_00841, data_00949, data_00950
@@ -69,19 +69,19 @@ class CPSC2019(OtherDataBase):
     which would falsely omit the interval between the 0-th and the 1-st ref rpeaks,
     thus potentially missing false positive
 
-    Usage:
-    ------
+    Usage
+    -----
     1. ecg wave delineation
 
-    References:
-    -----------
+    References
+    ----------
     [1] http://2019.icbeb.org/Challenge.html
     """
     def __init__(self, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """ finished, to be improved,
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         db_dir: str,
             storage path of the database
         working_dir: str, optional,
@@ -155,13 +155,13 @@ class CPSC2019(OtherDataBase):
     def get_subject_id(self, rec_no:int) -> int:
         """ not finished,
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec_no: int,
             number of the record, NOTE that rec_no starts from 1
 
-        Returns:
-        --------
+        Returns
+        -------
         pid: int,
             the `subject_id` corr. to `rec_no`
         """
@@ -174,8 +174,8 @@ class CPSC2019(OtherDataBase):
 
         print the information about the database
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         detailed: bool, default False,
             if False, an short introduction of the database will be printed,
             if True, then docstring of the class will be printed additionally
@@ -191,15 +191,15 @@ class CPSC2019(OtherDataBase):
     def load_data(self, rec:Union[int,str], units:str="mV", keep_dim:bool=True) -> np.ndarray:
         """ finished, checked,
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec_no: int,
             number of the record, NOTE that rec_no starts from 1
         keep_dim: bool, default True,
             whether or not to flatten the data of shape (n,1)
         
-        Returns:
-        --------
+        Returns
+        -------
         data: ndarray,
             the ecg data
         """
@@ -215,16 +215,16 @@ class CPSC2019(OtherDataBase):
     def load_ann(self, rec:Union[int,str], keep_dim:bool=True) -> Dict[str, np.ndarray]:
         """ finished, checked,
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: int or str,
             number of the record, NOTE that rec_no starts from 1,
             or the record name
         keep_dim: bool, default True,
             whether or not to flatten the data of shape (n,1)
         
-        Returns:
-        --------
+        Returns
+        -------
         ann: dict,
             with items "SPB_indices" and "PVC_indices", which record the indices of SPBs and PVCs
         """
@@ -245,14 +245,14 @@ class CPSC2019(OtherDataBase):
     def _get_rec_name(self, rec:Union[int,str]) -> str:
         """ finished, checked,
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: int or str,
             number of the record, NOTE that rec_no starts from 1,
             or the record name
 
-        Returns:
-        --------
+        Returns
+        -------
         rec_name: str,
             filename of the record
         """
@@ -268,14 +268,14 @@ class CPSC2019(OtherDataBase):
     def _get_ann_name(self, rec:Union[int,str]) -> str:
         """ finished, checked,
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: int or str,
             number of the record, NOTE that rec_no starts from 1,
             or the record name
 
-        Returns:
-        --------
+        Returns
+        -------
         ann_name: str,
             filename of annotations of the record `rec`
         """
@@ -287,8 +287,8 @@ class CPSC2019(OtherDataBase):
     def plot(self, rec:Union[int,str], data:Optional[np.ndarray]=None, ann:Optional[np.ndarray]=None, ticks_granularity:int=0) -> NoReturn:
         """ finished, checked,
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: int or str,
             number of the record, NOTE that rec_no starts from 1,
             or the record name
@@ -352,8 +352,8 @@ def compute_metrics(rpeaks_truth:Sequence[Union[np.ndarray,Sequence[int]]], rpea
 
     metric (scoring) function modified from the official one, with errors fixed
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     rpeaks_truth: sequence,
         sequence of ground truths of rpeaks locations from multiple records
     rpeaks_pred: sequence,
@@ -366,8 +366,8 @@ def compute_metrics(rpeaks_truth:Sequence[Union[np.ndarray,Sequence[int]]], rpea
     verbose: int, default 0,
         print verbosity
 
-    Returns:
-    --------
+    Returns
+    -------
     rec_acc: float,
         accuracy of predictions
     """

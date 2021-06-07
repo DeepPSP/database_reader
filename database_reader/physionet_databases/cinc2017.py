@@ -32,8 +32,8 @@ class CINC2017(PhysioNetDataBase):
     AF Classification from a Short Single Lead ECG Recording
     - The PhysioNet Computing in Cardiology Challenge 2017
 
-    ABOUT CINC2017:
-    ---------------
+    ABOUT CINC2017
+    --------------
     1. training set contains 8,528 single lead ECG recordings lasting from 9 s to just over 60 s, and the test set contains 3,658 ECG recordings of similar lengths
     2. records are of frequency 300 Hz and have been band pass filtered
     3. data distribution:
@@ -45,25 +45,25 @@ class CINC2017(PhysioNetDataBase):
         Noisy	        46	            27.1	9.0	    60	    30	    10.2
         Total	        8528	        32.5	10.9	61.0	30	    9.0
 
-    NOTE:
-    -----
+    NOTE
+    ----
 
-    ISSUES:
-    -------
-
-    Usage:
+    ISSUES
     ------
+
+    Usage
+    -----
     1. atrial fibrillation (AF) detection
 
-    References:
-    -----------
+    References
+    ----------
     [1] https://physionet.org/content/challenge-2017/1.0.0/
     """
     def __init__(self, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """ finished, checked,
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         db_dir: str, optional,
             storage path of the database
         working_dir: str, optional,
@@ -119,8 +119,8 @@ class CINC2017(PhysioNetDataBase):
     def load_data(self, rec:str, data_format:str="channel_first", units:str="mV") -> np.ndarray:
         """ finished, checked,
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: str,
             name of the record
         data_format: str, default "channel_first",
@@ -131,8 +131,8 @@ class CINC2017(PhysioNetDataBase):
         units: str, default "mV",
             units of the output signal, can also be "μV", with an alias of "uV"
 
-        Returns:
-        --------
+        Returns
+        -------
         data: ndarray,
             data loaded from `rec`, with given units and format
         """
@@ -159,8 +159,8 @@ class CINC2017(PhysioNetDataBase):
     def load_ann(self, rec:str, original:bool=False, ann_format:str="a") -> str:
         """ finished, checked,
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: str,
             name of the record
         original: bool, default False,
@@ -171,8 +171,8 @@ class CINC2017(PhysioNetDataBase):
             "a" - abbreviation
             "f" - full name
 
-        Returns:
-        --------
+        Returns
+        -------
         ann: str,
             annotation (label) of the record
         """
@@ -191,8 +191,8 @@ class CINC2017(PhysioNetDataBase):
     def plot(self, rec:str, data:Optional[np.ndarray]=None, ann:Optional[str]=None, ticks_granularity:int=0, rpeak_inds:Optional[Union[Sequence[int],np.ndarray]]=None) -> NoReturn:
         """ finished, checked,
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: str,
             name of the record
         data: ndarray, optional,

@@ -28,21 +28,21 @@ class Hands11K(ImageDataBase):
     11k Hands
     Gender recognition and biometric identification using a large dataset of hand images
 
-    About 11k Hands:
-    ----------------
+    About 11k Hands
+    ---------------
     1. contains 11,076 hand images (1600 x 1200 pixels) of 190 subjects, of varying ages between 18 - 75 years old
     2. the metadata csv file contains: (1) the subject ID, (2) gender, (3) age, (4) skin color, and (5) a set of information of the captured hand, i.e. right- or left-hand, hand side (dorsal or palmar), and logical indicators referring to whether the hand image contains accessories, nail polish, or irregularities
     3. download links: https://sites.google.com/view/11khands#h.p_HS0BIeMrtWbo
 
-    References:
-    -----------
+    References
+    ----------
     [1] https://sites.google.com/view/11khands
     [2] https://github.com/mahmoudnafifi/11K-Hands
     """
     def __init__(self, db_dir:str, mask_dir:str, hand_info_path:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
-        Parameters:
-        -----------
+        Parameters
+        ----------
         db_dir: str,
             directory of the images of the database
         mask_dir: str,
@@ -62,8 +62,8 @@ class Hands11K(ImageDataBase):
         """
         add background to the images of 11k Hands, which can largely improve performance of DL models
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         bkgd_dir: str,
             directory of the background images
         save_dir: str, optional,

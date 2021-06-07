@@ -27,9 +27,10 @@ class CASIA_CESC(AudioDataBase):
     [1] http://shachi.org/resources/27
     """
     def __init__(self, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
-        """
-        Parameters:
-        -----------
+        """ NOT finished, NOT checked,
+
+        Parameters
+        ----------
         db_dir: str,
             storage path of the database
         working_dir: str, optional,

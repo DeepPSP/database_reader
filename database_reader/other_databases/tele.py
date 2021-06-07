@@ -25,8 +25,8 @@ class TELE(OtherDataBase):
 
     TELE ECG Database from Harvard Dataverse
 
-    ABOUT sleep_accel:
-    ------------------
+    ABOUT sleep_accel
+    -----------------
     1. Contains 250 telehealth ECG records (collected using dry metal electrodes) from 120 patients with annotated QRS and artifact masks
     2. The original dataset contains 300 records, 50 of which are discarded due to low quality
     3. The mains frequency was 50 Hz, the sampling frequency was 500 Hz
@@ -38,26 +38,26 @@ class TELE(OtherDataBase):
         - a boolean indicating the visually determined mask
         - a boolean indicating the software determined mask
 
-    NOTE:
-    -----
+    NOTE
+    ----
 
-    ISSUES:
-    -------
+    ISSUES
+    ------
     1. 
 
-    Usage:
-    ------
+    Usage
+    -----
     1. ECG QRS delineation
 
-    References:
-    -----------
+    References
+    ----------
     [1] https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/QTG0EP
     """
     def __init__(self, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """ not finished,
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         db_dir: str,
             storage path of the database
         working_dir: str, optional,

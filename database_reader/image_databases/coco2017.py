@@ -25,20 +25,20 @@ class COCO2017(ImageDataBase):
 
     Common Object in Context
 
-    NOTE:
-    -----
+    NOTE
+    ----
     1. cocoapi `pycocotools` in pypi has not been updated for a long time, with bugs left unfixed; the github repo on the contrary is more up-to-date. Hence the recommended installation is via
     `git+https://github.com/cocodataset/cocoapi.git#subdirectory=PythonAPI`
 
-    References:
-    -----------
+    References
+    ----------
     [1] http://cocodataset.org/#download
     [2] https://github.com/cocodataset/cocoapi/blob/master/PythonAPI/pycocotools/coco.py
     """
     def __init__(self, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
-        Parameters:
-        -----------
+        Parameters
+        ----------
         db_dir: str,
             storage path of the database
         working_dir: str, optional,
@@ -125,13 +125,13 @@ def _image_id_to_filename(image_id:int) -> str:
     """
     convert image_id to the corresponding filename of the image in COCO2017
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     image_id: int,
         the `image_id` of the image, read from the annotation file
     
-    Returns:
-    --------
+    Returns
+    -------
     fn: str,
         the filename of the corresponding image
     """

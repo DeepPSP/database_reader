@@ -29,29 +29,29 @@ class AFTDB(PhysioNetDataBase):
 
     AF Termination Challenge Database
 
-    ABOUT aftdb (CinC 2004):
-    ------------------------
+    ABOUT aftdb (CinC 2004)
+    -----------------------
 
-    NOTE:
-    -----
+    NOTE
+    ----
 
-    ISSUES:
-    -------
-
-    Usage:
+    ISSUES
     ------
+
+    Usage
+    -----
     1. 
 
-    References:
-    -----------
+    References
+    ----------
     [1] https://physionet.org/content/aftdb/1.0.0/
     [2] Moody GB. Spontaneous Termination of Atrial Fibrillation: A Challenge from PhysioNet and Computers in Cardiology 2004. Computers in Cardiology 31:101-104 (2004).
     """
     def __init__(self, db_dir:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """ NOT finished,
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         db_dir: str, optional,
             storage path of the database
             if not specified, data will be fetched from Physionet
@@ -72,13 +72,13 @@ class AFTDB(PhysioNetDataBase):
     def get_subject_id(self, rec:str) -> int:
         """ NOT finished,
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: str,
             name of the record
 
-        Returns:
-        --------
+        Returns
+        -------
         sid: int,
             the `get_subject_id` corr. to `rec`
         """
@@ -100,8 +100,8 @@ class AFTDB(PhysioNetDataBase):
         load physical (converted from digital) ecg data,
         which is more understandable for humans
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: str,
             name of the record
         leads: str or list of str, optional,
@@ -115,8 +115,8 @@ class AFTDB(PhysioNetDataBase):
         fs: real number, optional,
             if not None, the loaded data will be resampled to this frequency
         
-        Returns:
-        --------
+        Returns
+        -------
         data: ndarray,
             the ecg data
         """
@@ -144,13 +144,13 @@ class AFTDB(PhysioNetDataBase):
 
         load annotations (header) stored in the .hea files
         
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: str,
             name of the record
         
-        Returns:
-        --------
+        Returns
+        -------
         ann:
         """
         # fp = os.path.join(self.db_dir, rec)

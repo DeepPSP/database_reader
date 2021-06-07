@@ -31,8 +31,8 @@ class MESA(NSRRDataBase):
 
     Multi-Ethnic Study of Atherosclerosis
 
-    ABOUT mesa:
-    -----------
+    ABOUT mesa
+    ----------
     ***ABOUT the dataset:
     1. subjects: 6,814 black, white, Hispanic, and Chinese-American men and women initially ages 45-84 at baseline in 2000-2002
     2. there have been four follow-up exams to date, in the years
@@ -63,26 +63,26 @@ class MESA(NSRRDataBase):
         finger pulse oximetry
     9. 
 
-    NOTE:
-    -----
+    NOTE
+    ----
     1. actigraph data: epochs without activity counts and/or light readings typically indicate offwrist time and/or the watch's failure to provide a valid measurement for that epoch. These epochs should be excluded from study
     2. 
 
-    ISSUES:
-    -------
-
-    Usage:
+    ISSUES
     ------
+
+    Usage
+    -----
     1. 
 
-    References:
-    -----------
+    References
+    ----------
     [1] https://sleepdata.org/datasets/mesa
     """
     def __init__(self, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
-        Parameters:
-        -----------
+        Parameters
+        ----------
         db_dir: str,
             storage path of the database
         working_dir: str, optional,
@@ -114,13 +114,13 @@ class MESA(NSRRDataBase):
         """
         Attach a `subject_id` to the record, in order to facilitate further uses
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: str,
             record name
 
-        Returns:
-        --------
+        Returns
+        -------
         int, a `subject_id` attached to the record `rec`
         """
         raise NotImplementedError
@@ -144,8 +144,8 @@ class MESA(NSRRDataBase):
 
         print information about the database
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         detailed: bool, default False,
             if False, "What","Who","When","Funding" will be printed,
             if True, then docstring of the class will be printed additionally

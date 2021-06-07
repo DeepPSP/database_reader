@@ -30,8 +30,8 @@ class LUDB(PhysioNetDataBase):
 
     Lobachevsky University Electrocardiography Database
 
-    ABOUT ludb:
-    -----------
+    ABOUT ludb
+    ----------
     1. consist of 200 10-second conventional 12-lead (i, ii, iii, avr, avl, avf, v1, v2, v3, v4, v5, v6) ECG signal records, with sampling frequency 500 Hz
     2. boundaries of P, T waves and QRS complexes were manually annotated by cardiologists, and with the corresponding diagnosis
     3. annotated are 16797 P waves, 21966 QRS complexes, 19666 T waves (in total, 58429 annotated waves)
@@ -135,28 +135,28 @@ class LUDB(PhysioNetDataBase):
     5. ludb.csv stores information about the patients (gender, age, rhythm type, direction of the electrical axis of the heart, the presence of a cardiac pacemaker, etc.)
     
 
-    NOTE:
-    -----
+    NOTE
+    ----
 
-    ISSUES:
-    -------
+    ISSUES
+    ------
     1. (version 1.0.0, fixed in version 1.0.1) ADC gain might be wrong, either `units` should be μV, or `adc_gain` should be 1000 times larger
 
-    Usage:
-    ------
+    Usage
+    -----
     1. ECG wave delineation
     2. ECG arrhythmia classification
 
-    References:
-    -----------
+    References
+    ----------
     [1] https://physionet.org/content/ludb/1.0.1/
     [2] Kalyakulina, A., Yusipov, I., Moskalenko, V., Nikolskiy, A., Kozlov, A., Kosonogov, K., Zolotykh, N., & Ivanchenko, M. (2020). Lobachevsky University Electrocardiography Database (version 1.0.0).
     """
     def __init__(self, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """ finished, checked,
         
-        Parameters:
-        -----------
+        Parameters
+        ----------
         db_dir: str,
             storage path of the database
         working_dir: str, optional,
@@ -218,8 +218,8 @@ class LUDB(PhysioNetDataBase):
         load physical (converted from digital) ecg data,
         which is more understandable for humans
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: str,
             name of the record
         leads: str or list of str, optional,
@@ -233,8 +233,8 @@ class LUDB(PhysioNetDataBase):
         fs: real number, optional,
             if not None, the loaded data will be resampled to this frequency
         
-        Returns:
-        --------
+        Returns
+        -------
         data: ndarray,
             the ecg data
         """
@@ -265,8 +265,8 @@ class LUDB(PhysioNetDataBase):
 
         load the wave delineation, along with metadata if specified
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: str,
             name of the record
         leads: str or list of str, optional,
@@ -274,8 +274,8 @@ class LUDB(PhysioNetDataBase):
         metadata: bool, default False,
             if True, load metadata from corresponding head file
 
-        Returns:
-        --------
+        Returns
+        -------
         ann_dict: dict,
         """
         ann_dict = ED()
@@ -348,13 +348,13 @@ class LUDB(PhysioNetDataBase):
 
         load diagnoses of the `rec`
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: str,
             name of the record
 
-        Returns:
-        --------
+        Returns
+        -------
         diagnoses: list of str,
         """
         diagnoses = self._load_header(rec)["diagnoses"]
@@ -366,8 +366,8 @@ class LUDB(PhysioNetDataBase):
 
         load the wave delineation in the form of masks
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: str,
             name of the record
         leads: str or list of str, optional,
@@ -380,8 +380,8 @@ class LUDB(PhysioNetDataBase):
             custom class map,
             if not set, `self.class_map` will be used
 
-        Returns:
-        --------
+        Returns
+        -------
         masks: ndarray,
             the masks corresponding to the wave delineation annotations of `rec`
         """
@@ -403,8 +403,8 @@ class LUDB(PhysioNetDataBase):
 
         convert masks into lists of waveforms
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         masks: ndarray,
             wave delineation in the form of masks,
             of shape (n_leads, seq_len), or (seq_len,)
@@ -421,8 +421,8 @@ class LUDB(PhysioNetDataBase):
             sampling frequency of the signal corresponding to the `masks`,
             if is None, `self.fs` will be used, to compute `duration` of the ecg waveforms
 
-        Returns:
-        --------
+        Returns
+        -------
         waves: dict,
             each item value is a list containing the `ECGWaveForm`s corr. to the lead (item key)
         """
@@ -480,13 +480,13 @@ class LUDB(PhysioNetDataBase):
 
         load header data into a dict
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: str,
             name of the record
 
-        Returns:
-        --------
+        Returns
+        -------
         header_dict: dict,
         """
         header_dict = ED({})
@@ -512,8 +512,8 @@ class LUDB(PhysioNetDataBase):
     def _normalize_leads(self, leads:Optional[Sequence[str]]=None, standard_ordering:bool=True, lower_cases:bool=False) -> List[str]:
         """ finished, checked,
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         leads: str or list of str, optional,
             the (names of) leads to normalize
         starndard_ordering: bool, default True,
@@ -541,16 +541,16 @@ class LUDB(PhysioNetDataBase):
     def load_patient_info(self, rec:str, fields:Optional[Union[str,Sequence[str]]]=None) -> Union[dict,str]:
         """ finished, checked,
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: str,
             name of the record
         fields: str or sequence of str, optional,
             field(s) of the patient info of record `rec`,
             if not specified, all fields of the patient info will be returned
 
-        Returns:
-        --------
+        Returns
+        -------
         info: dict or str,
             patient info of the given fields of the record
         """
@@ -577,8 +577,8 @@ class LUDB(PhysioNetDataBase):
         with metadata (fs, labels, tranche, etc.),
         possibly also along with wave delineations
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         rec: str,
             name of the record
         data: ndarray, optional,
@@ -601,8 +601,8 @@ class LUDB(PhysioNetDataBase):
         1. slice too long records, and plot separately for each segment
         2. plot waves using `axvspan`
 
-        NOTE:
-        -----
+        NOTE
+        ----
         `Locator` of `plt` has default `MAXTICKS` equal to 1000,
         if not modifying this number, at most 40 seconds of signal could be plotted once
 

@@ -30,8 +30,8 @@ class MIMIC3WDB_MATCHED(PhysioNetDataBase):
 
     MIMIC-III Waveform Database Matched Subset
 
-    ABOUT mimic3wdb_matched:
-    ------------------------
+    ABOUT mimic3wdb_matched
+    -----------------------
     1. contains 22,317 waveform records, and 22,247 numerics records, for 10,282 distinct ICU patients, which have been matched and time-aligned with MIMIC-III Clinical Database records, with total size 2.4 TB
     2. almost all record sets include waveform records (usually multi-record consisting of multiple continuous segments in single files) from several visits (each visit is a single "folder" in "mimic3wdb") containing digitized signals (typically including ECG, ABP, respiration, and PPG, and frequently other signals) digitized at 125 Hz with 8-, 10-, or (occasionally) 12-bit resolution and "numerics" records containing time series of vital signs (HR, RESP, SpO2, BP, etc.) of periodic measurements sampled once per second or once per minute
     3. all data associated with a particular patient have been placed into a single subdirectory "matched/pXX/pXXNNNN/" where "N", "X" are digits, named according to the patient's MIMIC-III subject_ID. These subdirectories are further divided into ten intermediate-level directories (matched/p00 to matched/p09)
@@ -39,19 +39,19 @@ class MIMIC3WDB_MATCHED(PhysioNetDataBase):
     5. in most cases, the waveform (multi-)record is paired with a numerics record, which has the same name as the associated waveform record, with an "n" added to the end "pXXNNNN-YYYY-MM-DD-hh-mmn" ("n" is the letter, not a digit)
     6. in each folder "matched/pXX/pXXNNNN/", the files of patterns "3[\d]{6}_[\d]{4}.dat", "3[\d]{6}_[\d]{4}.hea", "3[\d]{6}n.dat", "3[\d]{6}_layout.hea" are from the parent `MIMIC3WDB`, with only the "3[\d]{6}.hea", "3[\d]{6}n.hea" files from the parent `MIMIC3WDB` replaced by "pXXNNNN-YYYY-MM-DD-hh-mm.hea", "pXXNNNN-YYYY-MM-DD-hh-mmn.hea" files correspondingly
 
-    NOTE:
-    -----
+    NOTE
+    ----
 
-    ISSUES:
-    -------
+    ISSUES
+    ------
     ref. [3]
 
-    Usage:
-    ------
+    Usage
+    -----
     1. 
 
-    References:
-    -----------
+    References
+    ----------
     [1] https://mimic.physionet.org/
     [2] https://github.com/MIT-LCP/mimic-code
     [3] https://www.physionet.org/content/mimiciii/1.4/
@@ -60,8 +60,8 @@ class MIMIC3WDB_MATCHED(PhysioNetDataBase):
     """
     def __init__(self, db_dir:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
-        Parameters:
-        -----------
+        Parameters
+        ----------
         db_dir: str, optional,
             storage path of the database
             if not specified, data will be fetched from Physionet

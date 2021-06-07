@@ -29,8 +29,8 @@ class UCDDB(PhysioNetDataBase):
 
     St. Vincent"s University Hospital / University College Dublin Sleep Apnea Database
 
-    ABOUT ucddb:
-    ------------
+    ABOUT ucddb
+    -----------
     1. contains 25 full overnight polysomnograms (PSGs) with simultaneous three-channel Holter ECGs
         *.rec --- PSG data in EDF format
         *_lifecard.edf --- ECG data in EDF format 
@@ -66,27 +66,27 @@ class UCDDB(PhysioNetDataBase):
         CS - Cheynes-Stokes
         Bradycardia / Tachycardia
 
-    NOTE:
-    -----
+    NOTE
+    ----
     1. this dataset is NOT in the standard wfdb format, but rather in EDF format
     2. in record ucddb002, only two distinct ECG signals were recorded; the second ECG signal was also used as the third signal.
 
-    ISSUES:
-    -------
-
-    Usage:
+    ISSUES
     ------
+
+    Usage
+    -----
     1. sleep stage
     2. sleep apnea
 
-    References:
-    -----------
+    References
+    ----------
     [1] https://physionet.org/content/ucddb/1.0.0/
     """
     def __init__(self, db_dir:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
-        Parameters:
-        -----------
+        Parameters
+        ----------
         db_dir: str, optional,
             storage path of the database
             if not specified, data will be fetched from Physionet
@@ -110,16 +110,16 @@ class UCDDB(PhysioNetDataBase):
     def safe_edf_file_operation(self, operation:str="close", full_file_path:Optional[str]=None) -> Union[EdfReader, NoReturn]:
         """ finished, checked,
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         operation: str, default "close",
             operation name, can be "open" and "close"
         full_file_path: str, optional,
             path of the file which contains the psg data,
             if not given, default path will be used
         
-        Returns:
-        --------
+        Returns
+        -------
 
         """
         if operation == "open":

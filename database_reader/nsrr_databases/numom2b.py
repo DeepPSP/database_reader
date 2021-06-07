@@ -31,29 +31,29 @@ class nuMoM2b(NSRRDataBase):
 
     Nulliparous Pregnancy Outcomes Study: Monitoring Mothers-to-Be (nuMoM2b)
 
-    ABOUT nuMoM2b:
-    --------------
+    ABOUT nuMoM2b
+    -------------
 
-    NOTE:
-    -----
+    NOTE
+    ----
     1. 
 
-    ISSUES:
-    -------
-
-    Usage:
+    ISSUES
     ------
+
+    Usage
+    -----
     1. sleep analysis, especially for pregnant women
 
-    References:
-    -----------
+    References
+    ----------
     [1] https://sleepdata.org/datasets/numom2b
     [2] https://dash.nichd.nih.gov/study/226675
     """
     def __init__(self, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
         """
-        Parameters:
-        -----------
+        Parameters
+        ----------
         db_dir: str,
             storage path of the database
         working_dir: str, optional,
