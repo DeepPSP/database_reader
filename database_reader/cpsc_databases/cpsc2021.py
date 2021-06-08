@@ -556,7 +556,7 @@ class CPSC2021(OtherDataBase):
 
         load the episodes of atrial fibrillation, in terms of intervals or mask
 
-        Paramters:
+        Parameters
         ----------
         rec: str,
             name of the record
