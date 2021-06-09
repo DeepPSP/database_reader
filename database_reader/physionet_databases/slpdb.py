@@ -53,7 +53,7 @@ class SLPDB(PhysioNetDataBase):
     ----------
     [1] https://physionet.org/content/slpdb/1.0.0/
     """
-    def __init__(self, db_dir:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
+    def __init__(self, db_dir:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs:Any) -> NoReturn:
         """
         Parameters
         ----------
@@ -63,6 +63,8 @@ class SLPDB(PhysioNetDataBase):
         working_dir: str, optional,
             working directory, to store intermediate files and log file
         verbose: int, default 2,
+            log verbosity
+        kwargs: auxilliary key word arguments
         """
         super().__init__(db_name="slpdb", db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
         self.fs = 250  # for ecg

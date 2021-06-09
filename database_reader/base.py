@@ -112,7 +112,7 @@ class _DataBase(object):
 
     universal base class for all databases
     """
-    def __init__(self, db_name:str, db_dir:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
+    def __init__(self, db_name:str, db_dir:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs:Any) -> NoReturn:
         """
         Parameters
         ----------
@@ -124,7 +124,8 @@ class _DataBase(object):
         working_dir: str, optional,
             working directory, to store intermediate files and log file
         verbose: int, default 2,
-        kwargs: dict,
+            log verbosity
+        kwargs: auxilliary key word arguments
         """
         self.db_name = db_name
         self.db_dir = db_dir
@@ -230,7 +231,7 @@ class PhysioNetDataBase(_DataBase):
     """
     https://www.physionet.org/
     """
-    def __init__(self, db_name:str, db_dir:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
+    def __init__(self, db_name:str, db_dir:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs:Any) -> NoReturn:
         """
         Parameters
         ----------
@@ -242,7 +243,8 @@ class PhysioNetDataBase(_DataBase):
         working_dir: str, optional,
             working directory, to store intermediate files and log file
         verbose: int, default 2,
-        kwargs: dict,
+            log verbosity
+        kwargs: auxilliary key word arguments
 
         NOTE
         ----
@@ -619,7 +621,7 @@ class NSRRDataBase(_DataBase):
     """
     https://sleepdata.org/
     """
-    def __init__(self, db_name:str, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
+    def __init__(self, db_name:str, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs:Any) -> NoReturn:
         """
         Parameters
         ----------
@@ -630,7 +632,8 @@ class NSRRDataBase(_DataBase):
         working_dir: str, optional,
             working directory, to store intermediate files and log file
         verbose: int, default 2,
-        kwargs: dict,
+            log verbosity
+        kwargs: auxilliary key word arguments
 
         typical `db_dir`:
         ------------------
@@ -769,7 +772,7 @@ class ImageDataBase(_DataBase):
     """
 
     """
-    def __init__(self, db_name:str, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
+    def __init__(self, db_name:str, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs:Any) -> NoReturn:
         """
         Parameters
         ----------
@@ -780,7 +783,8 @@ class ImageDataBase(_DataBase):
         working_dir: str, optional,
             working directory, to store intermediate files and log file
         verbose: int, default 2,
-        kwargs: dict,
+            log verbosity
+        kwargs: auxilliary key word arguments
         """
         super().__init__(db_name=db_name, db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
         # self._set_logger(prefix=None)
@@ -815,7 +819,7 @@ class AudioDataBase(_DataBase):
     """
 
     """
-    def __init__(self, db_name:str, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
+    def __init__(self, db_name:str, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs:Any) -> NoReturn:
         """
         Parameters
         ----------
@@ -826,7 +830,8 @@ class AudioDataBase(_DataBase):
         working_dir: str, optional,
             working directory, to store intermediate files and log file
         verbose: int, default 2,
-        kwargs: dict,
+            log verbosity
+        kwargs: auxilliary key word arguments
         """
         super().__init__(db_name=db_name, db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
         # self._set_logger(prefix=None)
@@ -861,7 +866,7 @@ class OtherDataBase(_DataBase):
     """
 
     """
-    def __init__(self, db_name:str, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
+    def __init__(self, db_name:str, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs:Any) -> NoReturn:
         r"""
         Parameters
         ----------
@@ -872,7 +877,8 @@ class OtherDataBase(_DataBase):
         working_dir: str, optional,
             working directory, to store intermediate files and log file
         verbose: int, default 2,
-        kwargs: dict,
+            log verbosity
+        kwargs: auxilliary key word arguments
 
         typical "db_dir":
         ------------------

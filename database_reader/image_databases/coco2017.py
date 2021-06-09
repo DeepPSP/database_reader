@@ -3,7 +3,7 @@
 """
 import os
 import json
-from typing import Optional
+from typing import Optional, Any, NoReturn
 
 import cv2
 import numpy as np
@@ -35,7 +35,7 @@ class COCO2017(ImageDataBase):
     [1] http://cocodataset.org/#download
     [2] https://github.com/cocodataset/cocoapi/blob/master/PythonAPI/pycocotools/coco.py
     """
-    def __init__(self, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
+    def __init__(self, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs:Any) -> NoReturn:
         """
         Parameters
         ----------
@@ -44,6 +44,8 @@ class COCO2017(ImageDataBase):
         working_dir: str, optional,
             working directory, to store intermediate files and log file
         verbose: int, default 2,
+            log verbosity
+        kwargs: auxilliary key word arguments
         """
         super().__init__(db_name="COCO2017", db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
         self.image_dirs = ED({

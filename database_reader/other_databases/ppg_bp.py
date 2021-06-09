@@ -54,7 +54,7 @@ class PPGBP(OtherDataBase):
     [4] https://figshare.com/articles/PPG-BP_Database_zip/5459299/3
     """
     
-    def __init__(self, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
+    def __init__(self, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs:Any) -> NoReturn:
         """ finished, to be improved,
 
         Parameters
@@ -64,6 +64,8 @@ class PPGBP(OtherDataBase):
         working_dir: str, optional,
             working directory, to store intermediate files and log file
         verbose: int, default 2,
+            log verbosity
+        kwargs: auxilliary key word arguments
 
         typical "db_dir": "/export/servers/kuangzhexiang/data/PPG_BP/"
         ------------------

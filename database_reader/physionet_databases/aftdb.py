@@ -47,7 +47,7 @@ class AFTDB(PhysioNetDataBase):
     [1] https://physionet.org/content/aftdb/1.0.0/
     [2] Moody GB. Spontaneous Termination of Atrial Fibrillation: A Challenge from PhysioNet and Computers in Cardiology 2004. Computers in Cardiology 31:101-104 (2004).
     """
-    def __init__(self, db_dir:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
+    def __init__(self, db_dir:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs:Any) -> NoReturn:
         """ NOT finished,
 
         Parameters
@@ -58,6 +58,8 @@ class AFTDB(PhysioNetDataBase):
         working_dir: str, optional,
             working directory, to store intermediate files and log file
         verbose: int, default 2,
+            log verbosity
+        kwargs: auxilliary key word arguments
         """
         super().__init__(db_name="aftdb", db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
         # self.fs = 100

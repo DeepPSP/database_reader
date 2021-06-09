@@ -203,7 +203,7 @@ class SHHS(NSRRDataBase):
     [9] http://healthysleep.med.harvard.edu/sleep-apnea/diagnosing-osa/understanding-results
     [10] https://sleepdata.org/datasets/shhs/pages/full-description.md
     """
-    def __init__(self, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
+    def __init__(self, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs:Any) -> NoReturn:
         """
         
         Parameters
@@ -213,6 +213,8 @@ class SHHS(NSRRDataBase):
         working_dir: str, optional,
             working directory, to store intermediate files and log file
         verbose: int, default 2,
+            log verbosity
+        kwargs: auxilliary key word arguments
 
         default db_dir:
             "/export/algo/wenh06/ecg_data/shhs/"

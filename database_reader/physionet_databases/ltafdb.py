@@ -64,7 +64,7 @@ class LTAFDB(PhysioNetDataBase):
     [2] Petrutiu S, Sahakian AV, Swiryn S. Abrupt changes in fibrillatory wave characteristics at the termination of paroxysmal atrial fibrillation in humans. Europace 9:466-470 (2007).
     [3] https://physionet.org/files/ltafdb/1.0.0/tables.shtml
     """
-    def __init__(self, db_dir:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
+    def __init__(self, db_dir:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs:Any) -> NoReturn:
         """ finished, checked,
 
         Parameters
@@ -75,6 +75,8 @@ class LTAFDB(PhysioNetDataBase):
         working_dir: str, optional,
             working directory, to store intermediate files and log file
         verbose: int, default 2,
+            log verbosity
+        kwargs: auxilliary key word arguments
         """
         super().__init__(db_name="ltafdb", db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
         self.fs = 128

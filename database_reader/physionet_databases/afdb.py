@@ -63,7 +63,7 @@ class AFDB(PhysioNetDataBase):
     [1] https://physionet.org/content/afdb/1.0.0/
     [2] Moody GB, Mark RG. A new method for detecting atrial fibrillation using R-R intervals. Computers in Cardiology. 10:227-230 (1983).
     """
-    def __init__(self, db_dir:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
+    def __init__(self, db_dir:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs:Any) -> NoReturn:
         """ finished, checked,
 
         Parameters
@@ -74,6 +74,8 @@ class AFDB(PhysioNetDataBase):
         working_dir: str, optional,
             working directory, to store intermediate files and log file
         verbose: int, default 2,
+            log verbosity
+        kwargs: auxilliary key word arguments
         """
         super().__init__(db_name="afdb", db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
         self.fs = 250

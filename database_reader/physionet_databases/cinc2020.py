@@ -165,7 +165,7 @@ class CINC2020(PhysioNetDataBase):
     [6] (deprecated) https://storage.cloud.google.com/physionet-challenge-2020-12-lead-ecg-public/
     [7] (recommended) https://storage.cloud.google.com/physionetchallenge2021-public-datasets/
     """
-    def __init__(self, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
+    def __init__(self, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs:Any) -> NoReturn:
         """
         Parameters
         ----------
@@ -174,7 +174,8 @@ class CINC2020(PhysioNetDataBase):
         working_dir: str, optional,
             working directory, to store intermediate files and log file
         verbose: int, default 2,
-            print and log verbosity
+            log verbosity
+        kwargs: auxilliary key word arguments
         """
         super().__init__(db_name="CINC2020", db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
         

@@ -58,7 +58,7 @@ class MIMIC3WDB(PhysioNetDataBase):
     [4] https://physionet.org/content/mimic3wdb/1.0/
     [5] https://physionet.org/content/mimic3wdb-matched/1.0/
     """
-    def __init__(self, db_dir:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
+    def __init__(self, db_dir:Optional[str]=None, working_dir:Optional[str]=None, verbose:int=2, **kwargs:Any) -> NoReturn:
         """
         Parameters
         ----------
@@ -68,8 +68,8 @@ class MIMIC3WDB(PhysioNetDataBase):
         working_dir: str, optional,
             working directory, to store intermediate files and log file
         verbose: int, default 2,
-            print verbosity
-        kwargs:
+            log verbosity
+        kwargs: auxilliary key word arguments
         """
         super().__init__(db_name="mimic3wdb", db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
         self.metadata_files = ED(

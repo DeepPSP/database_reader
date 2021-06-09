@@ -83,7 +83,7 @@ class CPSC2018(OtherDataBase):
     [2] https://physionetchallenges.github.io/2020/
     [3] 
     """
-    def __init__(self, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
+    def __init__(self, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs:Any) -> NoReturn:
         """ finished, to be improved,
 
         Parameters
@@ -93,6 +93,8 @@ class CPSC2018(OtherDataBase):
         working_dir: str, optional,
             working directory, to store intermediate files and log file
         verbose: int, default 2,
+            log verbosity
+        kwargs: auxilliary key word arguments
         """
         super().__init__(db_name="CPSC2018", db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
 
@@ -444,7 +446,7 @@ class CPSC2018(OtherDataBase):
             f.write("\n".join([recording_string, class_string, label_string, score_string, ""]))
 
 
-    def plot(self, rec_no:Union[int,str], leads:Optional[Union[str, List[str]]]=None, **kwargs):
+    def plot(self, rec_no:Union[int,str], leads:Optional[Union[str, List[str]]]=None, **kwargs:Any) -> NoReturn:
         """ not finished, not checked,
 
         Parameters
@@ -453,8 +455,8 @@ class CPSC2018(OtherDataBase):
             number of the record, NOTE that rec_no starts from 1; or name of the record,
             int only supported for the original CPSC2018 dataset
         leads: str or list of str, optional,
-            the leads to 
-        kwargs: dict,
+            the leads to plot
+        kwargs: auxilliary key word arguments
         """
         if isinstance(rec_no, str):
             rec_no = int(rec_no[1:])

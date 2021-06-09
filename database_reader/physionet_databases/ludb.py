@@ -152,7 +152,7 @@ class LUDB(PhysioNetDataBase):
     [1] https://physionet.org/content/ludb/1.0.1/
     [2] Kalyakulina, A., Yusipov, I., Moskalenko, V., Nikolskiy, A., Kozlov, A., Kosonogov, K., Zolotykh, N., & Ivanchenko, M. (2020). Lobachevsky University Electrocardiography Database (version 1.0.0).
     """
-    def __init__(self, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
+    def __init__(self, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs:Any) -> NoReturn:
         """ finished, checked,
         
         Parameters
@@ -162,6 +162,8 @@ class LUDB(PhysioNetDataBase):
         working_dir: str, optional,
             working directory, to store intermediate files and log file
         verbose: int, default 2,
+            log verbosity
+        kwargs: auxilliary key word arguments
         """
         super().__init__(db_name="ludb", db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
         print("Version 1.0.0 has bugs, make sure that version 1.0.1 or higher is used")

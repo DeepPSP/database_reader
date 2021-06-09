@@ -54,7 +54,7 @@ class SleepAccel(OtherDataBase):
     [3] https://alpha.physionet.org/content/sleep-accel/1.0.0/
     [4] to add acc_to_count references
     """
-    def __init__(self, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs):
+    def __init__(self, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs:Any) -> NoReturn:
         """ not finished,
 
         Parameters
@@ -64,6 +64,8 @@ class SleepAccel(OtherDataBase):
         working_dir: str, optional,
             working directory, to store intermediate files and log file
         verbose: int, default 2,
+            log verbosity
+        kwargs: auxilliary key word arguments
 
         typical "db_dir":  "/export/servers/data/sleep_accel/"
         """
