@@ -32,7 +32,7 @@ class PRCV2021(OtherDataBase):
         - AD (Alzheimer Disease)
         - MCI (Mild Cognitive Impairment)
         - NC (Normal Control)
-    3. columns in the stats csv file:
+    3. columns in the stats csv file (TODO: find units for some columns (measurements)):
         - new_subject_id: subject id
         - site: 
         - age: age of the subject
@@ -43,15 +43,15 @@ class PRCV2021(OtherDataBase):
         - AD: boolean value indicating subject is of class AD (1) or not (0)
         - Label: class (map) of the subject, 0 for NC, 1 for MCI, 2 for AD
         - Resolution: sMRI image resolution
-        - Noise:
-        - Bias:
-        - IQR:
-        - TIV:
-        - CSF:
-        - GMV:
-        - WMV:
-        - Thickness:
-        - Thickness_std:
+        - Noise: noise (quality measures) of sMRI image evaluated using CAT12
+        - Bias: bias (quality measures) of sMRI image evaluated using CAT12
+        - IQR: weighted overall sMRI image quality evaluated using CAT12
+        - TIV: total intracranial volume
+        - CSF: cerebrospinal fluid
+        - GMV: grey matter volume
+        - WMV: white matter volume
+        - Thickness: (mean of) cortical thickness
+        - Thickness_std: standard deviation of cortical thickness
 
     NOTE
     ----
@@ -67,6 +67,8 @@ class PRCV2021(OtherDataBase):
     References
     ----------
     [1] https://competition.huaweicloud.com/information/1000041489/introduction
+    [2] http://www.neuro.uni-jena.de/cat/
+    [3] http://www.neuro.uni-jena.de/cat12/CAT12-Manual.pdf
     """
     def __init__(self, db_dir:str, working_dir:Optional[str]=None, verbose:int=2, **kwargs:Any) -> NoReturn:
         """ not finished,
