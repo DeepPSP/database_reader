@@ -143,7 +143,7 @@ class CPSC2021(OtherDataBase):
             "persistent atrial fibrillation": 2,
         }
 
-         self.nb_records = ED({"training_I":730, "training_II":706})
+        self.nb_records = ED({"training_I":730, "training_II":706})
         self._all_records = ED({t:[] for t in self.db_tranches})
         self.__all_records = None
         self.__revised_records = []
