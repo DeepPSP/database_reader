@@ -1,3 +1,5 @@
 [submodule "database_reader/utils"]
 	path = database_reader/utils
 	url = https://github.com/DeepPSP/utils.git
+	# https://stackoverflow.com/questions/60009274/git-error-after-changing-submodules-url-fatal-needed-a-single-revision
+	branch = master
