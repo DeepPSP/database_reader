@@ -59,12 +59,12 @@ PlotCfg.t_offset = 60
 
 
 class CINC2021(PhysioNetDataBase):
-    """ NOT finished,
+    """ finished, checked, to improve,
 
     Will Two Do? Varying Dimensions in Electrocardiography:
     The PhysioNet/Computing in Cardiology Challenge 2021
 
-    ABOUT CINC2021
+    ABOUT CinC2021
     --------------
     0. goal: build an algorithm that can classify cardiac abnormalities from either
         - twelve-lead (I, II, III, aVR, aVL, aVF, V1, V2, V3, V4, V5, V6)
@@ -74,21 +74,21 @@ class CINC2021(PhysioNetDataBase):
         - two-lead (I, II)
     ECG recordings.
     1. tranches of data:
-        - CPSC2018 (tranches A and B of CINC2020):
+        - CPSC2018 (tranches A and B of CinC2020):
             contains 13,256 ECGs (6,877 from tranche A, 3,453 from tranche B),
             10,330 ECGs shared as training data, 1,463 retained as validation data,
             and 1,463 retained as test data.
             Each recording is between 6 and 144 seconds long with a sampling frequency of 500 Hz
-        - INCARTDB (tranche C of CINC2020):
+        - INCARTDB (tranche C of CinC2020):
             contains 75 annotated ECGs,
             all shared as training data, extracted from 32 Holter monitor recordings.
             Each recording is 30 minutes long with a sampling frequency of 257 Hz
-        - PTB (PTB and PTB-XL, tranches D and E of CINC2020):
+        - PTB (PTB and PTB-XL, tranches D and E of CinC2020):
             contains 22,353 ECGs,
             516 + 21,837, all shared as training data.
             Each recording is between 10 and 120 seconds long,
             with a sampling frequency of either 500 (PTB-XL) or 1,000 (PTB) Hz
-        - Georgia (tranche F of CINC2020):
+        - Georgia (tranche F of CinC2020):
             contains 20,678 ECGs,
             10,334 ECGs shared as training data, 5,167 retained as validation data,
             and 5,167 retained as test data.
@@ -97,11 +97,12 @@ class CINC2021(PhysioNetDataBase):
             contains 10,000 ECGs,
             all retained as test data,
             geographically distinct from the Georgia database.
-            Perhaps is the main part of the hidden test set of CINC2020
+            Perhaps is the main part of the hidden test set of CinC2020
         - CUSPHNFH (NEW, the Chapman University, Shaoxing People’s Hospital and Ningbo First Hospital database)
             contains 45,152 ECGS,
             all shared as training data.
             Each recording is 10 seconds long with a sampling frequency of 500 Hz
+            this tranche contains two subsets:
             - Chapman_Shaoxing: "JS00001" - "JS10646"
             - Ningbo: "JS10647" - "JS45551"
     2. only a part of diagnosis_abbr (diseases that appear in the labels of the 6 tranches of training data) are used in the scoring function, while others are ignored. The scored diagnoses were chosen based on prevalence of the diagnoses in the training data, the severity of the diagnoses, and the ability to determine the diagnoses from ECG recordings. The ignored diagnosis_abbr can be put in a a "non-class" group.
@@ -109,9 +110,9 @@ class CINC2021(PhysioNetDataBase):
     4. all data are recorded in the leads ordering of
         ["I", "II", "III", "aVR", "aVL", "aVF", "V1", "V2", "V3", "V4", "V5", "V6"]
     using for example the following code:
-    >>> db_dir = "/media/cfs/wenhao71/data/cinc2020_data/"
+    >>> db_dir = "/media/cfs/wenhao71/data/CinC2021/"
     >>> working_dir = "./working_dir"
-    >>> dr = CINC2020Reader(db_dir=db_dir,working_dir=working_dir)
+    >>> dr = CINC2021(db_dir=db_dir,working_dir=working_dir)
     >>> set_leads = []
     >>> for tranche, l_rec in dr.all_records.items():
     ...     for rec in l_rec:
@@ -158,7 +159,7 @@ class CINC2021(PhysioNetDataBase):
     -----
     1. ECG arrhythmia detection
 
-    ISSUES: (all in CinC2020, left unfixed)
+    ISSUES: (all in CinC2021, left unfixed)
     -------
     1. reading the .hea files, baselines of all records are 0, however it is not the case if one plot the signal
     2. about half of the LAD records satisfy the "2-lead" criteria, but fail for the "3-lead" criteria, which means that their axis is (-30°, 0°) which is not truely LAD
@@ -166,6 +167,10 @@ class CINC2021(PhysioNetDataBase):
     4. "E04603" (all leads), "E06072" (chest leads, epecially V1-V3), "E06909" (lead V2), "E07675" (lead V3), "E07941" (lead V6), "E08321" (lead V6) has exceptionally large values at rpeaks, reading (`load_data`) these two records using `wfdb` would bring in `nan` values. One can check using the following code
     >>> rec = "E04603"
     >>> dr.plot(rec, dr.load_data(rec, backend="scipy", units="uv"))  # currently raising error
+    5. many records (headers) have duplicate labels. For example, many records in the Georgia subset has duplicate "PAC" ("284470004") label
+    6. some records in tranche G has #Dx ending with "," (at least "JS00344"), or consecutive "," (at least "JS03287") in corresponding .hea file
+    7. tranche G has 2 Dx ("251238007", "6180003") which are listed in neither of dx_mapping_scored.csv nor dx_mapping_unscored.csv
+    8. about 68 records from tranche G has `nan` values loaded via `wfdb.rdrecord`, which might be caused by motion artefact in some leads
 
     References
     ----------
@@ -190,7 +195,7 @@ class CINC2021(PhysioNetDataBase):
             log verbosity
         kwargs: auxilliary key word arguments
         """
-        super().__init__(db_name="CINC2021", db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
+        super().__init__(db_name="CinC2021", db_dir=db_dir, working_dir=working_dir, verbose=verbose, **kwargs)
         
         self.rec_ext = "mat"
         self.ann_ext = "hea"
@@ -198,10 +203,10 @@ class CINC2021(PhysioNetDataBase):
         self.db_tranches = list("ABCDEFG")
         self.tranche_names = ED({
             "A": "CPSC",
-            "B": "CPSC-Extra",
+            "B": "CPSC_Extra",
             "C": "StPetersburg",
             "D": "PTB",
-            "E": "PTB-XL",
+            "E": "PTB_XL",
             "F": "Georgia",
             "G": "CUSPHNFH",
         })
@@ -221,17 +226,18 @@ class CINC2021(PhysioNetDataBase):
             "diagnosis", "diagnosis_scored",  # in the form of abbreviations
         }
         self._ls_rec()  # loads file system structures into self.db_dirs and self._all_records
-        # self._aggregate_stats()
+        self._aggregate_stats(fast=True)
 
         self._diagnoses_records_list = None
         # self._ls_diagnoses_records()
 
         self.fs = {
-            "A": 500, "B": 500, "C": 257, "D": 1000, "E": 500, "F": 500,
+            "A": 500, "B": 500, "C": 257, "D": 1000, "E": 500, "F": 500, "G": 500,
         }
         self.spacing = {t: 1000 / f for t,f in self.fs.items()}
 
         self.all_leads = ["I", "II", "III", "aVR", "aVL", "aVF", "V1", "V2", "V3", "V4", "V5", "V6",]
+        self._all_leads_set = set(self.all_leads)
 
         self.df_ecg_arrhythmia = dx_mapping_all[["Dx", "SNOMEDCTCode", "Abbreviation"]]
         self.ann_items = [
@@ -245,6 +251,17 @@ class CINC2021(PhysioNetDataBase):
         # self.value_correction_factor.F = 4.88  # ref. ISSUES 3
 
         self.exceptional_records = ["E04603", "E06072", "E06909", "E07675", "E07941", "E08321"]  # ref. ISSUES 4
+        self.exceptional_records += [  # ref. ISSUE 8
+            "JS35065", "JS26793", "JS37176", "JS13181", "JS27985", "JS26605", "JS37173", "JS23588",
+            "JS36244", "JS15624", "JS35727", "JS25106", "JS21617", "JS25322", "JS35050", "JS35654",
+            "JS37609", "JS38252", "JS26245", "JS27460", "JS42026", "JS24016", "JS41935", "JS33280",
+            "JS14343", "JS35192", "JS14659", "JS37105", "JS34879", "JS37439", "JS27170", "JS36018",
+            "JS28075", "JS27278", "JS34788", "JS16169", "JS10765", "JS19708", "JS21853", "JS16222",
+            "JS38231", "JS27271", "JS36015", "JS11956", "JS36568", "JS34868", "JS20330", "JS37592",
+            "JS21668", "JS25458", "JS34479", "JS21881", "JS41844", "JS27034", "JS27407", "JS41908",
+            "JS26843", "JS34509", "JS16813", "JS36731", "JS23450", "JS27835", "JS10767", "JS21701",
+            "JS23786", "JS36189", "JS14627", "JS20656",
+        ]
 
 
     def get_subject_id(self, rec:str) -> int:
@@ -519,7 +536,13 @@ class CINC2021(PhysioNetDataBase):
         return fp
 
 
-    def load_data(self, rec:str, leads:Optional[Union[str, List[str]]]=None, data_format:str="channel_first", backend:str="wfdb", units:str="mV", fs:Optional[Real]=None) -> np.ndarray:
+    def load_data(self,
+                  rec:str,
+                  leads:Optional[Union[str, List[str]]]=None,
+                  data_format:str="channel_first",
+                  backend:str="wfdb",
+                  units:str="mV",
+                  fs:Optional[Real]=None) -> np.ndarray:
         """ finished, checked,
 
         load physical (converted from digital) ecg data,
@@ -656,41 +679,53 @@ class CINC2021(PhysioNetDataBase):
         ann_dict["nb_leads"] = int(ann_dict["nb_leads"])
         ann_dict["fs"] = int(ann_dict["fs"])
         ann_dict["nb_samples"] = int(ann_dict["nb_samples"])
-        ann_dict["datetime"] = datetime.strptime(" ".join([ann_dict["datetime"], daytime]), "%d-%b-%Y %H:%M:%S")
-        try: # see NOTE. 1.
-            ann_dict["age"] = int([l for l in header_reader.comments if "Age" in l][0].split(": ")[-1])
+        try:
+            ann_dict["datetime"] = datetime.strptime(
+                " ".join([ann_dict["datetime"], daytime]), "%d-%b-%Y %H:%M:%S"
+            )
+        except:
+            pass
+        try:  # see NOTE. 1.
+            ann_dict["age"] = \
+                int([l for l in header_reader.comments if "Age" in l][0].split(":")[-1].strip())
         except:
             ann_dict["age"] = np.nan
-        try:
-            ann_dict["sex"] = [l for l in header_reader.comments if "Sex" in l][0].split(": ")[-1]
+        try:  # only "10726" has "NaN" sex
+            ann_dict["sex"] = \
+                [l for l in header_reader.comments if "Sex" in l][0].split(":")[-1].strip().replace("NaN", "Unknown")
         except:
             ann_dict["sex"] = "Unknown"
         try:
-            ann_dict["medical_prescription"] = [l for l in header_reader.comments if "Rx" in l][0].split(": ")[-1]
+            ann_dict["medical_prescription"] = \
+                [l for l in header_reader.comments if "Rx" in l][0].split(":")[-1].strip()
         except:
             ann_dict["medical_prescription"] = "Unknown"
         try:
-            ann_dict["history"] = [l for l in header_reader.comments if "Hx" in l][0].split(": ")[-1]
+            ann_dict["history"] = \
+                [l for l in header_reader.comments if "Hx" in l][0].split(":")[-1].strip()
         except:
             ann_dict["history"] = "Unknown"
         try:
-            ann_dict["symptom_or_surgery"] = [l for l in header_reader.comments if "Sx" in l][0].split(": ")[-1]
+            ann_dict["symptom_or_surgery"] = \
+                [l for l in header_reader.comments if "Sx" in l][0].split(":")[-1].strip()
         except:
             ann_dict["symptom_or_surgery"] = "Unknown"
 
-        l_Dx = [l for l in header_reader.comments if "Dx" in l][0].split(": ")[-1].split(",")
+        # l_Dx = [l for l in header_reader.comments if "Dx" in l][0].split(": ")[-1].split(",")
+        # ref. ISSUE 6
+        l_Dx = [l for l in header_reader.comments if "Dx" in l][0].split(":")[-1].strip().split(",")
+        l_Dx = [d for d in l_Dx if len(d) > 0]
         ann_dict["diagnosis"], ann_dict["diagnosis_scored"] = self._parse_diagnosis(l_Dx)
 
         df_leads = pd.DataFrame()
-        for k in ["file_name", "fmt", "byte_offset", "adc_gain", "units", "adc_res", "adc_zero", "baseline", "init_value", "checksum", "block_size", "sig_name"]:
+        cols = [
+            "file_name", "fmt", "byte_offset",
+            "adc_gain", "units", "adc_res", "adc_zero",
+            "baseline", "init_value", "checksum", "block_size", "sig_name",
+        ]
+        for k in cols:
             df_leads[k] = header_reader.__dict__[k]
-        df_leads = df_leads.rename(
-            columns={
-                "sig_name": "lead_name",
-                "units":"adc_units",
-                "file_name":"filename",
-            }
-        )
+        df_leads = df_leads.rename(columns={"sig_name": "lead_name", "units":"adc_units", "file_name":"filename",})
         df_leads.index = df_leads["lead_name"]
         df_leads.index.name = None
         ann_dict["df_leads"] = df_leads
@@ -719,29 +754,42 @@ class CINC2021(PhysioNetDataBase):
         ann_dict["nb_leads"] = int(ann_dict["nb_leads"])
         ann_dict["fs"] = int(ann_dict["fs"])
         ann_dict["nb_samples"] = int(ann_dict["nb_samples"])
-        ann_dict["datetime"] = datetime.strptime(" ".join([ann_dict["datetime"], daytime]), "%d-%b-%Y %H:%M:%S")
+        try:
+            ann_dict["datetime"] = datetime.strptime(
+                " ".join([ann_dict["datetime"], daytime]), "%d-%b-%Y %H:%M:%S"
+            )
+        except:
+            pass
         try: # see NOTE. 1.
-            ann_dict["age"] = int([l for l in header_data if l.startswith("#Age")][0].split(": ")[-1])
+            ann_dict["age"] = \
+                int([l for l in header_data if l.startswith("#Age")][0].split(":")[-1]).strip()
         except:
             ann_dict["age"] = np.nan
         try:
-            ann_dict["sex"] = [l for l in header_data if l.startswith("#Sex")][0].split(": ")[-1]
+            ann_dict["sex"] = \
+                [l for l in header_data if l.startswith("#Sex")][0].split(":")[-1].strip()
         except:
             ann_dict["sex"] = "Unknown"
         try:
-            ann_dict["medical_prescription"] = [l for l in header_data if l.startswith("#Rx")][0].split(": ")[-1]
+            ann_dict["medical_prescription"] = \
+                [l for l in header_data if l.startswith("#Rx")][0].split(":")[-1].strip()
         except:
             ann_dict["medical_prescription"] = "Unknown"
         try:
-            ann_dict["history"] = [l for l in header_data if l.startswith("#Hx")][0].split(": ")[-1]
+            ann_dict["history"] = \
+                [l for l in header_data if l.startswith("#Hx")][0].split(":")[-1].strip()
         except:
             ann_dict["history"] = "Unknown"
         try:
-            ann_dict["symptom_or_surgery"] = [l for l in header_data if l.startswith("#Sx")][0].split(": ")[-1]
+            ann_dict["symptom_or_surgery"] = \
+                [l for l in header_data if l.startswith("#Sx")][0].split(":")[-1].strip()
         except:
             ann_dict["symptom_or_surgery"] = "Unknown"
 
-        l_Dx = [l for l in header_data if l.startswith("#Dx")][0].split(": ")[-1].split(",")
+        # l_Dx = [l for l in header_data if l.startswith("#Dx")][0].split(": ")[-1].split(",")
+        # ref. ISSUE 6
+        l_Dx = [l for l in header_data if "Dx" in l][0].split(":")[-1].strip().split(",")
+        l_Dx = [d for d in l_Dx if len(d) > 0]
         ann_dict["diagnosis"], ann_dict["diagnosis_scored"] = self._parse_diagnosis(l_Dx)
 
         ann_dict["df_leads"] = self._parse_leads(header_data[1:13])
@@ -838,7 +886,11 @@ class CINC2021(PhysioNetDataBase):
         return self.load_ann(rec, raw)
 
     
-    def get_labels(self, rec:str, scored_only:bool=True, fmt:str="s", normalize:bool=True) -> List[str]:
+    def get_labels(self,
+                   rec:str,
+                   scored_only:bool=True,
+                   fmt:str="s",
+                   normalize:bool=True) -> List[str]:
         """ finished, checked,
 
         read labels (diagnoses or arrhythmias) of a record
@@ -848,7 +900,7 @@ class CINC2021(PhysioNetDataBase):
         rec: str,
             name of the record
         scored_only: bool, default True,
-            only get the labels that are scored in the CINC2020 official phase
+            only get the labels that are scored in the CinC2021 official phase
         fmt: str, default "a",
             the format of labels, one of the following (case insensitive):
             - "a", abbreviations
@@ -856,7 +908,7 @@ class CINC2021(PhysioNetDataBase):
             - "s", SNOMEDCTCode
         normalize: bool, default True,
             if True, the labels will be transformed into their equavalents,
-            which are defined in `utils.utils_misc.cinc2020_aux_data.py`,
+            which are defined in `utils.scoring_aux_data.py`,
             and duplicates would be removed if exist after normalization
         
         Returns
@@ -926,7 +978,7 @@ class CINC2021(PhysioNetDataBase):
         rec: str,
             name of the record
         items: list of str, optional,
-            items of the subject's information (e.g. sex, age, etc.)
+            items of the subject"s information (e.g. sex, age, etc.)
         
         Returns
         -------
@@ -946,7 +998,12 @@ class CINC2021(PhysioNetDataBase):
         return subject_info
 
 
-    def save_challenge_predictions(self, rec:str, output_dir:str, scores:List[Real], labels:List[int], classes:List[str]) -> NoReturn:
+    def save_challenge_predictions(self,
+                                   rec:str,
+                                   output_dir:str,
+                                   scores:List[Real],
+                                   labels:List[int],
+                                   classes:List[str]) -> NoReturn:
         """ NOT finished, NOT checked, need updating, 
         
         TODO: update for the official phase
@@ -978,7 +1035,15 @@ class CINC2021(PhysioNetDataBase):
             f.write("\n".join([recording_string, class_string, label_string, score_string, ""]))
 
 
-    def plot(self, rec:str, data:Optional[np.ndarray]=None, ann:Optional[Dict[str, np.ndarray]]=None, ticks_granularity:int=0, leads:Optional[Union[str, List[str]]]=None, same_range:bool=False, waves:Optional[Dict[str, Sequence[int]]]=None, **kwargs) -> NoReturn:
+    def plot(self,
+             rec:str,
+             data:Optional[np.ndarray]=None,
+             ann:Optional[Dict[str, np.ndarray]]=None,
+             ticks_granularity:int=0,
+             leads:Optional[Union[str, List[str]]]=None,
+             same_range:bool=False,
+             waves:Optional[Dict[str, Sequence[int]]]=None,
+             **kwargs:Any) -> NoReturn:
         """ finished, checked, to improve,
 
         plot the signals of a record or external signals (units in μV),
@@ -995,7 +1060,7 @@ class CINC2021(PhysioNetDataBase):
             if given, data of `rec` will not be used,
             this is useful when plotting filtered data
         ann: dict, optional,
-            annotations for `data`,
+            annotations for `data`, with 2 items: "scored", "all",
             ignored if `data` is None
         ticks_granularity: int, default 0,
             the granularity to plot axis ticks, the higher the more,
@@ -1011,8 +1076,8 @@ class CINC2021(PhysioNetDataBase):
             "t_onsets", "t_peaks", "t_offsets"
         kwargs: dict,
 
-        TODO:
-        -----
+        TODO
+        ----
         1. slice too long records, and plot separately for each segment
         2. plot waves using `axvspan`
 
@@ -1042,7 +1107,8 @@ class CINC2021(PhysioNetDataBase):
             _leads = [leads]
         else:
             _leads = leads
-        assert all([l in self.all_leads for l in _leads])
+        # assert all([l in self.all_leads for l in _leads])
+        assert set(_leads).issubset(self._all_leads_set)
 
         # lead_list = self.load_ann(rec)["df_leads"]["lead_name"].tolist()
         # lead_indices = [lead_list.index(l) for l in _leads]
@@ -1166,7 +1232,9 @@ class CINC2021(PhysioNetDataBase):
         plt.show()
 
 
-    def get_tranche_class_distribution(self, tranches:Sequence[str], scored_only:bool=True) -> Dict[str, int]:
+    def get_tranche_class_distribution(self,
+                                       tranches:Sequence[str],
+                                       scored_only:bool=True) -> Dict[str, int]:
         """ finished, checked,
 
         Parameters
@@ -1174,7 +1242,7 @@ class CINC2021(PhysioNetDataBase):
         tranches: sequence of str,
             tranche symbols (A-F)
         scored_only: bool, default True,
-            only get class distributions that are scored in the CINC2020 official phase
+            only get class distributions that are scored in the CinC2021 official phase
         
         Returns
         -------
@@ -1192,7 +1260,7 @@ class CINC2021(PhysioNetDataBase):
 
 
     @staticmethod
-    def get_arrhythmia_knowledge(arrhythmias:Union[str,List[str]], **kwargs) -> NoReturn:
+    def get_arrhythmia_knowledge(arrhythmias:Union[str,List[str]], **kwargs:Any) -> NoReturn:
         """ finished, checked,
 
         knowledge about ECG features of specific arrhythmias,
@@ -1218,7 +1286,11 @@ class CINC2021(PhysioNetDataBase):
                 print("*"*110)
 
 
-    def load_resampled_data(self, rec:str, data_format:str="channel_first", siglen:Optional[int]=None) -> np.ndarray:
+    def load_resampled_data(self,
+                            rec:str,
+                            leads:Optional[Union[str, List[str]]]=None,
+                            data_format:str="channel_first",
+                            siglen:Optional[int]=None) -> np.ndarray:
         """ finished, checked,
 
         resample the data of `rec` to 500Hz,
@@ -1228,6 +1300,8 @@ class CINC2021(PhysioNetDataBase):
         ----------
         rec: str,
             name of the record
+        leads: str or list of str, optional,
+            the leads to load
         data_format: str, default "channel_first",
             format of the ecg data,
             "channel_last" (alias "lead_last"), or
@@ -1242,6 +1316,15 @@ class CINC2021(PhysioNetDataBase):
         data: ndarray,
             the resampled (and perhaps sliced) signal data
         """
+        if leads is None or leads == "all":
+            _leads = self.all_leads
+        elif isinstance(leads, str):
+            _leads = [leads]
+        else:
+            _leads = leads
+        assert set(_leads).issubset(self._all_leads_set)
+        _leads = [self.all_leads.index(item) for item in _leads]
+
         tranche = self._get_tranche(rec)
         if siglen is None:
             rec_fp = os.path.join(self.db_dirs[tranche], f"{rec}_500Hz.npy")
@@ -1249,7 +1332,15 @@ class CINC2021(PhysioNetDataBase):
             rec_fp = os.path.join(self.db_dirs[tranche], f"{rec}_500Hz_siglen_{siglen}.npy")
         if not os.path.isfile(rec_fp):
             # print(f"corresponding file {os.basename(rec_fp)} does not exist")
-            data = self.load_data(rec, data_format="channel_first", units="mV", fs=None)
+            # NOTE: if not exists, create the data file,
+            # so that the ordering of leads keeps in accordance with `Standard12Leads`
+            data = self.load_data(
+                rec,
+                leads="all",
+                data_format="channel_first",
+                units="mV",
+                fs=None
+            )
             rec_fs = self.get_fs(rec, from_hea=True)
             if rec_fs != 500:
                 data = resample_poly(data, 500, rec_fs, axis=1)
@@ -1266,6 +1357,8 @@ class CINC2021(PhysioNetDataBase):
         else:
             # print(f"loading from local file...")
             data = np.load(rec_fp)
+        # choose data of specific leads
+        data = data[_leads, ...]
         if data_format.lower() in ["channel_last", "lead_last"]:
             data = data.T
         return data
@@ -1322,6 +1415,59 @@ class CINC2021(PhysioNetDataBase):
                 data = self.load_data(rec)
                 if np.isnan(data).any():
                     print(f"record {rec} from tranche {t} has nan values")
+
+
+    def _compute_cooccurrence(self, tranches:Optional[str]=None) -> pd.DataFrame:
+        """ finished, checked,
+
+        compute the coocurrence matrix (DataFrame) of all classes in the whole of the CinC2021 database
+
+        Parameters
+        ----------
+        tranches: str, optional,
+            if specified, computation will be limited to these tranches, case insensitive,
+            e.g. "AB", "ABEF", "G", etc.
+
+        Returns
+        -------
+        dx_cooccurrence_all: DataFrame,
+            the coocurrence matrix (DataFrame) desired
+        """
+        dx_cooccurrence_all_fp = os.path.join(utils._BASE_DIR, "utils", "dx_cooccurrence_all.csv")
+        if os.path.isfile(dx_cooccurrence_all_fp) and tranches is None:
+            dx_cooccurrence_all = pd.read_csv(dx_cooccurrence_all_fp)
+            return
+        dx_cooccurrence_all = pd.DataFrame(np.zeros((len(dx_mapping_all.Abbreviation), len(dx_mapping_all.Abbreviation)),dtype=int), columns=dx_mapping_all.Abbreviation.values)
+        dx_cooccurrence_all.index = dx_mapping_all.Abbreviation.values
+        start = time.time()
+        print("start computing the cooccurrence matrix...")
+        _tranches = (tranches or "").upper() or list(self.all_records.keys())
+        for tranche, l_rec in self.all_records.items():
+            if tranche not in _tranches:
+                continue
+            for idx, rec in enumerate(l_rec):
+                ann = self.load_ann(rec)
+                d = ann["diagnosis"]["diagnosis_abbr"]
+                for item in d:
+                    if item not in dx_cooccurrence_all.columns.values:
+                        # ref. ISSUE 7
+                        # print(f"{rec} has illegal Dx {item}!")
+                        continue
+                    dx_cooccurrence_all.loc[item,item] += 1
+                for i in range(len(d)-1):
+                    if d[i] not in dx_cooccurrence_all.columns.values:
+                        continue
+                    for j in range(i+1,len(d)):
+                        if d[j] not in dx_cooccurrence_all.columns.values:
+                            continue
+                        dx_cooccurrence_all.loc[d[i],d[j]] += 1
+                        dx_cooccurrence_all.loc[d[j],d[i]] += 1
+                print(f"tranche {tranche} <-- {idx+1} / {len(l_rec)}", end="\r")
+            print("\n")
+        print(f"finish computing the cooccurrence matrix in {(time.time()-start)/60:.3f} minutes")
+        if tranches is None:
+            dx_cooccurrence_all.to_csv(dx_cooccurrence_all_fp)
+        return dx_cooccurrence_all
 
 
 
