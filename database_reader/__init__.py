@@ -2,8 +2,8 @@
 """
 facilities for easy reading of various databases
 
-subpackages:
-------------
+subpackages
+-----------
     physionet_databases
     nsrr_databases
     audio_databases

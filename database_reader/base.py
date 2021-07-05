@@ -558,8 +558,8 @@ class PhysioNetDataBase(_DataBase):
             the items to print,
             if not specified, then a comprehensive printing of meanings of all symbols will be performed
 
-        References:
-        -----------
+        References
+        ----------
         [1] https://archive.physionet.org/physiobank/annotations.shtml
         """
         attrs = vars(self)
