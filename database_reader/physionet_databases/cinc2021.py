@@ -361,6 +361,9 @@ class CINC2021(PhysioNetDataBase):
                     self._stats.at[idx, k] = ann_dict[k]
                 for k in ["diagnosis", "diagnosis_scored",]:
                     self._stats.at[idx, k] = ann_dict[k]["diagnosis_abbr"]
+                self.logger.debug(f"stats of {row.tranche_name} -- {row.record} --> ({idx+1} / {len(self._stats)}) gathered")
+            for k in ["nb_leads", "fs", "nb_samples"]:
+                self._stats[k] = self._stats[k].astype(int)
             _stats_to_save = self._stats.copy()
             for k in ["diagnosis", "diagnosis_scored",]:
                 _stats_to_save[k] = _stats_to_save[k].apply(lambda l: list_sep.join(l))
@@ -571,7 +574,7 @@ class CINC2021(PhysioNetDataBase):
             the ecg data
         """
         assert data_format.lower() in ["channel_first", "lead_first", "channel_last", "lead_last"]
-        tranche = self._get_tranche(rec)
+        # tranche = self._get_tranche(rec)
         if not leads:
             _leads = self.all_leads
         elif isinstance(leads, str):
@@ -636,7 +639,7 @@ class CINC2021(PhysioNetDataBase):
         ann_dict, dict or str,
             the annotations with items: ref. `self.ann_items`
         """
-        tranche = self._get_tranche(rec)
+        # tranche = self._get_tranche(rec)
         ann_fp = self.get_ann_filepath(rec, with_ext=True)
         with open(ann_fp, "r") as f:
             header_data = f.read().splitlines()
@@ -762,7 +765,7 @@ class CINC2021(PhysioNetDataBase):
             pass
         try: # see NOTE. 1.
             ann_dict["age"] = \
-                int([l for l in header_data if l.startswith("#Age")][0].split(":")[-1]).strip()
+                int([l for l in header_data if l.startswith("#Age")][0].split(":")[-1].strip())
         except:
             ann_dict["age"] = np.nan
         try:
@@ -1385,7 +1388,7 @@ class CINC2021(PhysioNetDataBase):
             raw data (d_signal) loaded from corresponding data file,
             without subtracting baseline nor dividing adc gain
         """
-        tranche = self._get_tranche(rec)
+        # tranche = self._get_tranche(rec)
         if backend.lower() == "wfdb":
             rec_fp = self.get_data_filepath(rec, with_ext=False)
             wfdb_rec = wfdb.rdrecord(rec_fp, physical=False)
@@ -1433,7 +1436,7 @@ class CINC2021(PhysioNetDataBase):
         dx_cooccurrence_all: DataFrame,
             the coocurrence matrix (DataFrame) desired
         """
-        dx_cooccurrence_all_fp = os.path.join(utils._BASE_DIR, "utils", "dx_cooccurrence_all.csv")
+        dx_cooccurrence_all_fp = os.path.join(self.db_dir_base, "dx_cooccurrence_all.csv")
         if os.path.isfile(dx_cooccurrence_all_fp) and tranches is None:
             dx_cooccurrence_all = pd.read_csv(dx_cooccurrence_all_fp)
             return
@@ -1600,6 +1603,7 @@ def get_parser() -> dict:
         help="output directory",
         dest="output_directory",
     )
+    _tranches = list("ABCDEFG")
     parser.add_argument(
         "-t", "--tranches", type=str,
         help=f"""list of tranches, a subset of {",".join(_tranches)}, separated by comma""",
@@ -1628,4 +1632,4 @@ if __name__ == "__main__":
     verbose = args.get("verbose", False)
     if tranches:
         tranches = tranches.split(",")
-    run(input_directory, output_directory, tranches, verbose)
+    prepare_dataset(input_directory, output_directory, tranches, verbose)
