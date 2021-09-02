@@ -232,10 +232,10 @@ class CINC2021(PhysioNetDataBase):
         self._diagnoses_records_list = None
         # self._ls_diagnoses_records()
 
-        self.fs = {
+        self.fs = ED({
             "A": 500, "B": 500, "C": 257, "D": 1000, "E": 500, "F": 500, "G": 500,
-        }
-        self.spacing = {t: 1000 / f for t,f in self.fs.items()}
+        })
+        self.spacing = ED({t: 1000 / f for t,f in self.fs.items()})
 
         self.all_leads = ["I", "II", "III", "aVR", "aVL", "aVF", "V1", "V2", "V3", "V4", "V5", "V6",]
         self._all_leads_set = set(self.all_leads)
